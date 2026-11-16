@@ -9,6 +9,7 @@ using OnlineShopping.Domain.Catalog;
 using OnlineShopping.Domain.Common;
 using OnlineShopping.Domain.Customers;
 using OnlineShopping.Domain.Sales;
+using OnlineShopping.Domain.Staff;
 using OnlineShopping.Infrastructure.Identity;
 
 namespace OnlineShopping.Infrastructure.Persistence;
@@ -35,6 +36,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<PhoneVerificationCode> PhoneVerificationCodes => Set<PhoneVerificationCode>();
     public DbSet<CustomerAddress> CustomerAddresses => Set<CustomerAddress>();
+    public DbSet<StaffInvitation> StaffInvitations => Set<StaffInvitation>();
+    public DbSet<StaffAuditEntry> StaffAuditEntries => Set<StaffAuditEntry>();
 
     /// <summary>ASP.NET Core Data Protection keys, shared by all app instances (cookies, antiforgery tokens).</summary>
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
@@ -55,6 +58,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         ConfigureOrders(builder);
         ConfigurePhoneCodes(builder);
         ConfigureAddresses(builder);
+        ConfigureStaff(builder);
         ApplySoftDeleteQueryFilters(builder);
     }
 
@@ -199,6 +203,36 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 .WithMany()
                 .HasForeignKey(a => a.CustomerId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureStaff(ModelBuilder b)
+    {
+        b.Entity<StaffInvitation>(e =>
+        {
+            e.ToTable("staff_invitations");
+            e.Property(i => i.Email).HasMaxLength(254);
+            e.Property(i => i.NormalizedEmail).HasMaxLength(254);
+            e.Property(i => i.PhoneNumber).HasMaxLength(20);
+            e.Property(i => i.Roles).HasMaxLength(200);
+            e.Property(i => i.InvitedByUserId).HasMaxLength(450);
+            e.Property(i => i.AcceptedByUserId).HasMaxLength(450);
+            e.Ignore(i => i.RoleList);
+            // Lookups are "open invitation for this email / phone".
+            e.HasIndex(i => i.NormalizedEmail);
+            e.HasIndex(i => i.PhoneNumber);
+            e.HasOne<AppUser>().WithMany().HasForeignKey(i => i.InvitedByUserId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        b.Entity<StaffAuditEntry>(e =>
+        {
+            e.ToTable("staff_audit_entries");
+            e.Property(a => a.ActorUserId).HasMaxLength(450);
+            e.Property(a => a.TargetUserId).HasMaxLength(450);
+            e.Property(a => a.TargetIdentifier).HasMaxLength(254);
+            e.Property(a => a.Details).HasMaxLength(300);
+            e.Property(a => a.Action).HasConversion<string>().HasMaxLength(32);
+            e.HasIndex(a => a.CreatedUtc);
         });
     }
 

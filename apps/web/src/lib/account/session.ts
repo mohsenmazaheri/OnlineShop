@@ -8,13 +8,16 @@ export type CurrentUser = components["schemas"]["CurrentUser"];
 export type ExternalLoginsView = components["schemas"]["ExternalLoginsView"];
 export type TwoFactorStatus = components["schemas"]["TwoFactorStatus"];
 export type Address = components["schemas"]["AddressView"];
+export type StaffOverview = components["schemas"]["StaffOverview"];
+export type StaffAuditEntry = components["schemas"]["StaffAuditView"];
+export type MyStaffInvitation = components["schemas"]["MyStaffInvitation"];
 
 /**
- * GET an account endpoint for server rendering, as the signed-in user. Forwards only the session cookie.
+ * GET an account or admin endpoint for server rendering, as the signed-in user. Forwards only the session cookie.
  * Never cached: the answer is per user and must not leak between visitors. Null without a session, on any
  * error status, or when the API cannot be reached.
  */
-async function getForUser<T>(path: `/api/v1/account${string}`, fetchImpl: typeof fetch): Promise<T | null> {
+async function getForUser<T>(path: `/api/v1/${"account" | "admin"}${string}`, fetchImpl: typeof fetch): Promise<T | null> {
   const session = (await cookies()).get(sessionCookieName);
   if (!session) return null;
   try {
@@ -47,4 +50,19 @@ export function getTwoFactorStatus(fetchImpl: typeof fetch = fetch): Promise<Two
 /** The signed-in customer's address book (default first). */
 export function getAddresses(fetchImpl: typeof fetch = fetch): Promise<Address[] | null> {
   return getForUser<Address[]>("/api/v1/account/addresses", fetchImpl);
+}
+
+/** Open staff invitations for the signed-in user (matched by their verified email or mobile number). */
+export function getMyStaffInvitations(fetchImpl: typeof fetch = fetch): Promise<MyStaffInvitation[] | null> {
+  return getForUser<MyStaffInvitation[]>("/api/v1/account/staff-invitations", fetchImpl);
+}
+
+/** Staff members and recent invitations (needs the staff.manage permission; null otherwise). */
+export function getStaffOverview(fetchImpl: typeof fetch = fetch): Promise<StaffOverview | null> {
+  return getForUser<StaffOverview>("/api/v1/admin/staff", fetchImpl);
+}
+
+/** The latest staff changes (needs the staff.manage permission; null otherwise). */
+export function getStaffAudit(fetchImpl: typeof fetch = fetch): Promise<StaffAuditEntry[] | null> {
+  return getForUser<StaffAuditEntry[]>("/api/v1/admin/staff/audit", fetchImpl);
 }

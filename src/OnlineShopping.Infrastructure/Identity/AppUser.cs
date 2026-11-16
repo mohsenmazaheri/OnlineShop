@@ -17,4 +17,7 @@ public class AppUser : IdentityUser
 
     /// <summary>Set when the customer deleted the account: the row stays (orders reference it) but holds no personal data.</summary>
     public DateTime? ErasedUtc { get; set; }
+
+    /// <summary>Set while an administrator has suspended the account (it is also locked out, so no sign-in works).</summary>
+    public DateTime? SuspendedUtc { get; set; }
 }

@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using OnlineShopping.Application.Accounts;
 using OnlineShopping.Application.Common;
 using OnlineShopping.Application.Notifications;
+using OnlineShopping.Application.Staff;
 using OnlineShopping.Infrastructure.Identity;
 using OnlineShopping.Infrastructure.Notifications;
 using OnlineShopping.Infrastructure.Persistence;
@@ -101,7 +102,12 @@ public static class DependencyInjection
 
         // The periodic security-stamp check rebuilds the session from the database; keep how the user signed in
         // (auth_time, amr=mfa) instead of silently dropping it.
-        services.Configure<SecurityStampValidatorOptions>(o => o.OnRefreshingPrincipal = SignInClaims.PreserveOnRefresh);
+        // Re-check every minute (default 30): a suspended account or removed staff role must lose access quickly.
+        services.Configure<SecurityStampValidatorOptions>(o =>
+        {
+            o.ValidationInterval = TimeSpan.FromMinutes(1);
+            o.OnRefreshingPrincipal = SignInClaims.PreserveOnRefresh;
+        });
 
         // Read through IOptions when the cookie handler is first used, not while registering services:
         // configuration sources added later (environment, tests) must be honoured.
@@ -136,6 +142,7 @@ public static class DependencyInjection
         services.AddScoped<IAccountIdentity, IdentityAccountService>();
         services.AddScoped<ITwoFactorIdentity, TwoFactorIdentity>();
         services.AddScoped<IAccountDataIdentity, IdentityAccountDataService>();
+        services.AddScoped<IStaffIdentity, StaffIdentity>();
     }
 
     private static void AddEmail(IServiceCollection services, IConfiguration configuration)

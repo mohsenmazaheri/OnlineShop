@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { LogoutButton, ResendConfirmationButton } from "@/components/account/AccountActions";
@@ -7,11 +8,12 @@ import { providerNames } from "@/components/account/ExternalLoginButtons";
 import { LinkedAccounts } from "@/components/account/LinkedAccounts";
 import { PhoneCodeForm } from "@/components/account/PhoneCodeForm";
 import { ChangePasswordForm, ProfileForm } from "@/components/account/ProfileForms";
+import { StaffInvitations } from "@/components/account/StaffInvitations";
 import { TwoFactorSettings } from "@/components/account/TwoFactorSettings";
 import { format } from "@/lib/account/digits";
 import { accountMetadata, firstParam, routeLocale } from "@/lib/account/page-helpers";
 import { messageFor } from "@/lib/account/problems";
-import { getCurrentUser, getExternalLogins, getTwoFactorStatus } from "@/lib/account/session";
+import { getCurrentUser, getExternalLogins, getMyStaffInvitations, getTwoFactorStatus } from "@/lib/account/session";
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary, type Dictionary } from "@/lib/i18n/dictionaries";
 import { loadStore } from "@/lib/store/load";
@@ -23,14 +25,17 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/account"
 
 type Search = Promise<Record<string, string | string[] | undefined>>;
 
-/** Profile, email confirmation, adding a phone, password, two-step sign-in, linked providers, sign out. */
-async function AccountSummary({ locale, texts, searchParams }: { locale: Locale; texts: Dictionary["account"]; searchParams: Search }) {
-  const [user, store, query, external, twoFactor] = await Promise.all([
+type SummaryProps = { locale: Locale; texts: Dictionary["account"]; adminTexts: Dictionary["admin"]; searchParams: Search };
+
+/** Staff invitations, profile, email confirmation, phone, password, two-step sign-in, linked providers, sign out. */
+async function AccountSummary({ locale, texts, adminTexts, searchParams }: SummaryProps) {
+  const [user, store, query, external, twoFactor, invitations] = await Promise.all([
     getCurrentUser(),
     loadStore(),
     searchParams,
     getExternalLogins(),
     getTwoFactorStatus(),
+    getMyStaffInvitations(),
   ]);
   const linkedProvider = firstParam(query.linked);
   const error = firstParam(query.error);
@@ -44,6 +49,12 @@ async function AccountSummary({ locale, texts, searchParams }: { locale: Locale;
         <FormAlert kind="success">{format(texts.linkedOk, { provider: providerNames[linkedProvider] ?? linkedProvider })}</FormAlert>
       )}
       {error && <FormAlert kind="error">{messageFor(error, texts.errors)}</FormAlert>}
+      <StaffInvitations locale={locale} texts={texts} adminTexts={adminTexts} invitations={invitations ?? []} />
+      {user.isStaff && (
+        <Link href={`/${locale}/admin`} className="inline-flex h-11 items-center self-start rounded-xl border border-primary px-4 font-medium text-primary hover:bg-primary/5">
+          {texts.adminPanel}
+        </Link>
+      )}
       <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
         {user.email && (
           <>
@@ -102,7 +113,7 @@ export default async function AccountPage({ params, searchParams }: PageProps<"/
     <AuthCard title={dict.account.accountTitle}>
       <AccountNav locale={locale} texts={dict.account} current="profile" />
       <Suspense fallback={<p role="status">{dict.account.working}</p>}>
-        <AccountSummary locale={locale} texts={dict.account} searchParams={searchParams} />
+        <AccountSummary locale={locale} texts={dict.account} adminTexts={dict.admin} searchParams={searchParams} />
       </Suspense>
     </AuthCard>
   );

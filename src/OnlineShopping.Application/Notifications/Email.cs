@@ -11,7 +11,8 @@ public interface IEmailSender
 public enum EmailTemplate
 {
     ConfirmEmail,
-    ResetPassword
+    ResetPassword,
+    StaffInvitation
 }
 
 /// <summary>
@@ -34,7 +35,13 @@ public static class EmailTemplates
         [(EmailTemplate.ResetPassword, "en")] = new("Reset your password for {0}", "Use the link below to choose a new password. It works once and only for a short time:", "Choose a new password", "If you did not ask to reset your password, ignore this message; your password stays the same."),
         [(EmailTemplate.ResetPassword, "hy")] = new("Գաղտնաբառի վերականգնում {0}-ում", "Օգտագործեք ստորև նշված հղումը նոր գաղտնաբառ ընտրելու համար։ Այն գործում է մեկ անգամ և կարճ ժամանակով՝", "Ընտրել նոր գաղտնաբառ", "Եթե դուք չեք խնդրել վերականգնել գաղտնաբառը, անտեսեք այս նամակը։"),
         [(EmailTemplate.ResetPassword, "de")] = new("Passwort zurücksetzen bei {0}", "Über den folgenden Link wählen Sie ein neues Passwort. Er funktioniert nur einmal und nur kurze Zeit:", "Neues Passwort wählen", "Wenn Sie kein neues Passwort angefordert haben, ignorieren Sie diese Nachricht; Ihr Passwort bleibt unverändert."),
-        [(EmailTemplate.ResetPassword, "ar")] = new("إعادة تعيين كلمة المرور في {0}", "استخدم الرابط أدناه لاختيار كلمة مرور جديدة. يعمل مرة واحدة ولفترة قصيرة فقط:", "اختيار كلمة مرور جديدة", "إذا لم تطلب إعادة تعيين كلمة المرور، تجاهل هذه الرسالة؛ ستبقى كلمة المرور كما هي.")
+        [(EmailTemplate.ResetPassword, "ar")] = new("إعادة تعيين كلمة المرور في {0}", "استخدم الرابط أدناه لاختيار كلمة مرور جديدة. يعمل مرة واحدة ولفترة قصيرة فقط:", "اختيار كلمة مرور جديدة", "إذا لم تطلب إعادة تعيين كلمة المرور، تجاهل هذه الرسالة؛ ستبقى كلمة المرور كما هي."),
+
+        [(EmailTemplate.StaffInvitation, "fa")] = new("دعوت به همکاری در {0}", "شما برای همکاری در پنل مدیریت این فروشگاه دعوت شده‌اید. با همین ایمیل وارد شوید یا حساب بسازید و دعوت را در صفحهٔ حساب کاربری بپذیرید. این دعوت ۷ روز معتبر است.", "ورود و پذیرش دعوت", "اگر انتظار این دعوت را نداشتید، این پیام را نادیده بگیرید؛ تا وقتی دعوت را نپذیرید هیچ تغییری ایجاد نمی‌شود."),
+        [(EmailTemplate.StaffInvitation, "en")] = new("You are invited to join the {0} team", "You have been invited to work in this shop's back office. Sign in or create an account with this email address, then accept the invitation on your account page. The invitation is valid for 7 days.", "Sign in and accept", "If you did not expect this, ignore this message; nothing changes unless you accept."),
+        [(EmailTemplate.StaffInvitation, "hy")] = new("Հրավեր՝ միանալու {0}-ի թիմին", "Ձեզ հրավիրել են աշխատելու այս խանութի կառավարման վահանակում։ Մուտք գործեք կամ ստեղծեք հաշիվ այս էլ. հասցեով, ապա ընդունեք հրավերը ձեր հաշվի էջում։ Հրավերը գործում է 7 օր։", "Մուտք գործել և ընդունել", "Եթե չէիք սպասում այս հրավերին, անտեսեք այս նամակը․ ոչինչ չի փոխվի, քանի դեռ չեք ընդունել։"),
+        [(EmailTemplate.StaffInvitation, "de")] = new("Einladung ins Team von {0}", "Sie wurden eingeladen, im Verwaltungsbereich dieses Shops mitzuarbeiten. Melden Sie sich mit dieser E-Mail-Adresse an oder erstellen Sie ein Konto und nehmen Sie die Einladung auf Ihrer Kontoseite an. Die Einladung ist 7 Tage gültig.", "Anmelden und annehmen", "Wenn Sie diese Einladung nicht erwartet haben, ignorieren Sie diese Nachricht; ohne Ihre Zustimmung ändert sich nichts."),
+        [(EmailTemplate.StaffInvitation, "ar")] = new("دعوة للانضمام إلى فريق {0}", "تمت دعوتك للعمل في لوحة إدارة هذا المتجر. سجّل الدخول أو أنشئ حسابًا بهذا البريد الإلكتروني، ثم اقبل الدعوة في صفحة حسابك. الدعوة صالحة لمدة 7 أيام.", "تسجيل الدخول وقبول الدعوة", "إذا لم تكن تتوقع هذه الدعوة، تجاهل هذه الرسالة؛ لن يتغير شيء ما لم تقبلها.")
     };
 
     private static readonly HashSet<string> RtlLocales = new(["fa", "ar"], StringComparer.Ordinal);

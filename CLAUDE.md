@@ -138,6 +138,10 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   - Integration-test user-secrets (`tests/OnlineShopping.IntegrationTests`): `IntegrationTests:AdminConnection`
     (CI uses the `INTEGRATIONTESTS__ADMINCONNECTION` env var).
 - No Docker on this machine yet; Docker images are built by CI.
+- Windows (Hyper-V/WSL WinNAT) reserves TCP port ranges that move after reboots; when 2984–3083 is reserved, nothing
+  can listen on 3000 (`listen EACCES`, and the "API + web" profile logs "Couldn't start the SPA development server").
+  Check with `netsh interface ipv4 show excludedportrange protocol=tcp`; fixing it is a Windows setting the user makes.
+  For a check meanwhile, run the web app on a free port and the API with `Store__PublicUrl` set to it.
 - The built-in browser pane does not allow service workers; check PWA behaviour in a real browser.
 - The Claude desktop app is MSIX-packaged: anything it (or a process it starts) writes under `%APPDATA%` goes to
   `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\…` and is invisible to Visual Studio and normal
@@ -159,6 +163,8 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
 - **Errors:** expected failures return `Result<T>` with an `AppError` (`ErrorKind` + stable `code` like
   `category.not_found`); endpoints map them with `ToHttpResult()` to RFC 9457 problem details carrying `code`.
 - **Endpoints:** minimal APIs grouped under `/api/v1`, with `WithName` (becomes the OpenAPI operationId) and summary.
+  Admin endpoints live under `/api/v1/admin/...` and require a permission. Enums are serialized as their names
+  (`JsonStringEnumConverter`), so the generated TypeScript types are string unions.
 - **Options:** bind + `ValidateDataAnnotations` + `ValidateOnStart`. Configuration lists merge by index across sources,
   so list-like settings that operators override are comma-separated strings (see `StoreOptions.Locales`).
 - Logging via `[LoggerMessage]` source-generated methods (analyzer CA1848).
@@ -224,6 +230,14 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   `PersonalDataService.DeleteAsync` and included in `ExportAsync`.
 - Addresses: `AddressService` (Application/Customers); every query filters `CustomerId == userId`. Countries come
   from `Store:ShippingCountries` (empty = `PhoneRegion`), postal codes are checked by `PostalCodes`.
+- Staff: `StaffService` (Application/Staff) behind `IStaffIdentity`; error codes `staff.*` (`StaffErrors`, translated
+  under `admin.errors`). Invitations are accepted only by an account whose **verified** email/phone matches. Rules:
+  never act on your own account, always keep one active Admin, write a `StaffAuditEntry` for every change. A role
+  change keeps the session (claims refresh at the one-minute security-stamp check); suspension renews the stamp
+  and locks the account out (`AppUser.SuspendedUtc` + Identity lockout), so every sign-in path is blocked.
+- Admin panel (web): pages under `src/app/[locale]/admin/`, framed by `AdminShell`; each page calls
+  `requirePermission()` / `requireStaff()` (`src/lib/admin/access.ts`) inside its `<Suspense>`: signed out → sign-in,
+  no permission → `notFound()`. `proxy.ts` also sends signed-out visitors of `/{locale}/admin` to sign-in.
 - `PublicOriginMiddleware` makes the API see `Store:PublicUrl`'s scheme and host, so absolute URLs (OAuth redirect_uri)
   and Secure cookies follow the storefront. Integration tests therefore use an `http://` public URL.
 - Browser redirects back into the storefront go through `ReturnPaths.Sanitize` (no open redirects).

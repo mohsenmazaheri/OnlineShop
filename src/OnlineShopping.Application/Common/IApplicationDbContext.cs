@@ -3,6 +3,7 @@ using OnlineShopping.Domain.Accounts;
 using OnlineShopping.Domain.Catalog;
 using OnlineShopping.Domain.Customers;
 using OnlineShopping.Domain.Sales;
+using OnlineShopping.Domain.Staff;
 
 namespace OnlineShopping.Application.Common;
 
@@ -23,6 +24,8 @@ public interface IApplicationDbContext
     DbSet<OrderItem> OrderItems { get; }
     DbSet<PhoneVerificationCode> PhoneVerificationCodes { get; }
     DbSet<CustomerAddress> CustomerAddresses { get; }
+    DbSet<StaffInvitation> StaffInvitations { get; }
+    DbSet<StaffAuditEntry> StaffAuditEntries { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
