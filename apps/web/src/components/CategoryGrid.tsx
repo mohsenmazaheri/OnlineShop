@@ -1,3 +1,4 @@
+import { monogram } from "@/components/layout/Brand";
 import type { CategorySummary } from "@/lib/api/storefront";
 
 type Props = {
@@ -6,27 +7,30 @@ type Props = {
   emptyText: string;
 };
 
-/** Category cards for the home page. Category pages arrive in phase 6; until then cards are not links. */
+/**
+ * Round category tiles for the home page (the target of the "categories" links in the header and bottom bar).
+ * Until categories have images (phase 4) a tile shows the name's first letter on a soft colour. Category pages
+ * arrive in phase 6; until then tiles are not links.
+ */
 export function CategoryGrid({ categories, heading, emptyText }: Props) {
   return (
-    <section aria-labelledby="categories-heading" className="mx-auto w-full max-w-6xl px-4 py-6">
-      <h2 id="categories-heading" className="mb-4 text-lg font-bold">
+    <section id="categories" aria-labelledby="categories-heading" className="flex flex-col gap-4 md:gap-5">
+      <h2 id="categories-heading" className="text-lg font-extrabold md:text-center md:text-2xl">
         {heading}
       </h2>
       {categories.length === 0 ? (
-        <p className="text-muted">{emptyText}</p>
+        <p className="text-muted md:text-center">{emptyText}</p>
       ) : (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {categories.map((category) => (
-            <li key={category.id} className="rounded-2xl border border-border bg-surface p-4">
-              <h3 className="font-semibold">{category.name}</h3>
-              {category.subCategories.length > 0 && (
-                <ul className="mt-2 space-y-1 text-sm text-muted">
-                  {category.subCategories.map((sub) => (
-                    <li key={sub.id}>{sub.name}</li>
-                  ))}
-                </ul>
-              )}
+        <ul className="grid grid-cols-4 gap-x-2 gap-y-4 md:grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] md:gap-x-3 md:gap-y-5">
+          {categories.map((category, i) => (
+            <li key={category.id} className="flex flex-col items-center gap-2 text-center">
+              <span
+                aria-hidden
+                className={`tint tint-${i % 8} flex h-16 w-16 items-center justify-center rounded-[1.25rem] text-2xl font-extrabold md:h-24 md:w-24 md:rounded-[1.75rem] md:text-3xl`}
+              >
+                {monogram(category.name)}
+              </span>
+              <h3 className="text-xs leading-snug font-medium md:text-sm">{category.name}</h3>
             </li>
           ))}
         </ul>
@@ -37,9 +41,12 @@ export function CategoryGrid({ categories, heading, emptyText }: Props) {
 
 export function CategoryGridSkeleton({ label }: { label: string }) {
   return (
-    <div role="status" aria-label={label} className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-3 px-4 py-6 sm:grid-cols-3 lg:grid-cols-4">
+    <div role="status" aria-label={label} className="grid grid-cols-4 gap-x-2 gap-y-4 md:grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] md:gap-x-3">
       {Array.from({ length: 8 }, (_, i) => (
-        <div key={i} className="h-24 animate-pulse rounded-2xl bg-border" />
+        <div key={i} className="flex flex-col items-center gap-2">
+          <div className="h-16 w-16 animate-pulse rounded-[1.25rem] bg-border md:h-24 md:w-24 md:rounded-[1.75rem]" />
+          <div className="h-3 w-14 animate-pulse rounded bg-border" />
+        </div>
       ))}
     </div>
   );

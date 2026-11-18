@@ -1,5 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { formatDate } from "./format-date";
+import { formatDate, formatYear } from "./format-date";
+
+describe("formatYear", () => {
+  const date = new Date("2026-11-16T09:30:00Z");
+
+  it("uses the reader's calendar and digits", () => {
+    expect(formatYear(date, "fa")).toBe("۱۴۰۵");
+    expect(formatYear(date, "en")).toBe("2026");
+  });
+
+  it("falls back to the Gregorian year for an unknown locale", () => {
+    expect(formatYear(date, "not a locale!")).toBe("2026");
+  });
+});
 
 describe("formatDate", () => {
   const iso = "2026-11-16T09:30:00Z";

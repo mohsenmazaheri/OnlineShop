@@ -17,7 +17,8 @@ public sealed partial class DataSeeder(
     UserManager<AppUser> userManager,
     IOptions<SeedOptions> options,
     ILogger<DataSeeder> logger,
-    TimeProvider clock)
+    TimeProvider clock,
+    DemoUserSeeder demoUsers)
 {
 
     private readonly SeedOptions _options = options.Value;
@@ -29,6 +30,8 @@ public sealed partial class DataSeeder(
 
         await EnsureRolesAsync();
         await EnsureAdminAsync();
+        // Development-only test accounts (guarded inside; a no-op everywhere else).
+        await demoUsers.SeedAsync();
     }
 
     private async Task EnsureRolesAsync()

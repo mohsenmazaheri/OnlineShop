@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging.Abstractions;
+using StoreOptions = OnlineShopping.Application.Common.StoreOptions;
 using Microsoft.Extensions.Options;
 using OnlineShopping.Infrastructure.Persistence;
 using OnlineShopping.Infrastructure.Persistence.Seeding;
@@ -117,17 +120,40 @@ public sealed class DataSeederTests : IDisposable
         Assert.Contains("PasswordTooShort", ex.Message);
     }
 
-    private async Task SeedAsync(SeedOptions options)
+    [Fact]
+    public async Task Also_creates_the_demo_users_when_they_are_enabled_on_a_local_development_instance()
+    {
+        await SeedAsync(new SeedOptions(), new DemoUserOptions
+        {
+            Enabled = true, CustomerEmail = "customer@shop.localhost", AdminEmail = "admin@shop.localhost", Password = ValidPassword
+        });
+
+        using var scope = _services.CreateScope();
+        var users = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+        Assert.True(await users.IsInRoleAsync((await users.FindByEmailAsync("admin@shop.localhost"))!, AppRoles.Admin));
+        Assert.True(await users.IsInRoleAsync((await users.FindByEmailAsync("customer@shop.localhost"))!, AppRoles.Customer));
+    }
+
+    private async Task SeedAsync(SeedOptions options, DemoUserOptions? demo = null)
     {
         using var scope = _services.CreateScope();
         var sp = scope.ServiceProvider;
+        var users = sp.GetRequiredService<UserManager<AppUser>>();
+        var demoUsers = new DemoUserSeeder(
+            users,
+            new HostingEnvironment { EnvironmentName = Environments.Development },
+            Options.Create(new StoreOptions { Locales = "fa", PublicUrl = "http://localhost:3000" }),
+            Options.Create(demo ?? new DemoUserOptions()),
+            NullLogger<DemoUserSeeder>.Instance,
+            _database.Clock);
         var seeder = new DataSeeder(
             sp.GetRequiredService<AppDbContext>(),
             sp.GetRequiredService<RoleManager<IdentityRole>>(),
-            sp.GetRequiredService<UserManager<AppUser>>(),
+            users,
             Options.Create(options),
             NullLogger<DataSeeder>.Instance,
-            _database.Clock);
+            _database.Clock,
+            demoUsers);
 
         await seeder.SeedAsync();
     }

@@ -11,3 +11,12 @@ export function formatDate(iso: string, locale: string, withTime = false): strin
     return date.toISOString().slice(0, withTime ? 16 : 10).replace("T", " ");
   }
 }
+
+/** Just the year in the reader's calendar and digits (the footer's copyright line): ۱۴۰۵ for fa, 2026 for en. */
+export function formatYear(date: Date, locale: string): string {
+  try {
+    return new Intl.DateTimeFormat(locale, { year: "numeric" }).format(date);
+  } catch {
+    return String(date.getUTCFullYear());
+  }
+}

@@ -3,10 +3,26 @@
     "description": "Easy, fast and secure online shopping"
   },
   "home": {
-    "categories": "Categories",
+    "categories": "Shop by category",
     "noCategories": "No categories yet.",
     "loading": "Loading…",
-    "unavailable": "The shop is temporarily unavailable. Please try again shortly."
+    "unavailable": "The shop is temporarily unavailable. Please try again shortly.",
+    "heroBadge": "Welcome",
+    "heroCta": "Browse categories",
+    "quickAccess": "Quick access",
+    "quickCategories": "All categories",
+    "quickCart": "Cart",
+    "quickAccount": "My account",
+    "quickAddresses": "My addresses",
+    "benefits": "Why shop with us",
+    "benefitPaymentTitle": "Secure payment",
+    "benefitPaymentText": "Only trusted payment gateways",
+    "benefitMobileTitle": "Shop on your phone",
+    "benefitMobileText": "Install the web app, no app store needed",
+    "benefitPrivacyTitle": "Your privacy",
+    "benefitPrivacyText": "Download or delete your data at any time",
+    "benefitDeliveryTitle": "Delivered to you",
+    "benefitDeliveryText": "Save your addresses once"
   },
   "offline": {
     "title": "You are offline",
@@ -22,7 +38,17 @@
     "theme": "Theme",
     "themeSystem": "System",
     "themeLight": "Light",
-    "themeDark": "Dark"
+    "themeDark": "Dark",
+    "search": "Search the shop",
+    "searchPlaceholder": "Search products…",
+    "searchSubmit": "Search",
+    "cart": "Cart",
+    "categories": "All categories",
+    "language": "Language",
+    "mainMenu": "Main menu",
+    "bottomMenu": "Bottom menu",
+    "home": "Home",
+    "categoriesShort": "Categories"
   },
   "account": {
     "loginTitle": "Sign in",
@@ -292,5 +318,30 @@
       "already_suspended": "This account is already suspended.",
       "not_suspended": "This account is not suspended."
     }
+  },
+  "footer": {
+    "shopping": "Shopping",
+    "account": "Account",
+    "languages": "Languages",
+    "categories": "Categories",
+    "search": "Search",
+    "cart": "Cart",
+    "myAccount": "My account",
+    "addresses": "Addresses",
+    "privacy": "Privacy and my data",
+    "signIn": "Sign in or sign up",
+    "rights": "All rights reserved."
+  },
+  "search": {
+    "title": "Search",
+    "resultsFor": "Search for “{query}”",
+    "prompt": "Type something in the search box.",
+    "soon": "Product search is coming soon. Until then, browse the categories.",
+    "backHome": "Back to the home page"
+  },
+  "cart": {
+    "title": "Cart",
+    "empty": "Your cart is empty.",
+    "continue": "Continue shopping"
   }
 }

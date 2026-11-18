@@ -6,7 +6,7 @@ import { CategoryGrid, CategoryGridSkeleton } from "./CategoryGrid";
 afterEach(cleanup);
 
 describe("CategoryGrid", () => {
-  it("shows each category with its sub-categories", () => {
+  it("shows a tile per category under the #categories anchor", () => {
     render(
       <CategoryGrid
         heading="Categories"
@@ -19,9 +19,10 @@ describe("CategoryGrid", () => {
     );
 
     const section = screen.getByRole("region", { name: "Categories" });
+    expect(section.id).toBe("categories");
     expect(within(section).getByRole("heading", { level: 3, name: "Books" })).toBeTruthy();
-    expect(within(section).getByText("Poetry")).toBeTruthy();
     expect(within(section).getByRole("heading", { level: 3, name: "Toys" })).toBeTruthy();
+    expect(within(section).getAllByRole("listitem")).toHaveLength(2);
     expect(screen.queryByText("None")).toBeNull();
   });
 

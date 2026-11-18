@@ -3,10 +3,26 @@
     "description": "تسوّق عبر الإنترنت بسهولة وسرعة وأمان"
   },
   "home": {
-    "categories": "الفئات",
+    "categories": "تسوّق حسب الفئة",
     "noCategories": "لا توجد فئات بعد.",
     "loading": "جارٍ التحميل…",
-    "unavailable": "المتجر غير متاح مؤقتًا. يُرجى المحاولة بعد قليل."
+    "unavailable": "المتجر غير متاح مؤقتًا. يُرجى المحاولة بعد قليل.",
+    "heroBadge": "أهلاً بك",
+    "heroCta": "تصفّح الفئات",
+    "quickAccess": "وصول سريع",
+    "quickCategories": "كل الفئات",
+    "quickCart": "سلة التسوق",
+    "quickAccount": "حسابي",
+    "quickAddresses": "عناويني",
+    "benefits": "مزايا التسوق",
+    "benefitPaymentTitle": "دفع آمن",
+    "benefitPaymentText": "عبر بوابات دفع موثوقة فقط",
+    "benefitMobileTitle": "تسوّق من هاتفك",
+    "benefitMobileText": "ثبّت تطبيق الويب دون متجر تطبيقات",
+    "benefitPrivacyTitle": "الخصوصية",
+    "benefitPrivacyText": "نزّل بياناتك أو احذفها في أي وقت",
+    "benefitDeliveryTitle": "التوصيل إلى عنوانك",
+    "benefitDeliveryText": "احفظ عناوينك مرة واحدة"
   },
   "offline": {
     "title": "أنت غير متصل بالإنترنت",
@@ -22,7 +38,17 @@
     "theme": "المظهر",
     "themeSystem": "حسب النظام",
     "themeLight": "فاتح",
-    "themeDark": "داكن"
+    "themeDark": "داكن",
+    "search": "البحث في المتجر",
+    "searchPlaceholder": "ابحث عن المنتجات…",
+    "searchSubmit": "بحث",
+    "cart": "سلة التسوق",
+    "categories": "كل الفئات",
+    "language": "اللغة",
+    "mainMenu": "القائمة الرئيسية",
+    "bottomMenu": "القائمة السفلية",
+    "home": "الرئيسية",
+    "categoriesShort": "الفئات"
   },
   "account": {
     "loginTitle": "تسجيل الدخول",
@@ -292,5 +318,30 @@
       "already_suspended": "هذا الحساب موقوف بالفعل.",
       "not_suspended": "هذا الحساب غير موقوف."
     }
+  },
+  "footer": {
+    "shopping": "التسوق",
+    "account": "الحساب",
+    "languages": "اللغات",
+    "categories": "الفئات",
+    "search": "البحث",
+    "cart": "سلة التسوق",
+    "myAccount": "حسابي",
+    "addresses": "العناوين",
+    "privacy": "الخصوصية وبياناتي",
+    "signIn": "تسجيل الدخول أو إنشاء حساب",
+    "rights": "جميع الحقوق محفوظة."
+  },
+  "search": {
+    "title": "البحث",
+    "resultsFor": "البحث عن «{query}»",
+    "prompt": "اكتب شيئًا في مربع البحث.",
+    "soon": "البحث عن المنتجات قادم قريبًا. حتى ذلك الحين، تصفّح الفئات.",
+    "backHome": "العودة إلى الصفحة الرئيسية"
+  },
+  "cart": {
+    "title": "سلة التسوق",
+    "empty": "سلة التسوق فارغة.",
+    "continue": "متابعة التسوق"
   }
 }
