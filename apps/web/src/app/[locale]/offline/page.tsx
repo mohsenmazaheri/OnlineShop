@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { RequestTimeMarker } from "@/components/RequestTimeMarker";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 
@@ -12,6 +14,9 @@ export default async function OfflinePage({ params }: PageProps<"/[locale]/offli
     <main className="mx-auto flex max-w-md flex-1 flex-col items-center justify-center gap-2 px-4 text-center">
       <h1 className="text-xl font-bold">{dict.offline.title}</h1>
       <p className="text-muted">{dict.offline.body}</p>
+      <Suspense fallback={null}>
+        <RequestTimeMarker />
+      </Suspense>
     </main>
   );
 }

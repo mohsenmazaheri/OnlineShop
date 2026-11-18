@@ -63,6 +63,8 @@ public static class DependencyInjection
             dataProtection.PersistKeysToDbContext<AppDbContext>();
 
         services.Configure<SeedOptions>(configuration.GetSection(SeedOptions.SectionName));
+        services.Configure<DemoUserOptions>(configuration.GetSection(DemoUserOptions.SectionName));
+        services.AddScoped<DemoUserSeeder>();
         services.AddScoped<DataSeeder>();
 
         services.AddHealthChecks()

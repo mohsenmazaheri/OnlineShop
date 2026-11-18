@@ -33,4 +33,10 @@ browser on the storefront and stops Next.js when debugging stops. The same from 
 The `http` profile starts the API alone. If the connection string is missing, startup stops with the exact
 user-secrets file it looked for.
 
+**Test accounts (local only):** in Development with a local public URL, the API creates two demo accounts with
+confirmed emails: `customer@shop.localhost` (customer) and `admin@shop.localhost` (Admin). The shared test password is
+in `src/OnlineShopping.Api/appsettings.Development.json` (`DemoUsers`). They are never created in any other
+environment or with a non-local public URL. Emails in Development are not sent: they are saved as `.eml` files in
+`src/OnlineShopping.Api/App_Data/mail/` (SMS codes in `App_Data/sms/`).
+
 Tests: `dotnet test` (integration tests need `IntegrationTests:AdminConnection`, see CLAUDE.md) and `npm test` in `apps/web`.

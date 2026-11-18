@@ -11,7 +11,21 @@ vi.mock("next/link", () => ({
 }));
 
 import { Button, ButtonLink, buttonClass } from "./Button";
+import { Icon, iconNames } from "./Icon";
 import { Badge, Card, Skeleton } from "./Surface";
+
+describe("Icon", () => {
+  it("draws every icon as a decorative SVG of the requested size", () => {
+    for (const name of iconNames) {
+      const { container, unmount } = render(<Icon name={name} size={18} />);
+      const svg = container.querySelector("svg")!;
+      expect(svg.getAttribute("aria-hidden")).toBe("true");
+      expect(svg.getAttribute("width")).toBe("18");
+      expect(svg.children.length).toBeGreaterThan(0);
+      unmount();
+    }
+  });
+});
 
 afterEach(cleanup);
 

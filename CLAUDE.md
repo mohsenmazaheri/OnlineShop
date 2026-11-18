@@ -135,6 +135,9 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
 - Secrets (never print them, never write them to tracked files):
   - API user-secrets: `ConnectionStrings:Default`, `Postgres:SuperuserPassword` (admin tasks only),
     optionally `Database:AdminEmail` / `Database:AdminPassword`.
+- Demo accounts for trying pages: `DemoUserSeeder` creates `customer@shop.localhost` and `admin@shop.localhost`
+  (password in `appsettings.Development.json` → `DemoUsers`) only when the environment is Development **and**
+  `Store:PublicUrl` is local (loopback, `*.localhost`, `*.test`). Keep both guards; never enable it in other files.
   - Integration-test user-secrets (`tests/OnlineShopping.IntegrationTests`): `IntegrationTests:AdminConnection`
     (CI uses the `INTEGRATIONTESTS__ADMINCONNECTION` env var).
 - No Docker on this machine yet; Docker images are built by CI.
@@ -142,7 +145,9 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   can listen on 3000 (`listen EACCES`, and the "API + web" profile logs "Couldn't start the SPA development server").
   Check with `netsh interface ipv4 show excludedportrange protocol=tcp`; fixing it is a Windows setting the user makes.
   For a check meanwhile, run the web app on a free port and the API with `Store__PublicUrl` set to it.
-- The built-in browser pane does not allow service workers; check PWA behaviour in a real browser.
+- The built-in browser pane does not allow service workers; check PWA behaviour in a real browser. While the pane is
+  hidden, streamed `<Suspense>` content stays unrevealed (React waits for an animation frame); check with `curl` or
+  show the pane. `.claude/launch.json` has `api` (5087) and `web` (3000) for `preview_start`.
 - The Claude desktop app is MSIX-packaged: anything it (or a process it starts) writes under `%APPDATA%` goes to
   `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\…` and is invisible to Visual Studio and normal
   terminals. So `dotnet user-secrets set` run from Claude does **not** reach Visual Studio. Ask the user to set
@@ -258,7 +263,17 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
 - Design system: colours, states, ring and `--radius` are CSS tokens in `globals.css` (light + `[data-theme=dark]` +
   a no-JS system fallback); use the token classes (`bg-surface`, `text-muted`, `bg-danger`, …) and the shared
   components in `src/components/ui/` (`Button`/`ButtonLink`/`buttonClass`, `Card`, `Badge`, `Skeleton`), not raw
-  palette colours. `dark:` follows the chosen theme (custom variant).
+  palette colours. `dark:` follows the chosen theme (custom variant). Also `bg-accent` (badges, discounts),
+  `bg-inverse`/`text-inverse-foreground` (dark bands such as the footer) and the `tint tint-0…7` classes (soft tiles
+  that work in both themes). Icons: `<Icon name=…>` in `src/components/ui/Icon.tsx` (our own inline SVGs; add new
+  ones there, never an icon font or CDN).
+- Layout (`src/components/layout/`): `SiteHeader` (sticky; brand, GET search form, theme, `LanguageSwitcher`,
+  account, cart; main menu from md up), `BottomNav` (phones only, hidden in the admin panel), `SiteFooter`. The home
+  page follows the design canvas "طراحی صفحه اول فروشگاه" (Digikala-style structure, our own palette and texts); its
+  product rails wait for real product data (phase 6) — never show made-up sample products.
+- A page with no per-request content of its own renders `<Suspense><RequestTimeMarker /></Suspense>`: the layout's
+  metadata reads the store per request, and without a marker Next.js reports "uncached data in generateMetadata()".
+  Every API read must come after `await connection()` (or `loadStore()`), or `npm run build` fails without an API.
 - Theme: `src/lib/theme.ts` + `ThemeToggle`; the `<head>` script sets `data-theme` before paint (keep it tiny; the
   root `<html>` has `suppressHydrationWarning` for it). Never read the theme on the server: pages must stay static.
 - Fonts: `src/lib/fonts.ts` (`next/font/local`, files from npm packages; never Google Fonts or a CDN). Vazirmatn has

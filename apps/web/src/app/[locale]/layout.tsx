@@ -2,9 +2,12 @@ import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
-import { SiteHeader } from "@/components/SiteHeader";
-import { getDictionary } from "@/lib/i18n/dictionaries";
-import { directionOf, isLocale, supportedLocales } from "@/lib/i18n/config";
+import { BottomNav } from "@/components/layout/BottomNav";
+import { SiteFooter } from "@/components/layout/SiteFooter";
+import { SiteHeader } from "@/components/layout/SiteHeader";
+import { getDictionary, type Dictionary } from "@/lib/i18n/dictionaries";
+import { directionOf, isLocale, supportedLocales, type Locale } from "@/lib/i18n/config";
+import { formatYear } from "@/lib/i18n/format-date";
 import { indexingAllowed, siteUrl } from "@/lib/seo/config";
 import { fontVariables } from "@/lib/fonts";
 import { loadStore } from "@/lib/store/load";
@@ -42,6 +45,21 @@ async function StoreServiceWorker() {
   return <ServiceWorkerRegistration locales={store.locales} />;
 }
 
+/** Store name, languages and the current year are per request (after loadStore's connection()). */
+async function StoreFooter({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+  const store = await loadStore();
+  return (
+    <SiteFooter
+      locale={locale}
+      storeName={store.name}
+      locales={store.locales}
+      description={dict.meta.description}
+      texts={dict.footer}
+      year={formatYear(new Date(), locale)}
+    />
+  );
+}
+
 export default async function LocaleLayout({ children, params }: LayoutProps<"/[locale]">) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
@@ -55,9 +73,14 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
         {/* Applies the saved light/dark choice before the first paint, so the page never flashes the wrong theme. */}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="flex min-h-full flex-col">
+      {/* Bottom padding on phones so the fixed tab bar never covers the end of the page. */}
+      <body className="flex min-h-full flex-col pb-[calc(3.75rem+env(safe-area-inset-bottom))] md:pb-0">
         <SiteHeader locale={locale} texts={dict.header} />
         {children}
+        <Suspense fallback={null}>
+          <StoreFooter locale={locale} dict={dict} />
+        </Suspense>
+        <BottomNav locale={locale} texts={dict.header} />
         <Suspense fallback={null}>
           <StoreServiceWorker />
         </Suspense>

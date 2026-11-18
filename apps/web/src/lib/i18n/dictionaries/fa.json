@@ -3,10 +3,26 @@
     "description": "خرید آنلاین آسان، سریع و مطمئن"
   },
   "home": {
-    "categories": "دسته‌بندی‌ها",
+    "categories": "خرید بر اساس دسته‌بندی",
     "noCategories": "هنوز دسته‌بندی‌ای ثبت نشده است.",
     "loading": "در حال بارگذاری…",
-    "unavailable": "فروشگاه موقتاً در دسترس نیست. لطفاً کمی بعد دوباره تلاش کنید."
+    "unavailable": "فروشگاه موقتاً در دسترس نیست. لطفاً کمی بعد دوباره تلاش کنید.",
+    "heroBadge": "خوش آمدید",
+    "heroCta": "مشاهدهٔ دسته‌بندی‌ها",
+    "quickAccess": "دسترسی سریع",
+    "quickCategories": "همهٔ دسته‌بندی‌ها",
+    "quickCart": "سبد خرید",
+    "quickAccount": "حساب من",
+    "quickAddresses": "آدرس‌های من",
+    "benefits": "مزایای خرید",
+    "benefitPaymentTitle": "پرداخت امن",
+    "benefitPaymentText": "پرداخت فقط از درگاه‌های معتبر",
+    "benefitMobileTitle": "خرید با موبایل",
+    "benefitMobileText": "نصب وب‌اپ، بدون فروشگاه برنامه",
+    "benefitPrivacyTitle": "حریم خصوصی",
+    "benefitPrivacyText": "دریافت یا حذف اطلاعاتتان در هر زمان",
+    "benefitDeliveryTitle": "ارسال به نشانی شما",
+    "benefitDeliveryText": "نشانی‌ها را یک بار ثبت کنید"
   },
   "offline": {
     "title": "اتصال اینترنت برقرار نیست",
@@ -22,7 +38,17 @@
     "theme": "پوسته",
     "themeSystem": "مطابق سیستم",
     "themeLight": "روشن",
-    "themeDark": "تیره"
+    "themeDark": "تیره",
+    "search": "جستجو در فروشگاه",
+    "searchPlaceholder": "جستجو در میان کالاها…",
+    "searchSubmit": "جستجو",
+    "cart": "سبد خرید",
+    "categories": "دسته‌بندی کالاها",
+    "language": "زبان",
+    "mainMenu": "منوی اصلی",
+    "bottomMenu": "منوی پایین",
+    "home": "خانه",
+    "categoriesShort": "دسته‌بندی"
   },
   "account": {
     "loginTitle": "ورود به حساب",
@@ -292,5 +318,30 @@
       "already_suspended": "این حساب از قبل معلق است.",
       "not_suspended": "این حساب معلق نیست."
     }
+  },
+  "footer": {
+    "shopping": "خرید",
+    "account": "حساب کاربری",
+    "languages": "زبان‌ها",
+    "categories": "دسته‌بندی‌ها",
+    "search": "جستجو",
+    "cart": "سبد خرید",
+    "myAccount": "حساب من",
+    "addresses": "آدرس‌ها",
+    "privacy": "حریم خصوصی و اطلاعات من",
+    "signIn": "ورود یا ثبت‌نام",
+    "rights": "همهٔ حقوق محفوظ است."
+  },
+  "search": {
+    "title": "جستجو",
+    "resultsFor": "جستجو برای «{query}»",
+    "prompt": "عبارتی را در کادر جستجو بنویسید.",
+    "soon": "جستجوی کالاها به‌زودی فعال می‌شود. تا آن زمان از دسته‌بندی‌ها کمک بگیرید.",
+    "backHome": "بازگشت به صفحهٔ اصلی"
+  },
+  "cart": {
+    "title": "سبد خرید",
+    "empty": "سبد خرید شما خالی است.",
+    "continue": "ادامهٔ خرید"
   }
 }

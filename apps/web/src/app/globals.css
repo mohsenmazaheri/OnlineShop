@@ -5,14 +5,21 @@
  * --primary*, --radius and the font at runtime (per shop, no rebuild); everything else derives from these.
  */
 :root {
-  --background: #f7f7f8;
+  --background: #f5f6f4;
   --surface: #ffffff;
-  --surface-muted: #f0f0f3;
-  --foreground: #1c1c21;
-  --muted: #6b6b76;
-  --border: #e4e4e9;
+  --surface-muted: #f0f2f1;
+  --foreground: #1c2321;
+  --muted: #5b6461;
+  --border: #e4e7e5;
   --primary: #0f766e;
   --primary-foreground: #ffffff;
+  /* Highlights: discount badges, the countdown, "new" markers. */
+  --accent: #f2a541;
+  --accent-foreground: #1c2321;
+  /* Dark bands (footer, notices) in the light theme. */
+  --inverse: #16201e;
+  --inverse-foreground: #c9d1ce;
+  --inverse-border: #2b3633;
   --danger: #b91c1c;
   --danger-foreground: #ffffff;
   --success: #047857;
@@ -33,6 +40,11 @@
   --border: #2e2e37;
   --primary: #2dd4bf;
   --primary-foreground: #04201d;
+  --accent: #f5b65c;
+  --accent-foreground: #1c1409;
+  --inverse: #0b0f0e;
+  --inverse-foreground: #b4bdb9;
+  --inverse-border: #222b29;
   --danger: #f87171;
   --danger-foreground: #2b0606;
   --success: #34d399;
@@ -50,6 +62,11 @@
     --border: #2e2e37;
     --primary: #2dd4bf;
     --primary-foreground: #04201d;
+  --accent: #f5b65c;
+  --accent-foreground: #1c1409;
+  --inverse: #0b0f0e;
+  --inverse-foreground: #b4bdb9;
+  --inverse-border: #222b29;
     --danger: #f87171;
     --danger-foreground: #2b0606;
     --success: #34d399;
@@ -79,6 +96,11 @@
   --color-border: var(--border);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-inverse: var(--inverse);
+  --color-inverse-foreground: var(--inverse-foreground);
+  --color-inverse-border: var(--inverse-border);
   --color-danger: var(--danger);
   --color-danger-foreground: var(--danger-foreground);
   --color-success: var(--success);
@@ -107,6 +129,28 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+/*
+ * Soft colour tiles (category tiles, image placeholders): a hue mixed into the surface, so they work in both themes.
+ * Use "tint tint-0" … "tint tint-7".
+ */
+.tint {
+  background: color-mix(in srgb, var(--tint) 13%, var(--surface));
+  color: color-mix(in srgb, var(--tint) 75%, var(--foreground));
+}
+.tint-0 { --tint: #0f766e; }
+.tint-1 { --tint: #d97706; }
+.tint-2 { --tint: #2563eb; }
+.tint-3 { --tint: #7c3aed; }
+.tint-4 { --tint: #c2410c; }
+.tint-5 { --tint: #4d7c0f; }
+.tint-6 { --tint: #475569; }
+.tint-7 { --tint: #be185d; }
+
+/* Links to in-page sections (#categories) stop below the sticky header. */
+[id] {
+  scroll-margin-top: 8rem;
 }
 
 /* Visible keyboard focus everywhere, in the brand colour. */

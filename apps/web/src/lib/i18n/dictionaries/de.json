@@ -3,10 +3,26 @@
     "description": "Einfach, schnell und sicher online einkaufen"
   },
   "home": {
-    "categories": "Kategorien",
+    "categories": "Nach Kategorie einkaufen",
     "noCategories": "Noch keine Kategorien.",
     "loading": "Wird geladen…",
-    "unavailable": "Der Shop ist vorübergehend nicht erreichbar. Bitte versuchen Sie es gleich noch einmal."
+    "unavailable": "Der Shop ist vorübergehend nicht erreichbar. Bitte versuchen Sie es gleich noch einmal.",
+    "heroBadge": "Willkommen",
+    "heroCta": "Kategorien ansehen",
+    "quickAccess": "Schnellzugriff",
+    "quickCategories": "Alle Kategorien",
+    "quickCart": "Warenkorb",
+    "quickAccount": "Mein Konto",
+    "quickAddresses": "Meine Adressen",
+    "benefits": "Ihre Vorteile",
+    "benefitPaymentTitle": "Sichere Zahlung",
+    "benefitPaymentText": "Nur vertrauenswürdige Zahlungsanbieter",
+    "benefitMobileTitle": "Einkaufen am Handy",
+    "benefitMobileText": "Web-App installieren, ohne App-Store",
+    "benefitPrivacyTitle": "Datenschutz",
+    "benefitPrivacyText": "Ihre Daten jederzeit herunterladen oder löschen",
+    "benefitDeliveryTitle": "Lieferung zu Ihnen",
+    "benefitDeliveryText": "Adressen einmal speichern"
   },
   "offline": {
     "title": "Sie sind offline",
@@ -22,7 +38,17 @@
     "theme": "Darstellung",
     "themeSystem": "Wie System",
     "themeLight": "Hell",
-    "themeDark": "Dunkel"
+    "themeDark": "Dunkel",
+    "search": "Im Shop suchen",
+    "searchPlaceholder": "Produkte suchen…",
+    "searchSubmit": "Suchen",
+    "cart": "Warenkorb",
+    "categories": "Alle Kategorien",
+    "language": "Sprache",
+    "mainMenu": "Hauptmenü",
+    "bottomMenu": "Menü unten",
+    "home": "Start",
+    "categoriesShort": "Kategorien"
   },
   "account": {
     "loginTitle": "Anmelden",
@@ -292,5 +318,30 @@
       "already_suspended": "Dieses Konto ist bereits gesperrt.",
       "not_suspended": "Dieses Konto ist nicht gesperrt."
     }
+  },
+  "footer": {
+    "shopping": "Einkaufen",
+    "account": "Konto",
+    "languages": "Sprachen",
+    "categories": "Kategorien",
+    "search": "Suche",
+    "cart": "Warenkorb",
+    "myAccount": "Mein Konto",
+    "addresses": "Adressen",
+    "privacy": "Datenschutz und meine Daten",
+    "signIn": "Anmelden oder registrieren",
+    "rights": "Alle Rechte vorbehalten."
+  },
+  "search": {
+    "title": "Suche",
+    "resultsFor": "Suche nach „{query}“",
+    "prompt": "Geben Sie einen Suchbegriff ein.",
+    "soon": "Die Produktsuche kommt bald. Bis dahin helfen Ihnen die Kategorien weiter.",
+    "backHome": "Zurück zur Startseite"
+  },
+  "cart": {
+    "title": "Warenkorb",
+    "empty": "Ihr Warenkorb ist leer.",
+    "continue": "Weiter einkaufen"
   }
 }
