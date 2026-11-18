@@ -8,6 +8,7 @@ describe("store settings from the API", () => {
         name: " Shop ",
         defaultLocale: "en",
         locales: ["fa", "en"],
+        currency: "EUR",
         signUp: { email: true, phone: true },
         signIn: { password: true, phoneCode: true, external: ["google"] },
         checkout: { guest: true, shippingCountries: ["IR"] },
@@ -16,6 +17,7 @@ describe("store settings from the API", () => {
       name: "Shop",
       defaultLocale: "en",
       locales: ["fa", "en"],
+      currency: "EUR",
       signUp: { email: true, phone: true },
       signIn: { password: true, phoneCode: true, external: ["google"] },
       checkout: { guest: true, shippingCountries: ["IR"] },
@@ -64,5 +66,13 @@ describe("checkout settings from the API", () => {
 
   it("defaults to guest checkout on and no countries", () => {
     expect(toStoreSettings({ name: "S", locales: ["en"] }).checkout).toEqual({ guest: true, shippingCountries: [] });
+  });
+});
+
+describe("currency from the API", () => {
+  it("keeps a valid ISO code and falls back to IRR otherwise", () => {
+    expect(toStoreSettings({ name: "S", locales: ["en"], currency: "AMD" }).currency).toBe("AMD");
+    expect(toStoreSettings({ name: "S", locales: ["en"], currency: "euro" }).currency).toBe("IRR");
+    expect(toStoreSettings({ name: "S", locales: ["en"] }).currency).toBe("IRR");
   });
 });

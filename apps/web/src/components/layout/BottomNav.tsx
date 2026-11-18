@@ -7,12 +7,18 @@ import { activeTab, type NavTab } from "./locale-path";
 
 type Texts = { bottomMenu: string; home: string; categoriesShort: string; cart: string; myAccount: string };
 
-/** The phone's tab bar (hidden from md up, where the header shows the same links). Not shown in the admin panel. */
+/**
+ * The phone's tab bar (hidden from md up, where the header shows the same links), marking the current tab. Not shown
+ * in the admin panel. Reads the URL, so the layout renders it inside <Suspense> with <BottomNavBar> as the fallback.
+ */
 export function BottomNav({ locale, texts }: { locale: string; texts: Texts }) {
   const pathname = usePathname();
   if (pathname?.startsWith(`/${locale}/admin`)) return null;
-  const active = activeTab(pathname, locale);
+  return <BottomNavBar locale={locale} texts={texts} active={activeTab(pathname, locale)} />;
+}
 
+/** The tab bar itself, for a known current tab (null: none marked, e.g. while the URL is not known yet). */
+export function BottomNavBar({ locale, texts, active }: { locale: string; texts: Texts; active: NavTab }) {
   const tabs: { tab: Exclude<NavTab, null>; href: string; icon: IconName; label: string }[] = [
     { tab: "home", href: `/${locale}`, icon: "home", label: texts.home },
     { tab: "categories", href: `/${locale}#categories`, icon: "grid", label: texts.categoriesShort },

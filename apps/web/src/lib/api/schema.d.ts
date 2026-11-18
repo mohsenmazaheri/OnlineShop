@@ -55,6 +55,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/catalog/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Published products for a list (discounted, newest), named in the requested locale. */
+        get: operations["ListProducts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/catalog/products/{number}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One published product by its public number, with images, specs and its slug in every translated language. */
+        get: operations["GetProduct"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/catalog/products/{number}/slug": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The product's slug in the requested locale, for redirecting old or wrong product addresses. */
+        get: operations["GetProductSlug"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/account/register": {
         parameters: {
             query?: never;
@@ -839,7 +890,11 @@ export interface components {
         CartItemData: {
             productName: string;
             /** Format: int32 */
-            quantity: number | string;
+            quantity: number;
+        };
+        CategoryLink: {
+            name: string;
+            slug: string;
         };
         CategorySummary: {
             /** Format: uuid */
@@ -900,7 +955,7 @@ export interface components {
             type?: null | string;
             title?: null | string;
             /** Format: int32 */
-            status?: null | number | string;
+            status?: null | number;
             detail?: null | string;
             instance?: null | string;
             errors?: {
@@ -931,21 +986,21 @@ export interface components {
             orderedUtc: string;
             status: string;
             /** Format: double */
-            subtotal: number | string;
+            subtotal: number;
             /** Format: double */
-            tax: number | string;
+            tax: number;
             /** Format: double */
-            shipping: number | string;
+            shipping: number;
             /** Format: double */
-            total: number | string;
+            total: number;
             items: components["schemas"]["OrderItemData"][];
         };
         OrderItemData: {
             productName: string;
             /** Format: double */
-            unitPrice: number | string;
+            unitPrice: number;
             /** Format: int32 */
-            quantity: number | string;
+            quantity: number;
         };
         PersonalDataExport: {
             /** Format: date-time */
@@ -957,9 +1012,9 @@ export interface components {
         };
         PhoneCodeSent: {
             /** Format: int32 */
-            expiresInSeconds: number | string;
+            expiresInSeconds: number;
             /** Format: int32 */
-            resendAfterSeconds: number | string;
+            resendAfterSeconds: number;
         };
         PhoneSignInRequest: {
             phone: string;
@@ -976,9 +1031,63 @@ export interface components {
             type?: null | string;
             title?: null | string;
             /** Format: int32 */
-            status?: null | number | string;
+            status?: null | number;
             detail?: null | string;
             instance?: null | string;
+        };
+        ProductAlternate: {
+            locale: string;
+            slug: string;
+        };
+        ProductCard: {
+            /** Format: int64 */
+            number: number;
+            name: string;
+            slug: string;
+            imageUrl: null | string;
+            /** Format: double */
+            price: number;
+            /** Format: double */
+            compareAtPrice: null | number;
+            inStock: boolean;
+        };
+        ProductDetail: {
+            /** Format: int64 */
+            number: number;
+            name: string;
+            slug: string;
+            description: null | string;
+            sku: string;
+            /** Format: double */
+            price: number;
+            /** Format: double */
+            compareAtPrice: null | number;
+            /** Format: int32 */
+            stock: number;
+            inStock: boolean;
+            images: string[];
+            category: components["schemas"]["CategoryLink"];
+            subCategory: components["schemas"]["CategoryLink"];
+            specs: components["schemas"]["ProductSpecLine"][];
+            alternates: components["schemas"]["ProductAlternate"][];
+        };
+        /** @enum {unknown} */
+        ProductList: "Discounted" | "Newest";
+        /** @description The product's slug in the requested language (the storefront redirects any other slug to it). */
+        ProductSlugResponse: {
+            slug: string;
+        };
+        ProductSpecLine: {
+            code: string;
+            group: string;
+            name: string;
+            kind: components["schemas"]["SpecKind"];
+            unit: null | string;
+            /** Format: double */
+            number: null | number;
+            boolean: null | boolean;
+            value: null | string;
+            inSummary: boolean;
         };
         RecoveryCodes: {
             codes: string[];
@@ -1012,6 +1121,8 @@ export interface components {
             email: boolean;
             phone: boolean;
         };
+        /** @enum {unknown} */
+        SpecKind: "Text" | "Number" | "Boolean" | "Option";
         /** @enum {unknown} */
         StaffAuditAction: "Invited" | "InvitationRevoked" | "InvitationAccepted" | "RolesChanged" | "Suspended" | "Reactivated" | "RemovedFromStaff";
         StaffAuditView: {
@@ -1054,10 +1165,12 @@ export interface components {
             members: components["schemas"]["StaffMember"][];
             invitations: components["schemas"]["StaffInvitationView"][];
         };
+        /** @description Store settings the storefront needs; `Currency` is the base currency of all prices (ISO 4217). */
         StoreInfoResponse: {
             name: string;
             defaultLocale: string;
             locales: string[];
+            currency: string;
             signUp: components["schemas"]["SignUpMethods"];
             signIn: components["schemas"]["SignInMethods"];
             checkout: components["schemas"]["CheckoutSettings"];
@@ -1079,7 +1192,7 @@ export interface components {
         TwoFactorStatus: {
             enabled: boolean;
             /** Format: int32 */
-            recoveryCodesLeft: number | string;
+            recoveryCodesLeft: number;
             rememberedDevice: boolean;
             requiredForAccount: boolean;
         };
@@ -1158,6 +1271,96 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CategorySummary"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ListProducts: {
+        parameters: {
+            query: {
+                list: components["schemas"]["ProductList"];
+                locale?: string;
+                take?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductCard"][];
+                };
+            };
+        };
+    };
+    GetProduct: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetProductSlug: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductSlugResponse"];
                 };
             };
             /** @description Not Found */

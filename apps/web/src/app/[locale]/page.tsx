@@ -6,7 +6,8 @@ import { CategoryGrid, CategoryGridSkeleton } from "@/components/CategoryGrid";
 import { Benefits } from "@/components/home/Benefits";
 import { HeroBanner } from "@/components/home/HeroBanner";
 import { QuickLinks } from "@/components/home/QuickLinks";
-import { getCategoryMenu } from "@/lib/api/storefront";
+import { ProductRail, ProductRailSkeleton } from "@/components/product/ProductRail";
+import { getCategoryMenu, getProducts, type ProductListName } from "@/lib/api/storefront";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary, type Dictionary } from "@/lib/i18n/dictionaries";
 import { buildAlternates } from "@/lib/seo/config";
@@ -56,10 +57,28 @@ async function Categories({ locale, dict }: { locale: Locale; dict: Dictionary }
   );
 }
 
+/** A product rail from the API (only real products from the database); nothing when the API is down or the list is empty. */
+async function Products({ list, locale, dict, variant }: { list: ProductListName; locale: Locale; dict: Dictionary; variant: "deals" | "grid" }) {
+  const store = await loadStore();
+  const products = await getProducts(list, locale, 12).catch(() => []);
+  const heading = list === "Discounted" ? dict.home.deals : dict.home.newest;
+  return (
+    <ProductRail
+      id={list.toLowerCase()}
+      heading={heading}
+      products={products}
+      locale={locale}
+      currency={store.currency}
+      texts={dict.product}
+      variant={variant}
+    />
+  );
+}
+
 /**
  * Home page laid out after the "home page design" canvas (Digikala-style structure, our own palette and texts):
- * banner, shortcuts, categories, benefits. Product rails (flash deals with a countdown, best sellers, suggestions)
- * join once products exist (phases 4 and 6); promotional banners come with branding (phase 3d).
+ * banner, shortcuts, special offers, categories, new arrivals, benefits. Best sellers wait for real orders (phase 7);
+ * a deals countdown waits for offer end dates; promotional banners come with branding (phase 3d).
  */
 export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const { locale } = await params;
@@ -82,8 +101,14 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           { href: `/${locale}/account/addresses`, label: t.quickAddresses, icon: "pin" },
         ]}
       />
+      <Suspense fallback={<ProductRailSkeleton label={t.loading} />}>
+        <Products list="Discounted" locale={locale} dict={dict} variant="deals" />
+      </Suspense>
       <Suspense fallback={<CategoryGridSkeleton label={t.loading} />}>
         <Categories locale={locale} dict={dict} />
+      </Suspense>
+      <Suspense fallback={<ProductRailSkeleton label={t.loading} />}>
+        <Products list="Newest" locale={locale} dict={dict} variant="grid" />
       </Suspense>
       <Benefits
         label={t.benefits}

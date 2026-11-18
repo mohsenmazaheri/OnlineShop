@@ -147,6 +147,8 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   - Integration-test user-secrets (`tests/OnlineShopping.IntegrationTests`): `IntegrationTests:AdminConnection`
     (CI uses the `INTEGRATIONTESTS__ADMINCONNECTION` env var).
 - No Docker on this machine yet; Docker images are built by CI.
+- .NET SDK on this machine: 11.0.100 (a Visual Studio update replaced SDK 10 on 1405-08-28); it builds the `net10.0`
+  projects. While an installer runs, `dotnet build` can fail with missing SDK targets — wait for it to finish.
 - Windows (Hyper-V/WSL WinNAT) reserves TCP port ranges that move after reboots; when 2984–3083 is reserved, nothing
   can listen on 3000 (`listen EACCES`, and the "API + web" profile logs "Couldn't start the SPA development server").
   Check with `netsh interface ipv4 show excludedportrange protocol=tcp`; fixing it is a Windows setting the user makes.
@@ -187,7 +189,10 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   `category.not_found`); endpoints map them with `ToHttpResult()` to RFC 9457 problem details carrying `code`.
 - **Endpoints:** minimal APIs grouped under `/api/v1`, with `WithName` (becomes the OpenAPI operationId) and summary.
   Admin endpoints live under `/api/v1/admin/...` and require a permission. Enums are serialized as their names
-  (`JsonStringEnumConverter`), so the generated TypeScript types are string unions.
+  (`JsonStringEnumConverter`), so the generated TypeScript types are string unions. Numbers are strict JSON numbers
+  (`JsonNumberHandling.Strict`): without it the OpenAPI types for `long`/`decimal` become `number | string`.
+  Nested collections with per-row translation lookups need SQL APPLY (unsupported in SQLite tests): load such
+  collections with separate flat queries (see `ProductQueries.GetAsync`).
 - **Options:** bind + `ValidateDataAnnotations` + `ValidateOnStart`. Configuration lists merge by index across sources,
   so list-like settings that operators override are comma-separated strings (see `StoreOptions.Locales`).
 - Logging via `[LoggerMessage]` source-generated methods (analyzer CA1848).
@@ -287,8 +292,14 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   ones there, never an icon font or CDN).
 - Layout (`src/components/layout/`): `SiteHeader` (sticky; brand, GET search form, theme, `LanguageSwitcher`,
   account, cart; main menu from md up), `BottomNav` (phones only, hidden in the admin panel), `SiteFooter`. The home
-  page follows the design canvas "طراحی صفحه اول فروشگاه" (Digikala-style structure, our own palette and texts); its
-  product rails wait for real product data (phase 6) — never show made-up sample products.
+  page follows the design canvas "طراحی صفحه اول فروشگاه" (Digikala-style structure, our own palette and texts).
+  Product rails (`ProductRail`: discounted, newest) show only products from the API — never products hard-coded in
+  the web app; sample products exist only through the opt-in `DemoCatalogSeeder`.
+- Products: `/{locale}/p/{number}/{slug}` (`app/[locale]/p/[number]/[[...slug]]`). `proxy.ts` 301s an old, wrong or
+  missing slug to the current one (it asks `GET /catalog/products/{n}/slug`), because the page streams and can no
+  longer change its status. The page writes canonical + hreflang only for translated languages (`productAlternates`;
+  untranslated → noindex, canonical on the default language) and Product JSON-LD from the same response as the
+  visible price (`productJsonLd`). Money: `formatMoney` (Intl; amount first in fa/ar; currency from `Store:Currency`).
 - A page with no per-request content of its own renders `<Suspense><RequestTimeMarker /></Suspense>`: the layout's
   metadata reads the store per request, and without a marker Next.js reports "uncached data in generateMetadata()".
   Every API read must come after `await connection()` (or `loadStore()`), or `npm run build` fails without an API.

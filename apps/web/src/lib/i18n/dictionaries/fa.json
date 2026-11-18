@@ -22,7 +22,9 @@
     "benefitPrivacyTitle": "حریم خصوصی",
     "benefitPrivacyText": "دریافت یا حذف اطلاعاتتان در هر زمان",
     "benefitDeliveryTitle": "ارسال به نشانی شما",
-    "benefitDeliveryText": "نشانی‌ها را یک بار ثبت کنید"
+    "benefitDeliveryText": "نشانی‌ها را یک بار ثبت کنید",
+    "deals": "پیشنهادهای ویژه",
+    "newest": "جدیدترین کالاها"
   },
   "offline": {
     "title": "اتصال اینترنت برقرار نیست",
@@ -343,5 +345,22 @@
     "title": "سبد خرید",
     "empty": "سبد خرید شما خالی است.",
     "continue": "ادامهٔ خرید"
+  },
+  "product": {
+    "price": "قیمت",
+    "oldPrice": "قیمت قبل از تخفیف",
+    "discount": "{percent} تخفیف",
+    "inStock": "موجود در انبار",
+    "outOfStock": "ناموجود",
+    "addToCart": "افزودن به سبد خرید",
+    "cartSoon": "سفارش آنلاین به‌زودی فعال می‌شود.",
+    "keyFacts": "ویژگی‌های اصلی",
+    "description": "معرفی کالا",
+    "specs": "مشخصات فنی",
+    "yes": "دارد",
+    "no": "ندارد",
+    "breadcrumb": "مسیر صفحه",
+    "home": "خانه",
+    "sku": "کد کالا"
   }
 }

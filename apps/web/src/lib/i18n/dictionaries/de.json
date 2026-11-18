@@ -22,7 +22,9 @@
     "benefitPrivacyTitle": "Datenschutz",
     "benefitPrivacyText": "Ihre Daten jederzeit herunterladen oder löschen",
     "benefitDeliveryTitle": "Lieferung zu Ihnen",
-    "benefitDeliveryText": "Adressen einmal speichern"
+    "benefitDeliveryText": "Adressen einmal speichern",
+    "deals": "Sonderangebote",
+    "newest": "Neu eingetroffen"
   },
   "offline": {
     "title": "Sie sind offline",
@@ -343,5 +345,22 @@
     "title": "Warenkorb",
     "empty": "Ihr Warenkorb ist leer.",
     "continue": "Weiter einkaufen"
+  },
+  "product": {
+    "price": "Preis",
+    "oldPrice": "Preis vor Rabatt",
+    "discount": "{percent} Rabatt",
+    "inStock": "Auf Lager",
+    "outOfStock": "Nicht vorrätig",
+    "addToCart": "In den Warenkorb",
+    "cartSoon": "Online-Bestellungen sind bald möglich.",
+    "keyFacts": "Wichtigste Merkmale",
+    "description": "Produktbeschreibung",
+    "specs": "Technische Daten",
+    "yes": "Ja",
+    "no": "Nein",
+    "breadcrumb": "Navigationspfad",
+    "home": "Start",
+    "sku": "Artikelnummer"
   }
 }

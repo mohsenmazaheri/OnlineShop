@@ -16,7 +16,8 @@ public sealed record SignInMethods(bool Password, bool PhoneCode, IReadOnlyList<
 /// <summary>Checkout rules: whether customers may buy without an account, and where the shop ships (ISO country codes).</summary>
 public sealed record CheckoutSettings(bool Guest, IReadOnlyList<string> ShippingCountries);
 
-public sealed record StoreInfoResponse(string Name, string DefaultLocale, IReadOnlyList<string> Locales, SignUpMethods SignUp, SignInMethods SignIn,
+/// <summary>Store settings the storefront needs; <c>Currency</c> is the base currency of all prices (ISO 4217).</summary>
+public sealed record StoreInfoResponse(string Name, string DefaultLocale, IReadOnlyList<string> Locales, string Currency, SignUpMethods SignUp, SignInMethods SignIn,
     CheckoutSettings Checkout);
 
 /// <summary>Public, read-only storefront endpoints (no authentication).</summary>
@@ -32,7 +33,7 @@ public static class StoreEndpoints
                 var signUp = new SignUpMethods(auth.Value.EmailSignUp, auth.Value.PhoneSignUp && sms.IsEnabled);
                 var signIn = new SignInMethods(Password: true, PhoneCode: sms.IsEnabled, External: external.Enabled);
                 var checkout = new CheckoutSettings(store.GuestCheckout, store.ShippingCountryList);
-                return TypedResults.Ok(new StoreInfoResponse(store.Name, store.DefaultLocale, store.LocaleList, signUp, signIn, checkout));
+                return TypedResults.Ok(new StoreInfoResponse(store.Name, store.DefaultLocale, store.LocaleList, store.Currency, signUp, signIn, checkout));
             })
             .WithName("GetStoreInfo")
             .WithSummary("Store name, the locales it offers, the available sign-up/sign-in methods and checkout settings.");

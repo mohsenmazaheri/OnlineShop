@@ -22,7 +22,9 @@
     "benefitPrivacyTitle": "Your privacy",
     "benefitPrivacyText": "Download or delete your data at any time",
     "benefitDeliveryTitle": "Delivered to you",
-    "benefitDeliveryText": "Save your addresses once"
+    "benefitDeliveryText": "Save your addresses once",
+    "deals": "Special offers",
+    "newest": "New arrivals"
   },
   "offline": {
     "title": "You are offline",
@@ -343,5 +345,22 @@
     "title": "Cart",
     "empty": "Your cart is empty.",
     "continue": "Continue shopping"
+  },
+  "product": {
+    "price": "Price",
+    "oldPrice": "Price before discount",
+    "discount": "{percent} off",
+    "inStock": "In stock",
+    "outOfStock": "Out of stock",
+    "addToCart": "Add to cart",
+    "cartSoon": "Online ordering opens soon.",
+    "keyFacts": "Key features",
+    "description": "About this product",
+    "specs": "Specifications",
+    "yes": "Yes",
+    "no": "No",
+    "breadcrumb": "Breadcrumb",
+    "home": "Home",
+    "sku": "Item number"
   }
 }

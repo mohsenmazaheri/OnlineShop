@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { apiBaseUrl } from "@/lib/api/base-url";
 import { sessionCookieName } from "@/lib/account/cookie";
+import { fetchProductSlug, parseProductPath, productRedirectTarget } from "@/lib/catalog/product-path";
 import { accountRedirectTarget, isApiPath, localeRedirectTarget } from "@/lib/routing";
 import { securityHeaders } from "@/lib/security/headers";
 import { indexingAllowed, siteUrl } from "@/lib/seo/config";
@@ -21,7 +22,15 @@ export async function proxy(request: NextRequest) {
   const target =
     localeRedirectTarget(pathname, search, await storeSettings()) ??
     accountRedirectTarget(pathname, search, request.cookies.has(sessionCookieName));
-  const response = target ? NextResponse.redirect(new URL(target, request.url), 307) : NextResponse.next();
+  // A product address with an old, wrong or missing slug: 301 to the current one. Here and not in the page, because
+  // the page streams (its status is 200 before the product is loaded).
+  const product = target ? null : parseProductPath(pathname);
+  const productTarget = product ? productRedirectTarget(product, (await fetchProductSlug(apiBaseUrl(), product)) ?? "", search) : null;
+  const response = target
+    ? NextResponse.redirect(new URL(target, request.url), 307)
+    : productTarget
+      ? NextResponse.redirect(new URL(productTarget, request.url), 301)
+      : NextResponse.next();
 
   const isDev = process.env.NODE_ENV !== "production";
   for (const { key, value } of securityHeaders({ isDev, https: siteUrl().startsWith("https://") })) {

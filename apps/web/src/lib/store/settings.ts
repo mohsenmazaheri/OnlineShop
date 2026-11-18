@@ -11,6 +11,8 @@ export type StoreSettings = {
   name: string;
   defaultLocale: Locale;
   locales: Locale[];
+  /** Base currency of every price (ISO 4217, e.g. IRR, EUR). */
+  currency: string;
   /** Sign-up methods offered (phone only when an SMS provider is configured). */
   signUp: { email: boolean; phone: boolean };
   /** Sign-in methods offered (SMS codes only when an SMS provider is configured). */
@@ -23,6 +25,7 @@ export type StoreInfoLike = {
   name?: string | null;
   defaultLocale?: string | null;
   locales?: readonly string[] | null;
+  currency?: string | null;
   signUp?: { email?: boolean | null; phone?: boolean | null } | null;
   signIn?: { password?: boolean | null; phoneCode?: boolean | null; external?: readonly string[] | null } | null;
   checkout?: { guest?: boolean | null; shippingCountries?: readonly string[] | null } | null;
@@ -33,6 +36,7 @@ export const fallbackStore: StoreSettings = {
   name: "Online Shop",
   defaultLocale: "fa",
   locales: [...supportedLocales],
+  currency: "IRR",
   signUp: { email: true, phone: false },
   signIn: { password: true, phoneCode: false, external: [] },
   checkout: { guest: true, shippingCountries: [] },
@@ -43,6 +47,7 @@ export function toStoreSettings(info: StoreInfoLike | null | undefined): StoreSe
   if (!info) return fallbackStore;
 
   const name = info.name?.trim() || fallbackStore.name;
+  const currency = /^[A-Z]{3}$/.test(info.currency ?? "") ? info.currency! : fallbackStore.currency;
   const signUp = { email: info.signUp?.email ?? true, phone: info.signUp?.phone ?? false };
   const signIn = {
     password: info.signIn?.password ?? true,
@@ -56,8 +61,8 @@ export function toStoreSettings(info: StoreInfoLike | null | undefined): StoreSe
   };
 
   const locales = [...new Set((info.locales ?? []).filter(isLocale))];
-  if (locales.length === 0) return { ...fallbackStore, name, signUp, signIn, checkout };
+  if (locales.length === 0) return { ...fallbackStore, name, currency, signUp, signIn, checkout };
 
   const defaultLocale = isLocale(info.defaultLocale) && locales.includes(info.defaultLocale) ? info.defaultLocale : locales[0];
-  return { name, defaultLocale, locales, signUp, signIn, checkout };
+  return { name, defaultLocale, locales, currency, signUp, signIn, checkout };
 }

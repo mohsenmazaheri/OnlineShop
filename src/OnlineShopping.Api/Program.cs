@@ -24,8 +24,13 @@ builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration, persistDataProtectionKeys: !isOpenApiGeneration);
 
 builder.Services.AddProblemDetails();
-// Enums travel as their names ("Pending", "Suspended"), never as numbers: readable and safe to reorder.
-builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
+// Enums travel as their names ("Pending", "Suspended"), never as numbers: readable and safe to reorder. Numbers
+// travel only as JSON numbers (never "12" strings), so the generated TypeScript types are plain numbers too.
+builder.Services.ConfigureHttpJsonOptions(o =>
+{
+    o.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    o.SerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.Strict;
+});
 builder.Services.AddOpenApi();
 
 // The API runs behind the Next.js server (and a reverse proxy); only trust forwarded headers from them.
@@ -98,6 +103,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 }).DisableRateLimiting();
 
 app.MapStoreEndpoints();
+app.MapProductEndpoints();
 app.MapAccountEndpoints();
 app.MapExternalLoginEndpoints();
 app.MapTwoFactorEndpoints();

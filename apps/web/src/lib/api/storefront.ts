@@ -1,6 +1,6 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
-import { apiGet } from "./client";
+import { ApiError, apiGet } from "./client";
 import type { components } from "./schema";
 
 export type StoreInfo = components["schemas"]["StoreInfoResponse"];
@@ -22,4 +22,32 @@ export async function getCategoryMenu(locale: string): Promise<CategorySummary[]
   cacheTag(cacheTags.catalog);
   cacheLife("hours");
   return apiGet<CategorySummary[]>(`/api/v1/catalog/categories?locale=${encodeURIComponent(locale)}`);
+}
+
+export type ProductCard = components["schemas"]["ProductCard"];
+export type ProductDetail = components["schemas"]["ProductDetail"];
+export type ProductListName = components["schemas"]["ProductList"];
+
+/** Cache tag of one product (revalidated when it changes). */
+export const productTag = (number: number) => `product-${number}`;
+
+/** Published products for a home-page rail, named in the given language. */
+export async function getProducts(list: ProductListName, locale: string, take = 12): Promise<ProductCard[]> {
+  "use cache";
+  cacheTag(cacheTags.catalog);
+  cacheLife("hours");
+  return apiGet<ProductCard[]>(`/api/v1/catalog/products?list=${list}&locale=${encodeURIComponent(locale)}&take=${take}`);
+}
+
+/** One published product, or null when there is none with this number (unpublished, deleted, never existed). */
+export async function getProduct(number: number, locale: string): Promise<ProductDetail | null> {
+  "use cache";
+  cacheTag(cacheTags.catalog, productTag(number));
+  cacheLife("hours");
+  try {
+    return await apiGet<ProductDetail>(`/api/v1/catalog/products/${number}?locale=${encodeURIComponent(locale)}`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  }
 }
