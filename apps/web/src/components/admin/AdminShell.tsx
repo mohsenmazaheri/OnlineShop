@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { Card } from "@/components/ui/Surface";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 export type AdminSection = "home" | "staff";
@@ -49,11 +50,8 @@ export function AdminShell({ locale, texts, current, permissions, children }: Pr
 /** A titled white card used to group content on admin pages. */
 export function AdminCard({ title, id, children }: { title: string; id: string; children: ReactNode }) {
   return (
-    <section aria-labelledby={id} className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
-      <h2 id={id} className="mb-3 font-semibold">
-        {title}
-      </h2>
+    <Card title={title} titleId={id}>
       {children}
-    </section>
+    </Card>
   );
 }

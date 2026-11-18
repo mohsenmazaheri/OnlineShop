@@ -1,3 +1,4 @@
+import { buttonClass } from "@/components/ui/Button";
 import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
 
 type FieldProps = InputHTMLAttributes<HTMLInputElement> & {
@@ -102,12 +103,7 @@ export function FormAlert({ kind, children }: { kind: "error" | "success"; child
 
 export function SubmitButton({ busy, label, busyLabel }: { busy: boolean; label: string; busyLabel: string }) {
   return (
-    <button
-      type="submit"
-      disabled={busy}
-      aria-busy={busy}
-      className="h-12 rounded-xl bg-primary px-4 font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-60"
-    >
+    <button type="submit" disabled={busy} aria-busy={busy} className={buttonClass("primary", "lg")}>
       {busy ? busyLabel : label}
     </button>
   );

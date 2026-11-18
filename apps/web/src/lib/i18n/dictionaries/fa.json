@@ -18,7 +18,11 @@
   },
   "header": {
     "signIn": "ورود | ثبت‌نام",
-    "myAccount": "حساب من"
+    "myAccount": "حساب من",
+    "theme": "پوسته",
+    "themeSystem": "مطابق سیستم",
+    "themeLight": "روشن",
+    "themeDark": "تیره"
   },
   "account": {
     "loginTitle": "ورود به حساب",

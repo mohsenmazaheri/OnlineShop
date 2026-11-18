@@ -18,7 +18,11 @@
   },
   "header": {
     "signIn": "تسجيل الدخول | إنشاء حساب",
-    "myAccount": "حسابي"
+    "myAccount": "حسابي",
+    "theme": "المظهر",
+    "themeSystem": "حسب النظام",
+    "themeLight": "فاتح",
+    "themeDark": "داكن"
   },
   "account": {
     "loginTitle": "تسجيل الدخول",

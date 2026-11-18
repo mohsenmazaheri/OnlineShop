@@ -18,7 +18,11 @@
   },
   "header": {
     "signIn": "Anmelden | Registrieren",
-    "myAccount": "Mein Konto"
+    "myAccount": "Mein Konto",
+    "theme": "Darstellung",
+    "themeSystem": "Wie System",
+    "themeLight": "Hell",
+    "themeDark": "Dunkel"
   },
   "account": {
     "loginTitle": "Anmelden",
