@@ -138,9 +138,17 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
 - Demo accounts for trying pages: `DemoUserSeeder` creates `customer@shop.localhost` and `admin@shop.localhost`
   (password in `appsettings.Development.json` → `DemoUsers`) only when the environment is Development **and**
   `Store:PublicUrl` is local (loopback, `*.localhost`, `*.test`). Keep both guards; never enable it in other files.
+- Demo catalog: `DemoCatalogSeeder` (`Persistence/Seeding/Demo/`) adds ~22 sample products (invented brands, every
+  text in fa/en/hy/de/ar, our own SVG illustrations in `apps/web/public/demo/`, prices written in EUR and converted
+  to `Store:Currency`) when `DemoCatalog:Enabled` is true — on in `appsettings.Development.json`, and on a demo
+  deployment via `DEMO_CATALOG=true`; never on a real shop. Runs once (skips when any `DEMO-*` SKU exists) and reuses
+  existing categories with the same slug or name. Change demo content in `DemoCatalogData` (a test checks every
+  language, spec kind and image file).
   - Integration-test user-secrets (`tests/OnlineShopping.IntegrationTests`): `IntegrationTests:AdminConnection`
     (CI uses the `INTEGRATIONTESTS__ADMINCONNECTION` env var).
 - No Docker on this machine yet; Docker images are built by CI.
+- .NET SDK on this machine: 11.0.100 (a Visual Studio update replaced SDK 10 on 1405-08-28); it builds the `net10.0`
+  projects. While an installer runs, `dotnet build` can fail with missing SDK targets — wait for it to finish.
 - Windows (Hyper-V/WSL WinNAT) reserves TCP port ranges that move after reboots; when 2984–3083 is reserved, nothing
   can listen on 3000 (`listen EACCES`, and the "API + web" profile logs "Couldn't start the SPA development server").
   Check with `netsh interface ipv4 show excludedportrange protocol=tcp`; fixing it is a Windows setting the user makes.
@@ -159,7 +167,19 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   (index filters, check constraints) use snake_case and must be valid in PostgreSQL and SQLite (`is_deleted = false`).
 - **BaseEntity**: `Guid Id` (version 7), `CreatedUtc`, `ModifiedUtc?`, `IsDeleted` — stamped by
   `AuditableEntityInterceptor`; `Remove()` is a soft delete; a global query filter hides deleted rows
-  (`IgnoreQueryFilters()` to see them). Unique indexes use `.HasFilter(NotDeletedFilter)`.
+  (`IgnoreQueryFilters()` to see them). Unique indexes use `.HasFilter(NotDeletedFilter)`. The Id is set when the
+  object is created, so EF treats a new child added under an already-loaded parent as an existing row: add new
+  children to their `DbSet` explicitly (`db.Products.Add(product)`), or the save fails with a foreign-key error.
+- **Content translations:** catalog items keep the shop's default language in their own columns and the other
+  languages in owned `*_translations` tables (`CatalogTranslation`: name, slug, description; `SpecTranslation`,
+  `SpecOptionTranslation`), keyed by owner id + locale. Queries pick the requested locale with a fallback to the own
+  column; endpoints take `?locale=` and resolve it with `StoreOptions.ContentLocale()` (unknown → default).
+- **Specs** (the roadmap's attributes; "Attribute" is a reserved suffix for CA1711): `ProductSpec` (code, kind
+  Text/Number/Boolean/Option, unit, group, filterable/comparable/summary flags) → `SpecOption` → `ProductSpecValue`
+  with one typed column per kind. Text values read the same in every language (brand, "A5"); translatable words are
+  options. Products have a stable `PublicNumber` (unique, never reused) and a `Slug` per language for
+  `/{locale}/p/{number}/{slug}`. `Slugs.From()` builds slugs in any script.
+- `Store:Currency` (ISO 4217, default IRR) is the base currency prices are stored in.
 - All `DateTime`s are UTC (`timestamptz`); all `decimal`s are `numeric(18,2)`.
 - User references (`Cart.CustomerId`, `Order.CustomerId`) are FKs to `users` without navigation properties
   (domain stays free of Identity). Orders `Restrict`, carts cascade.
@@ -169,7 +189,10 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   `category.not_found`); endpoints map them with `ToHttpResult()` to RFC 9457 problem details carrying `code`.
 - **Endpoints:** minimal APIs grouped under `/api/v1`, with `WithName` (becomes the OpenAPI operationId) and summary.
   Admin endpoints live under `/api/v1/admin/...` and require a permission. Enums are serialized as their names
-  (`JsonStringEnumConverter`), so the generated TypeScript types are string unions.
+  (`JsonStringEnumConverter`), so the generated TypeScript types are string unions. Numbers are strict JSON numbers
+  (`JsonNumberHandling.Strict`): without it the OpenAPI types for `long`/`decimal` become `number | string`.
+  Nested collections with per-row translation lookups need SQL APPLY (unsupported in SQLite tests): load such
+  collections with separate flat queries (see `ProductQueries.GetAsync`).
 - **Options:** bind + `ValidateDataAnnotations` + `ValidateOnStart`. Configuration lists merge by index across sources,
   so list-like settings that operators override are comma-separated strings (see `StoreOptions.Locales`).
 - Logging via `[LoggerMessage]` source-generated methods (analyzer CA1848).
@@ -269,8 +292,14 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   ones there, never an icon font or CDN).
 - Layout (`src/components/layout/`): `SiteHeader` (sticky; brand, GET search form, theme, `LanguageSwitcher`,
   account, cart; main menu from md up), `BottomNav` (phones only, hidden in the admin panel), `SiteFooter`. The home
-  page follows the design canvas "طراحی صفحه اول فروشگاه" (Digikala-style structure, our own palette and texts); its
-  product rails wait for real product data (phase 6) — never show made-up sample products.
+  page follows the design canvas "طراحی صفحه اول فروشگاه" (Digikala-style structure, our own palette and texts).
+  Product rails (`ProductRail`: discounted, newest) show only products from the API — never products hard-coded in
+  the web app; sample products exist only through the opt-in `DemoCatalogSeeder`.
+- Products: `/{locale}/p/{number}/{slug}` (`app/[locale]/p/[number]/[[...slug]]`). `proxy.ts` 301s an old, wrong or
+  missing slug to the current one (it asks `GET /catalog/products/{n}/slug`), because the page streams and can no
+  longer change its status. The page writes canonical + hreflang only for translated languages (`productAlternates`;
+  untranslated → noindex, canonical on the default language) and Product JSON-LD from the same response as the
+  visible price (`productJsonLd`). Money: `formatMoney` (Intl; amount first in fa/ar; currency from `Store:Currency`).
 - A page with no per-request content of its own renders `<Suspense><RequestTimeMarker /></Suspense>`: the layout's
   metadata reads the store per request, and without a marker Next.js reports "uncached data in generateMetadata()".
   Every API read must come after `await connection()` (or `loadStore()`), or `npm run build` fails without an API.

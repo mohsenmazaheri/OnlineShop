@@ -22,7 +22,9 @@
     "benefitPrivacyTitle": "الخصوصية",
     "benefitPrivacyText": "نزّل بياناتك أو احذفها في أي وقت",
     "benefitDeliveryTitle": "التوصيل إلى عنوانك",
-    "benefitDeliveryText": "احفظ عناوينك مرة واحدة"
+    "benefitDeliveryText": "احفظ عناوينك مرة واحدة",
+    "deals": "عروض خاصة",
+    "newest": "وصل حديثًا"
   },
   "offline": {
     "title": "أنت غير متصل بالإنترنت",
@@ -343,5 +345,22 @@
     "title": "سلة التسوق",
     "empty": "سلة التسوق فارغة.",
     "continue": "متابعة التسوق"
+  },
+  "product": {
+    "price": "السعر",
+    "oldPrice": "السعر قبل الخصم",
+    "discount": "خصم {percent}",
+    "inStock": "متوفر",
+    "outOfStock": "غير متوفر",
+    "addToCart": "أضف إلى السلة",
+    "cartSoon": "الطلب عبر الإنترنت متاح قريبًا.",
+    "keyFacts": "أهم الميزات",
+    "description": "عن المنتج",
+    "specs": "المواصفات",
+    "yes": "نعم",
+    "no": "لا",
+    "breadcrumb": "مسار التنقل",
+    "home": "الرئيسية",
+    "sku": "رمز المنتج"
   }
 }

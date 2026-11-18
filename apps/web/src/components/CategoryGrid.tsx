@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { monogram } from "@/components/layout/Brand";
 import type { CategorySummary } from "@/lib/api/storefront";
 
@@ -23,14 +24,19 @@ export function CategoryGrid({ categories, heading, emptyText }: Props) {
       ) : (
         <ul className="grid grid-cols-4 gap-x-2 gap-y-4 md:grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] md:gap-x-3 md:gap-y-5">
           {categories.map((category, i) => (
-            <li key={category.id} className="flex flex-col items-center gap-2 text-center">
+            <li key={category.id} className="flex min-w-0 flex-col items-center gap-2 text-center">
               <span
                 aria-hidden
-                className={`tint tint-${i % 8} flex h-16 w-16 items-center justify-center rounded-[1.25rem] text-2xl font-extrabold md:h-24 md:w-24 md:rounded-[1.75rem] md:text-3xl`}
+                className={`tint tint-${i % 8} flex h-16 w-16 items-center justify-center overflow-hidden rounded-[1.25rem] text-2xl font-extrabold md:h-24 md:w-24 md:rounded-[1.75rem] md:text-3xl`}
               >
-                {monogram(category.name)}
+                {category.imageUrl ? (
+                  // Decorative (the name is the heading below); fixed size, so nothing shifts while it loads.
+                  <Image src={category.imageUrl} alt="" width={96} height={96} unoptimized className="h-full w-full object-cover" />
+                ) : (
+                  monogram(category.name)
+                )}
               </span>
-              <h3 className="text-xs leading-snug font-medium md:text-sm">{category.name}</h3>
+              <h3 className="w-full text-xs leading-snug font-medium hyphens-auto [overflow-wrap:anywhere] md:text-sm">{category.name}</h3>
             </li>
           ))}
         </ul>

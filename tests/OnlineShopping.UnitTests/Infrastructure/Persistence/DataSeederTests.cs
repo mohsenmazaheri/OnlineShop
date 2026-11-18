@@ -8,6 +8,7 @@ using StoreOptions = OnlineShopping.Application.Common.StoreOptions;
 using Microsoft.Extensions.Options;
 using OnlineShopping.Infrastructure.Persistence;
 using OnlineShopping.Infrastructure.Persistence.Seeding;
+using OnlineShopping.Infrastructure.Persistence.Seeding.Demo;
 using OnlineShopping.Infrastructure.Persistence.Interceptors;
 using OnlineShopping.Application.Authorization;
 using OnlineShopping.Infrastructure.Identity;
@@ -146,14 +147,21 @@ public sealed class DataSeederTests : IDisposable
             Options.Create(demo ?? new DemoUserOptions()),
             NullLogger<DemoUserSeeder>.Instance,
             _database.Clock);
+        var db = sp.GetRequiredService<AppDbContext>();
+        var demoCatalog = new DemoCatalogSeeder(
+            db,
+            Options.Create(new StoreOptions { Locales = "fa", PublicUrl = "http://localhost:3000" }),
+            Options.Create(new DemoCatalogOptions()),
+            NullLogger<DemoCatalogSeeder>.Instance);
         var seeder = new DataSeeder(
-            sp.GetRequiredService<AppDbContext>(),
+            db,
             sp.GetRequiredService<RoleManager<IdentityRole>>(),
             users,
             Options.Create(options),
             NullLogger<DataSeeder>.Instance,
             _database.Clock,
-            demoUsers);
+            demoUsers,
+            demoCatalog);
 
         await seeder.SeedAsync();
     }

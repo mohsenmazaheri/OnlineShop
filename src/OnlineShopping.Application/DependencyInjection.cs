@@ -25,6 +25,7 @@ public static class DependencyInjection
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>(includeInternalTypes: true);
 
         services.AddScoped<ICategoryQueries, CategoryQueries>();
+        services.AddScoped<IProductQueries, ProductQueries>();
         services.AddScoped<LoginIdentifierParser>();
         services.AddScoped<AccountService>();
         services.AddScoped<PhoneCodeService>();

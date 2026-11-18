@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+<defs><radialGradient id="bg-coffee-maker" cx="50%" cy="38%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#ece5df"/></radialGradient></defs>
+<rect width="600" height="600" fill="url(#bg-coffee-maker)"/>
+<ellipse cx="300" cy="528" rx="180" ry="20" fill="#0b1210" opacity=".09"/>
+
+<rect x="170" y="100" width="260" height="70" rx="20" fill="#1f2937"/>
+<rect x="170" y="150" width="80" height="330" rx="16" fill="#1f2937"/>
+<rect x="160" y="470" width="280" height="36" rx="14" fill="#111827"/>
+<rect x="268" y="452" width="150" height="20" rx="8" fill="#374151"/>
+<path d="M276 300 H 410 L 400 450 a14 14 0 0 1 -14 12 H 300 a14 14 0 0 1 -14 -12 Z" fill="#e0f2fe" opacity=".75" stroke="#94a3b8" stroke-width="4"/>
+<path d="M282 370 H 404 L 400 450 a14 14 0 0 1 -14 12 H 300 a14 14 0 0 1 -14 -12 Z" fill="#7c4a2d"/>
+<path d="M410 320 a40 40 0 0 1 0 90" fill="none" stroke="#1f2937" stroke-width="14"/>
+<rect x="280" y="282" width="126" height="22" rx="8" fill="#1f2937"/>
+<circle cx="210" cy="200" r="12" fill="#ef4444"/>
+<rect x="196" y="230" width="28" height="8" rx="4" fill="#4b5563"/>
+</svg>

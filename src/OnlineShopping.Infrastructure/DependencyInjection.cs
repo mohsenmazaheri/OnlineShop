@@ -17,6 +17,7 @@ using OnlineShopping.Infrastructure.Notifications;
 using OnlineShopping.Infrastructure.Persistence;
 using OnlineShopping.Infrastructure.Persistence.Interceptors;
 using OnlineShopping.Infrastructure.Persistence.Seeding;
+using OnlineShopping.Infrastructure.Persistence.Seeding.Demo;
 
 namespace OnlineShopping.Infrastructure;
 
@@ -65,6 +66,8 @@ public static class DependencyInjection
         services.Configure<SeedOptions>(configuration.GetSection(SeedOptions.SectionName));
         services.Configure<DemoUserOptions>(configuration.GetSection(DemoUserOptions.SectionName));
         services.AddScoped<DemoUserSeeder>();
+        services.Configure<DemoCatalogOptions>(configuration.GetSection(DemoCatalogOptions.SectionName));
+        services.AddScoped<DemoCatalogSeeder>();
         services.AddScoped<DataSeeder>();
 
         services.AddHealthChecks()

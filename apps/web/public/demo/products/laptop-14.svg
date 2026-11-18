@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+<defs><radialGradient id="bg-laptop-14" cx="50%" cy="38%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e3e8ee"/></radialGradient></defs>
+<rect width="600" height="600" fill="url(#bg-laptop-14)"/>
+<ellipse cx="300" cy="528" rx="180" ry="20" fill="#0b1210" opacity=".09"/>
+
+<defs><linearGradient id="l14" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e0f2fe"/><stop offset="1" stop-color="#60a5fa"/></linearGradient></defs>
+<rect x="140" y="140" width="320" height="216" rx="16" fill="#b8bec6"/>
+<rect x="152" y="152" width="296" height="190" rx="8" fill="url(#l14)"/>
+<path d="M152 290 C 230 260, 320 320, 448 280 V 342 H 152 Z" fill="#ffffff" opacity=".35"/>
+<path d="M96 364 H 504 L 490 392 a10 10 0 0 1 -9 6 H 119 a10 10 0 0 1 -9 -6 Z" fill="#d5dade"/>
+<rect x="96" y="356" width="408" height="10" rx="4" fill="#c3c9cf"/>
+<rect x="262" y="364" width="76" height="8" rx="4" fill="#aeb4bb"/>
+</svg>

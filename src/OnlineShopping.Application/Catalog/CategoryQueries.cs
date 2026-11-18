@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using OnlineShopping.Application.Common;
@@ -7,14 +8,18 @@ namespace OnlineShopping.Application.Catalog;
 
 public sealed record SubCategorySummary(Guid Id, string Name, string Slug);
 
-public sealed record CategorySummary(Guid Id, string Name, string Slug, IReadOnlyList<SubCategorySummary> SubCategories);
+/// <param name="ImageUrl">Tile image (site-relative path or absolute URL); null when the category has none.</param>
+public sealed record CategorySummary(Guid Id, string Name, string Slug, string? ImageUrl, IReadOnlyList<SubCategorySummary> SubCategories);
 
 public interface ICategoryQueries
 {
-    /// <summary>All live categories with their live sub-categories, ordered by name, for menus and the home page.</summary>
-    Task<IReadOnlyList<CategorySummary>> GetMenuAsync(CancellationToken cancellationToken = default);
+    /// <summary>
+    /// All live categories with their live sub-categories, ordered by name, for menus and the home page. Names are in
+    /// <paramref name="locale"/> where translated, otherwise in the default language (null: default language).
+    /// </summary>
+    Task<IReadOnlyList<CategorySummary>> GetMenuAsync(string? locale = null, CancellationToken cancellationToken = default);
 
-    Task<Result<CategorySummary>> GetBySlugAsync(string slug, CancellationToken cancellationToken = default);
+    Task<Result<CategorySummary>> GetBySlugAsync(string slug, string? locale = null, CancellationToken cancellationToken = default);
 }
 
 public sealed class CategoryQueries(IApplicationDbContext db) : ICategoryQueries
@@ -22,25 +27,37 @@ public sealed class CategoryQueries(IApplicationDbContext db) : ICategoryQueries
     public const string NotFoundCode = "category.not_found";
     public const string SlugRequiredCode = "category.slug_required";
 
-    // Translated to SQL: selects only the needed columns. Soft-deleted rows (also in the
-    // SubCategories navigation) are removed by the global query filter.
-    private static readonly Expression<Func<Category, CategorySummary>> ToSummary = c => new CategorySummary(
+    // Translated to SQL: selects only the needed columns, and the name in the requested language with a fallback to
+    // the item's own (default-language) name. Soft-deleted rows (also in the SubCategories navigation) are removed by
+    // the global query filter.
+    private static Expression<Func<Category, CategorySummary>> ToSummary(string? locale) => c => new CategorySummary(
         c.Id,
-        c.Name,
+        c.Translations.Where(t => t.Locale == locale).Select(t => t.Name).FirstOrDefault() ?? c.Name,
         c.Slug,
+        c.ImageUrl,
         c.SubCategories
-            .OrderBy(s => s.Name)
-            .Select(s => new SubCategorySummary(s.Id, s.Name, s.Slug))
+            .Select(s => new SubCategorySummary(
+                s.Id,
+                s.Translations.Where(t => t.Locale == locale).Select(t => t.Name).FirstOrDefault() ?? s.Name,
+                s.Slug))
             .ToList());
 
-    public async Task<IReadOnlyList<CategorySummary>> GetMenuAsync(CancellationToken cancellationToken = default) =>
-        await db.Categories
+    public async Task<IReadOnlyList<CategorySummary>> GetMenuAsync(string? locale = null, CancellationToken cancellationToken = default)
+    {
+        var categories = await db.Categories
             .AsNoTracking()
-            .OrderBy(c => c.Name)
-            .Select(ToSummary)
+            .Select(ToSummary(locale))
             .ToListAsync(cancellationToken);
 
-    public async Task<Result<CategorySummary>> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
+        // Sorted here (a short list): by the translated names, in the reader's alphabet.
+        var byName = Comparer(locale);
+        return categories
+            .Select(c => c with { SubCategories = c.SubCategories.OrderBy(s => s.Name, byName).ToList() })
+            .OrderBy(c => c.Name, byName)
+            .ToList();
+    }
+
+    public async Task<Result<CategorySummary>> GetBySlugAsync(string slug, string? locale = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(slug))
             return AppError.Validation(SlugRequiredCode, "A category slug is required.");
@@ -48,11 +65,23 @@ public sealed class CategoryQueries(IApplicationDbContext db) : ICategoryQueries
         var category = await db.Categories
             .AsNoTracking()
             .Where(c => c.Slug == slug)
-            .Select(ToSummary)
+            .Select(ToSummary(locale))
             .SingleOrDefaultAsync(cancellationToken);
 
         return category is null
             ? AppError.NotFound(NotFoundCode, $"No category with slug '{slug}'.")
-            : category;
+            : category with { SubCategories = category.SubCategories.OrderBy(s => s.Name, Comparer(locale)).ToList() };
+    }
+
+    private static StringComparer Comparer(string? locale)
+    {
+        try
+        {
+            return StringComparer.Create(CultureInfo.GetCultureInfo(locale ?? ""), ignoreCase: true);
+        }
+        catch (CultureNotFoundException)
+        {
+            return StringComparer.OrdinalIgnoreCase;
+        }
     }
 }

@@ -45,6 +45,9 @@ services:
       # Countries addresses may be in (ISO codes, comma-separated); empty = PHONE_REGION only.
       Store__ShippingCountries: ${SHIPPING_COUNTRIES:-}
       Store__GuestCheckout: ${GUEST_CHECKOUT:-true}
+      Store__Currency: ${STORE_CURRENCY:-IRR}
+      # Sample products for a demo shop (adds them once to an empty catalog); never on a real shop.
+      DemoCatalog__Enabled: ${DEMO_CATALOG:-false}
       Auth__EmailSignUp: ${AUTH_EMAIL_SIGN_UP:-true}
       Auth__PhoneSignUp: ${AUTH_PHONE_SIGN_UP:-true}
       # Only for a plain-HTTP test instance set this to false (cookies would otherwise not be sent).

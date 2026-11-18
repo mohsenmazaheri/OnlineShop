@@ -32,6 +32,13 @@ public sealed class StoreOptions : IValidatableObject
             ? list
             : [PhoneRegion];
 
+    /// <summary>
+    /// Base currency (ISO 4217, e.g. <c>IRR</c>, <c>EUR</c>, <c>AMD</c>): product prices are entered and stored in it.
+    /// Display currencies and exchange rates arrive in phase 3c.
+    /// </summary>
+    [Required, RegularExpression("^[A-Z]{3}$", ErrorMessage = "Store:Currency must be a three-letter ISO 4217 code.")]
+    public string Currency { get; set; } = "IRR";
+
     /// <summary>Customers may check out without an account (on by default; checkout itself arrives in phase 5).</summary>
     public bool GuestCheckout { get; set; } = true;
 
@@ -56,6 +63,10 @@ public sealed class StoreOptions : IValidatableObject
 
     public IReadOnlyList<string> LocaleList =>
         Locales.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+    /// <summary>The language to show content in: the requested one when this store offers it, otherwise the default.</summary>
+    public string ContentLocale(string? requested) =>
+        requested is not null && LocaleList.Contains(requested, StringComparer.Ordinal) ? requested : DefaultLocale;
 
     /// <summary>Locales the platform can render (UI translations exist for them).</summary>
     public static IReadOnlySet<string> SupportedLocales { get; } =

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OnlineShopping.Infrastructure.Persistence.Seeding.Demo;
 using OnlineShopping.Application.Authorization;
 using OnlineShopping.Infrastructure.Identity;
 
@@ -18,7 +19,8 @@ public sealed partial class DataSeeder(
     IOptions<SeedOptions> options,
     ILogger<DataSeeder> logger,
     TimeProvider clock,
-    DemoUserSeeder demoUsers)
+    DemoUserSeeder demoUsers,
+    DemoCatalogSeeder demoCatalog)
 {
 
     private readonly SeedOptions _options = options.Value;
@@ -32,6 +34,8 @@ public sealed partial class DataSeeder(
         await EnsureAdminAsync();
         // Development-only test accounts (guarded inside; a no-op everywhere else).
         await demoUsers.SeedAsync();
+        // Sample products for a demo shop (DemoCatalog:Enabled; off by default, fills the catalog once).
+        await demoCatalog.SeedAsync(cancellationToken);
     }
 
     private async Task EnsureRolesAsync()

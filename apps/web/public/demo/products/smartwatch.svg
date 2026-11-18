@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+<defs><radialGradient id="bg-smartwatch" cx="50%" cy="38%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e3e6ea"/></radialGradient></defs>
+<rect width="600" height="600" fill="url(#bg-smartwatch)"/>
+<ellipse cx="300" cy="528" rx="180" ry="20" fill="#0b1210" opacity=".09"/>
+
+<defs><linearGradient id="sw" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0f766e"/><stop offset="1" stop-color="#111827"/></linearGradient></defs>
+<rect x="252" y="70" width="96" height="460" rx="34" fill="#374151"/>
+<rect x="252" y="110" width="96" height="10" fill="#2b3440"/><rect x="252" y="480" width="96" height="10" fill="#2b3440"/>
+<rect x="208" y="194" width="184" height="212" rx="52" fill="#111827"/>
+<rect x="222" y="208" width="156" height="184" rx="40" fill="url(#sw)"/>
+<rect x="392" y="262" width="12" height="40" rx="6" fill="#4b5563"/>
+<circle cx="300" cy="300" r="54" fill="none" stroke="#ffffff" stroke-opacity=".25" stroke-width="10"/>
+<path d="M300 246 a54 54 0 0 1 50 74" fill="none" stroke="#5eead4" stroke-width="10" stroke-linecap="round"/>
+<path d="M300 318 l -20 -20 a12 12 0 0 1 20 -16 a12 12 0 0 1 20 16 Z" fill="#fb7185"/>
+</svg>

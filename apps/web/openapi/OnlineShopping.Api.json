@@ -31,8 +31,17 @@
         "tags": [
           "Storefront"
         ],
-        "summary": "All categories with their sub-categories, for menus and the home page.",
+        "summary": "All categories with their sub-categories, for menus and the home page, named in the requested locale.",
         "operationId": "GetCategoryMenu",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -65,6 +74,13 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -74,6 +90,153 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CategorySummary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/products": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "Published products for a list (discounted, newest), named in the requested locale.",
+        "operationId": "ListProducts",
+        "parameters": [
+          {
+            "name": "list",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ProductList"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "take",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductCard"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/products/{number}": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "One published product by its public number, with images, specs and its slug in every translated language.",
+        "operationId": "GetProduct",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/products/{number}/slug": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "The product's slug in the requested locale, for redirecting old or wrong product addresses.",
+        "operationId": "GetProductSlug",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductSlugResponse"
                 }
               }
             }
@@ -1767,12 +1930,23 @@
             "type": "string"
           },
           "quantity": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "CategoryLink": {
+        "required": [
+          "name",
+          "slug"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
           }
         }
       },
@@ -1781,6 +1955,7 @@
           "id",
           "name",
           "slug",
+          "imageUrl",
           "subCategories"
         ],
         "type": "object",
@@ -1794,6 +1969,12 @@
           },
           "slug": {
             "type": "string"
+          },
+          "imageUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "subCategories": {
             "type": "array",
@@ -2022,11 +2203,9 @@
             ]
           },
           "status": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "format": "int32"
           },
@@ -2146,35 +2325,19 @@
             "type": "string"
           },
           "subtotal": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "format": "double"
           },
           "tax": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "format": "double"
           },
           "shipping": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "format": "double"
           },
           "total": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "format": "double"
           },
           "items": {
@@ -2197,19 +2360,11 @@
             "type": "string"
           },
           "unitPrice": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "format": "double"
           },
           "quantity": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           }
         }
@@ -2259,19 +2414,11 @@
         "type": "object",
         "properties": {
           "expiresInSeconds": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "resendAfterSeconds": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           }
         }
@@ -2340,11 +2487,9 @@
             ]
           },
           "status": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "format": "int32"
           },
@@ -2359,6 +2504,221 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "ProductAlternate": {
+        "required": [
+          "locale",
+          "slug"
+        ],
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          }
+        }
+      },
+      "ProductCard": {
+        "required": [
+          "number",
+          "name",
+          "slug",
+          "imageUrl",
+          "price",
+          "compareAtPrice",
+          "inStock"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "compareAtPrice": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "inStock": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ProductDetail": {
+        "required": [
+          "number",
+          "name",
+          "slug",
+          "description",
+          "sku",
+          "price",
+          "compareAtPrice",
+          "stock",
+          "inStock",
+          "images",
+          "category",
+          "subCategory",
+          "specs",
+          "alternates"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sku": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "compareAtPrice": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "stock": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "inStock": {
+            "type": "boolean"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "category": {
+            "$ref": "#/components/schemas/CategoryLink"
+          },
+          "subCategory": {
+            "$ref": "#/components/schemas/CategoryLink"
+          },
+          "specs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductSpecLine"
+            }
+          },
+          "alternates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductAlternate"
+            }
+          }
+        }
+      },
+      "ProductList": {
+        "enum": [
+          "Discounted",
+          "Newest"
+        ]
+      },
+      "ProductSlugResponse": {
+        "required": [
+          "slug"
+        ],
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          }
+        },
+        "description": "The product's slug in the requested language (the storefront redirects any other slug to it)."
+      },
+      "ProductSpecLine": {
+        "required": [
+          "code",
+          "group",
+          "name",
+          "kind",
+          "unit",
+          "number",
+          "boolean",
+          "value",
+          "inSummary"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/SpecKind"
+          },
+          "unit": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "number": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "boolean": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "value": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "inSummary": {
+            "type": "boolean"
           }
         }
       },
@@ -2494,6 +2854,14 @@
           }
         },
         "description": "Sign-up methods currently available (phone needs a configured SMS provider)."
+      },
+      "SpecKind": {
+        "enum": [
+          "Text",
+          "Number",
+          "Boolean",
+          "Option"
+        ]
       },
       "StaffAuditAction": {
         "enum": [
@@ -2694,6 +3062,7 @@
           "name",
           "defaultLocale",
           "locales",
+          "currency",
           "signUp",
           "signIn",
           "checkout"
@@ -2712,6 +3081,9 @@
               "type": "string"
             }
           },
+          "currency": {
+            "type": "string"
+          },
           "signUp": {
             "$ref": "#/components/schemas/SignUpMethods"
           },
@@ -2721,7 +3093,8 @@
           "checkout": {
             "$ref": "#/components/schemas/CheckoutSettings"
           }
-        }
+        },
+        "description": "Store settings the storefront needs; `Currency` is the base currency of all prices (ISO 4217)."
       },
       "SubCategorySummary": {
         "required": [
@@ -2786,11 +3159,7 @@
             "type": "boolean"
           },
           "recoveryCodesLeft": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "rememberedDevice": {

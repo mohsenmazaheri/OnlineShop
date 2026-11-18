@@ -18,6 +18,9 @@ public interface IApplicationDbContext
     DbSet<ProductGroup> ProductGroups { get; }
     DbSet<Product> Products { get; }
     DbSet<ProductImage> ProductImages { get; }
+    DbSet<ProductSpec> ProductSpecs { get; }
+    DbSet<SpecOption> SpecOptions { get; }
+    DbSet<ProductSpecValue> ProductSpecValues { get; }
     DbSet<Cart> Carts { get; }
     DbSet<CartItem> CartItems { get; }
     DbSet<Order> Orders { get; }

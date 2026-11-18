@@ -12,14 +12,18 @@ describe("CategoryGrid", () => {
         heading="Categories"
         emptyText="None"
         categories={[
-          { id: "1", name: "Books", slug: "books", subCategories: [{ id: "2", name: "Poetry", slug: "poetry" }] },
-          { id: "3", name: "Toys", slug: "toys", subCategories: [] },
+          { id: "1", name: "Books", slug: "books", imageUrl: "/demo/categories/books.svg", subCategories: [{ id: "2", name: "Poetry", slug: "poetry" }] },
+          { id: "3", name: "Toys", slug: "toys", imageUrl: null, subCategories: [] },
         ]}
       />,
     );
 
     const section = screen.getByRole("region", { name: "Categories" });
     expect(section.id).toBe("categories");
+    // An image where the category has one, otherwise the first letter.
+    expect(section.querySelector("img")?.getAttribute("src")).toBe("/demo/categories/books.svg");
+    expect(section.querySelectorAll("img")).toHaveLength(1);
+    expect(within(section).getByText("T")).toBeTruthy();
     expect(within(section).getByRole("heading", { level: 3, name: "Books" })).toBeTruthy();
     expect(within(section).getByRole("heading", { level: 3, name: "Toys" })).toBeTruthy();
     expect(within(section).getAllByRole("listitem")).toHaveLength(2);
