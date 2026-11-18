@@ -138,6 +138,12 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
 - Demo accounts for trying pages: `DemoUserSeeder` creates `customer@shop.localhost` and `admin@shop.localhost`
   (password in `appsettings.Development.json` → `DemoUsers`) only when the environment is Development **and**
   `Store:PublicUrl` is local (loopback, `*.localhost`, `*.test`). Keep both guards; never enable it in other files.
+- Demo catalog: `DemoCatalogSeeder` (`Persistence/Seeding/Demo/`) adds ~22 sample products (invented brands, every
+  text in fa/en/hy/de/ar, our own SVG illustrations in `apps/web/public/demo/`, prices written in EUR and converted
+  to `Store:Currency`) when `DemoCatalog:Enabled` is true — on in `appsettings.Development.json`, and on a demo
+  deployment via `DEMO_CATALOG=true`; never on a real shop. Runs once (skips when any `DEMO-*` SKU exists) and reuses
+  existing categories with the same slug or name. Change demo content in `DemoCatalogData` (a test checks every
+  language, spec kind and image file).
   - Integration-test user-secrets (`tests/OnlineShopping.IntegrationTests`): `IntegrationTests:AdminConnection`
     (CI uses the `INTEGRATIONTESTS__ADMINCONNECTION` env var).
 - No Docker on this machine yet; Docker images are built by CI.
@@ -159,7 +165,19 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   (index filters, check constraints) use snake_case and must be valid in PostgreSQL and SQLite (`is_deleted = false`).
 - **BaseEntity**: `Guid Id` (version 7), `CreatedUtc`, `ModifiedUtc?`, `IsDeleted` — stamped by
   `AuditableEntityInterceptor`; `Remove()` is a soft delete; a global query filter hides deleted rows
-  (`IgnoreQueryFilters()` to see them). Unique indexes use `.HasFilter(NotDeletedFilter)`.
+  (`IgnoreQueryFilters()` to see them). Unique indexes use `.HasFilter(NotDeletedFilter)`. The Id is set when the
+  object is created, so EF treats a new child added under an already-loaded parent as an existing row: add new
+  children to their `DbSet` explicitly (`db.Products.Add(product)`), or the save fails with a foreign-key error.
+- **Content translations:** catalog items keep the shop's default language in their own columns and the other
+  languages in owned `*_translations` tables (`CatalogTranslation`: name, slug, description; `SpecTranslation`,
+  `SpecOptionTranslation`), keyed by owner id + locale. Queries pick the requested locale with a fallback to the own
+  column; endpoints take `?locale=` and resolve it with `StoreOptions.ContentLocale()` (unknown → default).
+- **Specs** (the roadmap's attributes; "Attribute" is a reserved suffix for CA1711): `ProductSpec` (code, kind
+  Text/Number/Boolean/Option, unit, group, filterable/comparable/summary flags) → `SpecOption` → `ProductSpecValue`
+  with one typed column per kind. Text values read the same in every language (brand, "A5"); translatable words are
+  options. Products have a stable `PublicNumber` (unique, never reused) and a `Slug` per language for
+  `/{locale}/p/{number}/{slug}`. `Slugs.From()` builds slugs in any script.
+- `Store:Currency` (ISO 4217, default IRR) is the base currency prices are stored in.
 - All `DateTime`s are UTC (`timestamptz`); all `decimal`s are `numeric(18,2)`.
 - User references (`Cart.CustomerId`, `Order.CustomerId`) are FKs to `users` without navigation properties
   (domain stays free of Identity). Orders `Restrict`, carts cascade.

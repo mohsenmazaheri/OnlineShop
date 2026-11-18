@@ -11,4 +11,5 @@ public class ProductGroup : BaseEntity
     public SubCategory SubCategory { get; set; } = default!;
 
     public ICollection<Product> Products { get; set; } = new List<Product>();
+    public ICollection<CatalogTranslation> Translations { get; set; } = new List<CatalogTranslation>();
 }

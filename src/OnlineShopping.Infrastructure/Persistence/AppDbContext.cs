@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OnlineShopping.Application.Common;
 using OnlineShopping.Domain.Accounts;
 using OnlineShopping.Domain.Catalog;
@@ -30,6 +31,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<ProductGroup> ProductGroups => Set<ProductGroup>();
     public DbSet<Product> Products => Set<Product>();
     public DbSet<ProductImage> ProductImages => Set<ProductImage>();
+    public DbSet<ProductSpec> ProductSpecs => Set<ProductSpec>();
+    public DbSet<SpecOption> SpecOptions => Set<SpecOption>();
+    public DbSet<ProductSpecValue> ProductSpecValues => Set<ProductSpecValue>();
     public DbSet<Cart> Carts => Set<Cart>();
     public DbSet<CartItem> CartItems => Set<CartItem>();
     public DbSet<Order> Orders => Set<Order>();
@@ -141,6 +145,101 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 .WithMany(p => p.Images)
                 .HasForeignKey(i => i.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<Category>(e =>
+        {
+            e.Property(x => x.ImageUrl).HasMaxLength(2048);
+            e.OwnsMany(x => x.Translations, t => ConfigureTranslation(t, "category_translations", "CategoryId"));
+        });
+        b.Entity<SubCategory>().OwnsMany(x => x.Translations, t => ConfigureTranslation(t, "sub_category_translations", "SubCategoryId"));
+        b.Entity<ProductGroup>().OwnsMany(x => x.Translations, t => ConfigureTranslation(t, "product_group_translations", "ProductGroupId"));
+        b.Entity<Product>(e =>
+        {
+            e.Property(x => x.Slug).HasMaxLength(200);
+            // Numbers are never reused, so the index ignores soft deletes on purpose.
+            e.HasIndex(x => x.PublicNumber).IsUnique();
+            e.OwnsMany(x => x.Translations, t => ConfigureTranslation(t, "product_translations", "ProductId"));
+        });
+
+        ConfigureSpecs(b);
+    }
+
+    /// <summary>One row per item and language; the item's own columns hold the default language.</summary>
+    private static void ConfigureTranslation<TOwner>(OwnedNavigationBuilder<TOwner, CatalogTranslation> t, string table, string ownerKey)
+        where TOwner : class
+    {
+        t.ToTable(table);
+        t.WithOwner().HasForeignKey(ownerKey);
+        t.HasKey(ownerKey, nameof(CatalogTranslation.Locale));
+        t.Property(x => x.Locale).HasMaxLength(8);
+        t.Property(x => x.Name).HasMaxLength(300);
+        t.Property(x => x.Slug).HasMaxLength(200);
+    }
+
+    private static void ConfigureSpecs(ModelBuilder b)
+    {
+        b.Entity<ProductSpec>(e =>
+        {
+            e.ToTable("product_specs");
+            e.Property(x => x.Code).HasMaxLength(64);
+            e.Property(x => x.Name).HasMaxLength(200);
+            e.Property(x => x.GroupName).HasMaxLength(200);
+            e.Property(x => x.Unit).HasMaxLength(32);
+            e.Property(x => x.Kind).HasConversion<string>().HasMaxLength(16);
+            e.HasIndex(x => x.Code).IsUnique().HasFilter(NotDeletedFilter);
+            e.OwnsMany(x => x.Translations, t =>
+            {
+                t.ToTable("product_spec_translations");
+                t.WithOwner().HasForeignKey("SpecId");
+                t.HasKey("SpecId", nameof(SpecTranslation.Locale));
+                t.Property(x => x.Locale).HasMaxLength(8);
+                t.Property(x => x.Name).HasMaxLength(200);
+                t.Property(x => x.GroupName).HasMaxLength(200);
+                t.Property(x => x.Unit).HasMaxLength(32);
+            });
+        });
+
+        b.Entity<SpecOption>(e =>
+        {
+            e.ToTable("spec_options");
+            e.Property(x => x.Code).HasMaxLength(64);
+            e.Property(x => x.Value).HasMaxLength(200);
+            e.HasIndex(x => new { x.SpecId, x.Code }).IsUnique().HasFilter(NotDeletedFilter);
+            e.HasOne(o => o.Spec)
+                .WithMany(a => a.Options)
+                .HasForeignKey(o => o.SpecId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.OwnsMany(x => x.Translations, t =>
+            {
+                t.ToTable("spec_option_translations");
+                t.WithOwner().HasForeignKey("OptionId");
+                t.HasKey("OptionId", nameof(SpecOptionTranslation.Locale));
+                t.Property(x => x.Locale).HasMaxLength(8);
+                t.Property(x => x.Value).HasMaxLength(200);
+            });
+        });
+
+        b.Entity<ProductSpecValue>(e =>
+        {
+            e.ToTable("product_spec_values");
+            e.Property(x => x.TextValue).HasMaxLength(500);
+            // Filter and facet lookups: "which products have option X / a number in this range for spec Y".
+            e.HasIndex(x => new { x.ProductId, x.SpecId }).IsUnique().HasFilter(NotDeletedFilter);
+            e.HasIndex(x => new { x.SpecId, x.OptionId });
+            e.HasIndex(x => new { x.SpecId, x.NumberValue });
+            e.HasOne(v => v.Product)
+                .WithMany(p => p.SpecValues)
+                .HasForeignKey(v => v.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(v => v.Spec)
+                .WithMany()
+                .HasForeignKey(v => v.SpecId)
+                .OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(v => v.Option)
+                .WithMany()
+                .HasForeignKey(v => v.OptionId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 

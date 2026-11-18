@@ -42,11 +42,11 @@ async function StoreHero({ locale, dict }: { locale: Locale; dict: Dictionary })
  * Read per request (the build has no API), then cached by `use cache` for hours and revalidated on change.
  * Streamed in the same HTML response, so crawlers see the full content.
  */
-async function Categories({ dict }: { dict: Dictionary }) {
+async function Categories({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   // Request time only: the build has no API (and the image is shared by every shop).
   await connection();
   // An unreachable API must not break the page: show a friendly notice instead.
-  const categories = await getCategoryMenu().catch(() => null);
+  const categories = await getCategoryMenu(locale).catch(() => null);
   return categories ? (
     <CategoryGrid categories={categories} heading={dict.home.categories} emptyText={dict.home.noCategories} />
   ) : (
@@ -83,7 +83,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         ]}
       />
       <Suspense fallback={<CategoryGridSkeleton label={t.loading} />}>
-        <Categories dict={dict} />
+        <Categories locale={locale} dict={dict} />
       </Suspense>
       <Benefits
         label={t.benefits}

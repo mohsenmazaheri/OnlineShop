@@ -28,7 +28,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** All categories with their sub-categories, for menus and the home page. */
+        /** All categories with their sub-categories, for menus and the home page, named in the requested locale. */
         get: operations["GetCategoryMenu"];
         put?: never;
         post?: never;
@@ -846,6 +846,7 @@ export interface components {
             id: string;
             name: string;
             slug: string;
+            imageUrl: null | string;
             subCategories: components["schemas"]["SubCategorySummary"][];
         };
         ChangePasswordRequest: {
@@ -1117,7 +1118,9 @@ export interface operations {
     };
     GetCategoryMenu: {
         parameters: {
-            query?: never;
+            query?: {
+                locale?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1137,7 +1140,9 @@ export interface operations {
     };
     GetCategoryBySlug: {
         parameters: {
-            query?: never;
+            query?: {
+                locale?: string;
+            };
             header?: never;
             path: {
                 slug: string;

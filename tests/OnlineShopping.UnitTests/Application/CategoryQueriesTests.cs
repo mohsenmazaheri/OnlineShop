@@ -100,6 +100,45 @@ public sealed class CategoryQueriesTests : IDisposable
         Assert.Equal(CategoryQueries.SlugRequiredCode, result.Error.Code);
     }
 
+    [Fact]
+    public async Task Menu_uses_the_requested_language_and_falls_back_to_the_default_names()
+    {
+        await SeedAsync(
+            new Category
+            {
+                Name = "کتاب",
+                Slug = "books",
+                ImageUrl = "/demo/categories/books.svg",
+                Translations = [new CatalogTranslation { Locale = "en", Name = "Books" }],
+                SubCategories =
+                [
+                    new SubCategory { Name = "شعر", Slug = "poetry", Translations = [new CatalogTranslation { Locale = "en", Name = "Poetry" }] },
+                    new SubCategory { Name = "تاریخ", Slug = "history" },
+                ],
+            },
+            new Category { Name = "اسباب‌بازی", Slug = "toys", Translations = [new CatalogTranslation { Locale = "en", Name = "Toys" }] });
+
+        await using var db = _database.CreateContext();
+        var queries = new CategoryQueries(db);
+        var english = await queries.GetMenuAsync("en");
+        var persian = await queries.GetMenuAsync("fa");
+
+        Assert.Equal(["Books", "Toys"], english.Select(c => c.Name));
+        // "تاریخ" has no English name yet: it keeps its default-language name.
+        Assert.Equal(["Poetry", "تاریخ"], english[0].SubCategories.Select(s => s.Name));
+        Assert.Equal("/demo/categories/books.svg", english[0].ImageUrl);
+        Assert.Equal(["اسباب‌بازی", "کتاب"], persian.Select(c => c.Name));
+        Assert.Equal("Books", (await queries.GetBySlugAsync("books", "en")).Value.Name);
+    }
+
+    [Theory]
+    [InlineData("en", "en")]
+    [InlineData("de", "fa")]
+    [InlineData(null, "fa")]
+    [InlineData("xx", "fa")]
+    public void Content_locale_is_the_requested_one_only_when_the_store_offers_it(string? requested, string expected) =>
+        Assert.Equal(expected, new StoreOptions { Locales = "fa,en", DefaultLocale = "fa" }.ContentLocale(requested));
+
     private async Task SeedAsync(params Category[] categories)
     {
         await using var db = _database.CreateContext();

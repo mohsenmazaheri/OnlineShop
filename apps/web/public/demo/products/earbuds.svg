@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+<defs><radialGradient id="bg-earbuds" cx="50%" cy="38%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cfdbe6"/></radialGradient></defs>
+<rect width="600" height="600" fill="url(#bg-earbuds)"/>
+<ellipse cx="300" cy="528" rx="180" ry="20" fill="#0b1210" opacity=".09"/>
+
+<defs><linearGradient id="eb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dfe5eb"/></linearGradient></defs>
+<rect x="180" y="300" width="240" height="180" rx="72" fill="url(#eb)" stroke="#94a3b8" stroke-width="5"/>
+<path d="M182 360 H 418" stroke="#94a3b8" stroke-width="5"/>
+<circle cx="300" cy="420" r="8" fill="#22c55e"/>
+<g fill="url(#eb)" stroke="#94a3b8" stroke-width="5">
+<path d="M210 150 a52 52 0 1 1 40 92 l -8 76 a15 15 0 0 1 -30 0 Z"/>
+<path d="M390 150 a52 52 0 1 0 -40 92 l 8 76 a15 15 0 0 0 30 0 Z"/>
+</g>
+<circle cx="232" cy="196" r="22" fill="#334155"/><circle cx="368" cy="196" r="22" fill="#334155"/>
+<circle cx="226" cy="190" r="6" fill="#ffffff" opacity=".35"/><circle cx="362" cy="190" r="6" fill="#ffffff" opacity=".35"/>
+</svg>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+<defs><radialGradient id="bg-desk-lamp" cx="50%" cy="38%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#eef0ec"/></radialGradient></defs>
+<rect width="600" height="600" fill="url(#bg-desk-lamp)"/>
+<ellipse cx="300" cy="528" rx="180" ry="20" fill="#0b1210" opacity=".09"/>
+
+<ellipse cx="250" cy="480" rx="110" ry="26" fill="#e5e7eb" stroke="#cbd5e1" stroke-width="4"/>
+<path d="M250 470 L 210 300 L 340 190" fill="none" stroke="#f8fafc" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M250 470 L 210 300 L 340 190" fill="none" stroke="#cbd5e1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="210" cy="300" r="16" fill="#94a3b8"/><circle cx="340" cy="190" r="14" fill="#94a3b8"/>
+<path d="M320 160 L 450 210 L 420 268 L 300 214 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+<path d="M300 214 L 420 268 L 470 430 L 250 330 Z" fill="#fde68a" opacity=".45"/>
+</svg>

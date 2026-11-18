@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+<defs><radialGradient id="bg-notebook" cx="50%" cy="38%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dfe7f6"/></radialGradient></defs>
+<rect width="600" height="600" fill="url(#bg-notebook)"/>
+<ellipse cx="300" cy="528" rx="180" ry="20" fill="#0b1210" opacity=".09"/>
+
+<rect x="196" y="110" width="236" height="370" rx="14" fill="#2563eb"/>
+<rect x="214" y="128" width="200" height="334" rx="8" fill="#1d4ed8" opacity=".35"/>
+<rect x="178" y="136" width="40" height="12" rx="6" fill="none" stroke="#475569" stroke-width="6"/>
+<rect x="178" y="167" width="40" height="12" rx="6" fill="none" stroke="#475569" stroke-width="6"/>
+<rect x="178" y="198" width="40" height="12" rx="6" fill="none" stroke="#475569" stroke-width="6"/>
+<rect x="178" y="229" width="40" height="12" rx="6" fill="none" stroke="#475569" stroke-width="6"/>
+<rect x="178" y="260" width="40" height="12" rx="6" fill="none" stroke="#475569" stroke-width="6"/>
+<rect x="178" y="291" width="40" height="12" rx="6" fill="none" stroke="#475569" stroke-width="6"/>
+<rect x="178" y="322" width="40" height="12" rx="6" fill="none" stroke="#475569" stroke-width="6"/>
+<rect x="178" y="353" width="40" height="12" rx="6" fill="none" stroke="#475569" stroke-width="6"/>
+<rect x="178" y="384" width="40" height="12" rx="6" fill="none" stroke="#475569" stroke-width="6"/>
+<rect x="178" y="415" width="40" height="12" rx="6" fill="none" stroke="#475569" stroke-width="6"/>
+<rect x="178" y="446" width="40" height="12" rx="6" fill="none" stroke="#475569" stroke-width="6"/>
+<rect x="260" y="180" width="130" height="58" rx="8" fill="#f8fafc"/>
+<rect x="276" y="198" width="98" height="8" rx="4" fill="#93c5fd"/><rect x="276" y="214" width="70" height="8" rx="4" fill="#93c5fd"/>
+</svg>

@@ -11,4 +11,5 @@ public class SubCategory : BaseEntity
     public Category Category { get; set; } = default!;
 
     public ICollection<ProductGroup> Groups { get; set; } = new List<ProductGroup>();
+    public ICollection<CatalogTranslation> Translations { get; set; } = new List<CatalogTranslation>();
 }

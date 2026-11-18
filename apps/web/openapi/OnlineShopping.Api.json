@@ -31,8 +31,17 @@
         "tags": [
           "Storefront"
         ],
-        "summary": "All categories with their sub-categories, for menus and the home page.",
+        "summary": "All categories with their sub-categories, for menus and the home page, named in the requested locale.",
         "operationId": "GetCategoryMenu",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -62,6 +71,13 @@
             "name": "slug",
             "in": "path",
             "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
             "schema": {
               "type": "string"
             }
@@ -1781,6 +1797,7 @@
           "id",
           "name",
           "slug",
+          "imageUrl",
           "subCategories"
         ],
         "type": "object",
@@ -1794,6 +1811,12 @@
           },
           "slug": {
             "type": "string"
+          },
+          "imageUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "subCategories": {
             "type": "array",

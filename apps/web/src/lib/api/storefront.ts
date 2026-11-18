@@ -16,9 +16,10 @@ export async function getStoreInfo(): Promise<StoreInfo> {
   return apiGet<StoreInfo>("/api/v1/store");
 }
 
-export async function getCategoryMenu(): Promise<CategorySummary[]> {
+/** Categories named in the given language (the API falls back to the default language); cached per locale. */
+export async function getCategoryMenu(locale: string): Promise<CategorySummary[]> {
   "use cache";
   cacheTag(cacheTags.catalog);
   cacheLife("hours");
-  return apiGet<CategorySummary[]>("/api/v1/catalog/categories");
+  return apiGet<CategorySummary[]>(`/api/v1/catalog/categories?locale=${encodeURIComponent(locale)}`);
 }

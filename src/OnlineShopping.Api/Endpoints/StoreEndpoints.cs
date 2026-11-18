@@ -37,13 +37,14 @@ public static class StoreEndpoints
             .WithName("GetStoreInfo")
             .WithSummary("Store name, the locales it offers, the available sign-up/sign-in methods and checkout settings.");
 
-        group.MapGet("/catalog/categories", async (ICategoryQueries queries, CancellationToken ct) =>
-                TypedResults.Ok(await queries.GetMenuAsync(ct)))
+        // ?locale=en: names in that language (an unknown or disabled locale gives the store's default language).
+        group.MapGet("/catalog/categories", async (string? locale, ICategoryQueries queries, IOptions<StoreOptions> store, CancellationToken ct) =>
+                TypedResults.Ok(await queries.GetMenuAsync(store.Value.ContentLocale(locale), ct)))
             .WithName("GetCategoryMenu")
-            .WithSummary("All categories with their sub-categories, for menus and the home page.");
+            .WithSummary("All categories with their sub-categories, for menus and the home page, named in the requested locale.");
 
-        group.MapGet("/catalog/categories/{slug}", async (string slug, ICategoryQueries queries, CancellationToken ct) =>
-                (await queries.GetBySlugAsync(slug, ct)).ToHttpResult())
+        group.MapGet("/catalog/categories/{slug}", async (string slug, string? locale, ICategoryQueries queries, IOptions<StoreOptions> store, CancellationToken ct) =>
+                (await queries.GetBySlugAsync(slug, store.Value.ContentLocale(locale), ct)).ToHttpResult())
             .WithName("GetCategoryBySlug")
             .WithSummary("One category by its slug.")
             .Produces<CategorySummary>()

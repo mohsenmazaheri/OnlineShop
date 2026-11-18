@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+<defs><radialGradient id="bg-book-small-shop" cx="50%" cy="38%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dfeeea"/></radialGradient></defs>
+<rect width="600" height="600" fill="url(#bg-book-small-shop)"/>
+<ellipse cx="300" cy="528" rx="180" ry="20" fill="#0b1210" opacity=".09"/>
+
+<rect x="190" y="110" width="236" height="370" rx="12" fill="#0b5f58"/>
+<rect x="176" y="110" width="30" height="370" rx="8" fill="#0f766e"/>
+<rect x="420" y="124" width="12" height="342" rx="4" fill="#f8fafc"/>
+<path d="M250 250 H 380 L 370 226 H 260 Z" fill="#f2a541"/>
+<path d="M250 250 h26 v14 a13 13 0 0 1 -26 0 Z M302 250 h26 v14 a13 13 0 0 1 -26 0 Z M354 250 h26 v14 a13 13 0 0 1 -26 0 Z" fill="#f8fafc"/>
+<path d="M276 250 h26 v14 a13 13 0 0 1 -26 0 Z M328 250 h26 v14 a13 13 0 0 1 -26 0 Z" fill="#f2a541"/>
+<rect x="258" y="276" width="116" height="80" rx="4" fill="#f8fafc" opacity=".9"/>
+<rect x="300" y="300" width="32" height="56" rx="3" fill="#0f766e"/>
+<rect x="236" y="390" width="160" height="12" rx="6" fill="#f8fafc" opacity=".8"/>
+<rect x="260" y="414" width="110" height="10" rx="5" fill="#f8fafc" opacity=".5"/>
+</svg>

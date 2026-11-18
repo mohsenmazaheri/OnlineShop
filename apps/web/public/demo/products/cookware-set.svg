@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+<defs><radialGradient id="bg-cookware-set" cx="50%" cy="38%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e7ebee"/></radialGradient></defs>
+<rect width="600" height="600" fill="url(#bg-cookware-set)"/>
+<ellipse cx="300" cy="528" rx="180" ry="20" fill="#0b1210" opacity=".09"/>
+
+<defs><linearGradient id="ck" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f8fafc"/><stop offset="1" stop-color="#9aa6b2"/></linearGradient></defs>
+<path d="M120 300 H 390 V 430 a26 26 0 0 1 -26 26 H 146 a26 26 0 0 1 -26 -26 Z" fill="url(#ck)"/>
+<rect x="96" y="314" width="34" height="16" rx="8" fill="#475569"/><rect x="380" y="314" width="34" height="16" rx="8" fill="#475569"/>
+<path d="M112 300 a143 40 0 0 1 286 0 Z" fill="#bae6fd" opacity=".7" stroke="#64748b" stroke-width="4"/>
+<rect x="238" y="246" width="34" height="18" rx="8" fill="#475569"/>
+<path d="M330 380 H 500 V 450 a20 20 0 0 1 -20 20 H 350 a20 20 0 0 1 -20 -20 Z" fill="url(#ck)" stroke="#94a3b8" stroke-width="3"/>
+<path d="M324 380 a91 26 0 0 1 182 0 Z" fill="#bae6fd" opacity=".75" stroke="#64748b" stroke-width="4"/>
+<rect x="404" y="344" width="22" height="14" rx="6" fill="#475569"/>
+<path d="M150 330 V 430" stroke="#ffffff" stroke-width="10" stroke-linecap="round" opacity=".6"/>
+</svg>

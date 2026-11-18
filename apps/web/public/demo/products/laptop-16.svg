@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+<defs><radialGradient id="bg-laptop-16" cx="50%" cy="38%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e1e3e8"/></radialGradient></defs>
+<rect width="600" height="600" fill="url(#bg-laptop-16)"/>
+<ellipse cx="300" cy="528" rx="180" ry="20" fill="#0b1210" opacity=".09"/>
+
+<defs><linearGradient id="l16" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#312e81"/><stop offset="1" stop-color="#0f766e"/></linearGradient></defs>
+<rect x="120" y="126" width="360" height="238" rx="16" fill="#3f4650"/>
+<rect x="132" y="138" width="336" height="212" rx="8" fill="url(#l16)"/>
+<rect x="160" y="170" width="120" height="14" rx="7" fill="#ffffff" opacity=".35"/>
+<rect x="160" y="196" width="190" height="10" rx="5" fill="#ffffff" opacity=".2"/>
+<rect x="160" y="216" width="160" height="10" rx="5" fill="#ffffff" opacity=".2"/>
+<rect x="330" y="250" width="110" height="74" rx="10" fill="#ffffff" opacity=".15"/>
+<path d="M74 372 H 526 L 510 402 a10 10 0 0 1 -9 6 H 99 a10 10 0 0 1 -9 -6 Z" fill="#5b6370"/>
+<rect x="74" y="364" width="452" height="10" rx="4" fill="#4b525d"/>
+<rect x="258" y="372" width="84" height="8" rx="4" fill="#3b414a"/>
+</svg>
