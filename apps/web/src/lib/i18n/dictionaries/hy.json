@@ -18,7 +18,11 @@
   },
   "header": {
     "signIn": "Մուտք | Գրանցում",
-    "myAccount": "Իմ հաշիվը"
+    "myAccount": "Իմ հաշիվը",
+    "theme": "Թեմա",
+    "themeSystem": "Ըստ համակարգի",
+    "themeLight": "Լուսավոր",
+    "themeDark": "Մուգ"
   },
   "account": {
     "loginTitle": "Մուտք",

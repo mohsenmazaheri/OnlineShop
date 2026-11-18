@@ -255,6 +255,15 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   static with `'unsafe-inline'` scripts and everything else locked to `'self'`.
 - Server-only modules import `"server-only"`; the API is called only from the server (`apiGet`), never from the browser.
 - UI strings: `src/lib/i18n/dictionaries/<locale>.json`, all with the same keys as `fa.json` (enforced by a test).
+- Design system: colours, states, ring and `--radius` are CSS tokens in `globals.css` (light + `[data-theme=dark]` +
+  a no-JS system fallback); use the token classes (`bg-surface`, `text-muted`, `bg-danger`, …) and the shared
+  components in `src/components/ui/` (`Button`/`ButtonLink`/`buttonClass`, `Card`, `Badge`, `Skeleton`), not raw
+  palette colours. `dark:` follows the chosen theme (custom variant).
+- Theme: `src/lib/theme.ts` + `ThemeToggle`; the `<head>` script sets `data-theme` before paint (keep it tiny; the
+  root `<html>` has `suppressHydrationWarning` for it). Never read the theme on the server: pages must stay static.
+- Fonts: `src/lib/fonts.ts` (`next/font/local`, files from npm packages; never Google Fonts or a CDN). Vazirmatn has
+  an Arabic-script `unicode-range` and comes first in every stack; Inter (Latin), Noto Sans Armenian (hy).
+- Number/date/list formatting uses the built-in `Intl` (`formatDate`, `formatList`): Persian calendar and digits for fa.
 - Tests: Vitest (`environment: node`; `// @vitest-environment jsdom` for components) + Testing Library.
 
 ## Commits

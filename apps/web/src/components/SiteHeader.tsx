@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/account/session";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { loadStore } from "@/lib/store/load";
+import { ThemeToggle } from "./ThemeToggle";
 
 type Props = { locale: Locale; texts: Dictionary["header"] };
 
@@ -38,9 +39,12 @@ export function SiteHeader({ locale, texts }: Props) {
         <Suspense fallback={<span className="h-6 w-32 animate-pulse rounded bg-border" />}>
           <StoreName locale={locale} />
         </Suspense>
-        <Suspense fallback={<span className="h-8 w-28 animate-pulse rounded bg-border" />}>
-          <AccountLink locale={locale} texts={texts} />
-        </Suspense>
+        <div className="flex items-center gap-2">
+          <ThemeToggle texts={texts} />
+          <Suspense fallback={<span className="h-8 w-28 animate-pulse rounded bg-border" />}>
+            <AccountLink locale={locale} texts={texts} />
+          </Suspense>
+        </div>
       </div>
     </header>
   );

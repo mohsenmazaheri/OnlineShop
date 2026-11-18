@@ -1,47 +1,128 @@
 @import "tailwindcss";
 
 /*
- * Design tokens (phase 3 replaces these with the full design system and admin-editable brand colors).
- * Our own neutral palette — no third-party brand colors.
+ * Design tokens: our own neutral palette (no third-party brand colours). Phase 3d lets the administrator override
+ * --primary*, --radius and the font at runtime (per shop, no rebuild); everything else derives from these.
  */
 :root {
   --background: #f7f7f8;
   --surface: #ffffff;
+  --surface-muted: #f0f0f3;
   --foreground: #1c1c21;
   --muted: #6b6b76;
   --border: #e4e4e9;
   --primary: #0f766e;
   --primary-foreground: #ffffff;
+  --danger: #b91c1c;
+  --danger-foreground: #ffffff;
+  --success: #047857;
+  --warning: #b45309;
+  --ring: color-mix(in srgb, var(--primary) 40%, transparent);
+  /* Base corner radius; Tailwind's rounded-lg/xl/2xl are derived from it below. */
+  --radius: 0.75rem;
   color-scheme: light;
 }
 
+/* Dark tokens. Applied when the head script chose dark, or — without JavaScript — when the system prefers dark. */
+:root[data-theme="dark"] {
+  --background: #121216;
+  --surface: #1c1c22;
+  --surface-muted: #24242b;
+  --foreground: #ececf1;
+  --muted: #a1a1ad;
+  --border: #2e2e37;
+  --primary: #2dd4bf;
+  --primary-foreground: #04201d;
+  --danger: #f87171;
+  --danger-foreground: #2b0606;
+  --success: #34d399;
+  --warning: #fbbf24;
+  color-scheme: dark;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --background: #121216;
     --surface: #1c1c22;
+    --surface-muted: #24242b;
     --foreground: #ececf1;
     --muted: #a1a1ad;
     --border: #2e2e37;
     --primary: #2dd4bf;
     --primary-foreground: #04201d;
+    --danger: #f87171;
+    --danger-foreground: #2b0606;
+    --success: #34d399;
+    --warning: #fbbf24;
     color-scheme: dark;
+  }
+}
+
+/* Tailwind's dark: variant follows the chosen theme, and the system setting when no choice was applied. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme]), :root:not([data-theme]) *) {
+      @slot;
+    }
   }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  /* Self-hosted fonts arrive in phase 3; system fonts render instantly with no network request. */
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Armenian", Tahoma, sans-serif;
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-ring: var(--ring);
+  --radius-md: calc(var(--radius) - 0.375rem);
+  --radius-lg: calc(var(--radius) - 0.25rem);
+  --radius-xl: var(--radius);
+  --radius-2xl: calc(var(--radius) + 0.25rem);
+  --font-sans: var(--font-script), system-ui, -apple-system, "Segoe UI", Roboto, Tahoma, sans-serif;
+}
+
+/*
+ * Self-hosted fonts (next/font/local, see src/lib/fonts.ts). Vazirmatn is limited to Arabic-script letters and comes
+ * first everywhere (Persian/Arabic text, also untranslated content on other pages); Latin goes to Inter, Armenian to
+ * Noto Sans Armenian. The browser downloads only the fonts whose characters the page actually shows.
+ */
+:root {
+  --font-script: var(--font-vazirmatn), var(--font-inter);
+}
+:root:lang(hy) {
+  --font-script: var(--font-vazirmatn), var(--font-armenian), var(--font-inter);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+/* Visible keyboard focus everywhere, in the brand colour. */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Light animations only; none for people who asked their system for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

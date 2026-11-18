@@ -6,7 +6,9 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { directionOf, isLocale, supportedLocales } from "@/lib/i18n/config";
 import { indexingAllowed, siteUrl } from "@/lib/seo/config";
+import { fontVariables } from "@/lib/fonts";
 import { loadStore } from "@/lib/store/load";
+import { themeScript } from "@/lib/theme";
 import "../globals.css";
 
 /** lang/dir are known at build time; everything store-specific is read per request (one image for all shops). */
@@ -47,7 +49,12 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   const dict = await getDictionary(locale);
 
   return (
-    <html lang={locale} dir={directionOf(locale)} className="h-full antialiased">
+    // suppressHydrationWarning: the head script sets data-theme before React hydrates (that is the point).
+    <html lang={locale} dir={directionOf(locale)} className={`h-full antialiased ${fontVariables}`} suppressHydrationWarning>
+      <head>
+        {/* Applies the saved light/dark choice before the first paint, so the page never flashes the wrong theme. */}
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="flex min-h-full flex-col">
         <SiteHeader locale={locale} texts={dict.header} />
         {children}

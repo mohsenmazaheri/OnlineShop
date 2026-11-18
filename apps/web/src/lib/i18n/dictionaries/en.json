@@ -18,7 +18,11 @@
   },
   "header": {
     "signIn": "Sign in | Register",
-    "myAccount": "My account"
+    "myAccount": "My account",
+    "theme": "Theme",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark"
   },
   "account": {
     "loginTitle": "Sign in",

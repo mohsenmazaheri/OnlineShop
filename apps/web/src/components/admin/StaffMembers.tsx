@@ -7,6 +7,7 @@ import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { format } from "@/lib/account/digits";
 import { formatList } from "@/lib/i18n/format-list";
 import { FormAlert, SubmitButton } from "@/components/account/FormParts";
+import { Badge } from "@/components/ui/Surface";
 import { useApiForm } from "@/components/account/useApiForm";
 import { RoleCheckboxes, roleName } from "./RoleCheckboxes";
 
@@ -40,9 +41,7 @@ export function StaffMembers({ locale, texts, members, currentUserId }: Props) {
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-semibold">{label(member)}</span>
                 {self && <span className="text-muted">{texts.you}</span>}
-                <span className={`rounded-full px-2 py-0.5 text-xs ${member.suspended ? "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200" : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"}`}>
-                  {member.suspended ? texts.suspended : texts.active}
-                </span>
+                <Badge tone={member.suspended ? "danger" : "success"}>{member.suspended ? texts.suspended : texts.active}</Badge>
               </div>
               <p dir="ltr" className="text-start text-muted">
                 {[member.email, member.phoneNumber].filter(Boolean).join(" · ")}
