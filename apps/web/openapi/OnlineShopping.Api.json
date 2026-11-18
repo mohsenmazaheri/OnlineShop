@@ -1257,6 +1257,293 @@
           }
         }
       }
+    },
+    "/api/v1/admin/staff": {
+      "get": {
+        "tags": [
+          "Admin: staff"
+        ],
+        "summary": "Staff members with their roles and status, and recent invitations.",
+        "operationId": "GetStaff",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffOverview"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/staff/invitations": {
+      "post": {
+        "tags": [
+          "Admin: staff"
+        ],
+        "summary": "Invite someone by email or mobile number with one or more staff roles (valid 7 days).",
+        "operationId": "InviteStaff",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteStaffRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffInvitationView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/staff/invitations/{id}": {
+      "delete": {
+        "tags": [
+          "Admin: staff"
+        ],
+        "summary": "Withdraw an open invitation.",
+        "operationId": "RevokeStaffInvitation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/staff/{userId}/roles": {
+      "put": {
+        "tags": [
+          "Admin: staff"
+        ],
+        "summary": "Replace a staff member's roles (not your own; at least one active Admin stays).",
+        "operationId": "ChangeStaffRoles",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeStaffRolesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/staff/{userId}/suspend": {
+      "post": {
+        "tags": [
+          "Admin: staff"
+        ],
+        "summary": "Block every sign-in of a staff member; open sessions end within a minute.",
+        "operationId": "SuspendStaff",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/staff/{userId}/reactivate": {
+      "post": {
+        "tags": [
+          "Admin: staff"
+        ],
+        "summary": "Allow a suspended staff member to sign in again.",
+        "operationId": "ReactivateStaff",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/staff/{userId}/remove": {
+      "post": {
+        "tags": [
+          "Admin: staff"
+        ],
+        "summary": "Take away every staff role; the account stays a customer account.",
+        "operationId": "RemoveFromStaff",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/staff/audit": {
+      "get": {
+        "tags": [
+          "Admin: staff"
+        ],
+        "summary": "The latest 100 staff changes: who did what, to whom, and when.",
+        "operationId": "GetStaffAudit",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StaffAuditView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/account/staff-invitations": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Open staff invitations for the signed-in user's verified email or mobile number.",
+        "operationId": "GetMyStaffInvitations",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MyStaffInvitation"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/account/staff-invitations/{id}/accept": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Accept an invitation: its roles are added and this session is refreshed.",
+        "operationId": "AcceptStaffInvitation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1531,6 +1818,20 @@
           }
         }
       },
+      "ChangeStaffRolesRequest": {
+        "required": [
+          "roles"
+        ],
+        "type": "object",
+        "properties": {
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
       "CheckoutSettings": {
         "required": [
           "guest",
@@ -1752,6 +2053,31 @@
           }
         }
       },
+      "InviteStaffRequest": {
+        "required": [
+          "identifier",
+          "roles",
+          "locale"
+        ],
+        "type": "object",
+        "properties": {
+          "identifier": {
+            "type": "string"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "locale": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "LoginRequest": {
         "required": [
           "identifier",
@@ -1768,6 +2094,30 @@
           },
           "rememberMe": {
             "type": "boolean"
+          }
+        }
+      },
+      "MyStaffInvitation": {
+        "required": [
+          "id",
+          "roles",
+          "expiresUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "expiresUtc": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -2145,6 +2495,200 @@
         },
         "description": "Sign-up methods currently available (phone needs a configured SMS provider)."
       },
+      "StaffAuditAction": {
+        "enum": [
+          "Invited",
+          "InvitationRevoked",
+          "InvitationAccepted",
+          "RolesChanged",
+          "Suspended",
+          "Reactivated",
+          "RemovedFromStaff"
+        ]
+      },
+      "StaffAuditView": {
+        "required": [
+          "id",
+          "createdUtc",
+          "actorUserId",
+          "actorName",
+          "action",
+          "targetUserId",
+          "targetName",
+          "targetIdentifier",
+          "details"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "actorUserId": {
+            "type": "string"
+          },
+          "actorName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "action": {
+            "$ref": "#/components/schemas/StaffAuditAction"
+          },
+          "targetUserId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "targetName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "targetIdentifier": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "details": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "StaffInvitationStatus": {
+        "enum": [
+          "Pending",
+          "Accepted",
+          "Revoked",
+          "Expired"
+        ]
+      },
+      "StaffInvitationView": {
+        "required": [
+          "id",
+          "email",
+          "phoneNumber",
+          "roles",
+          "createdUtc",
+          "expiresUtc",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "phoneNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "$ref": "#/components/schemas/StaffInvitationStatus"
+          }
+        }
+      },
+      "StaffMember": {
+        "required": [
+          "userId",
+          "displayName",
+          "email",
+          "phoneNumber",
+          "roles",
+          "twoFactorEnabled",
+          "suspended"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "phoneNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "twoFactorEnabled": {
+            "type": "boolean"
+          },
+          "suspended": {
+            "type": "boolean"
+          }
+        }
+      },
+      "StaffOverview": {
+        "required": [
+          "members",
+          "invitations"
+        ],
+        "type": "object",
+        "properties": {
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StaffMember"
+            }
+          },
+          "invitations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StaffInvitationView"
+            }
+          }
+        }
+      },
       "StoreInfoResponse": {
         "required": [
           "name",
@@ -2286,6 +2830,9 @@
     },
     {
       "name": "Account"
+    },
+    {
+      "name": "Admin: staff"
     }
   ]
 }

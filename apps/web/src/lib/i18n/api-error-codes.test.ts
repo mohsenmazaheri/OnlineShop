@@ -5,27 +5,37 @@ import { supportedLocales } from "./config";
 import { getDictionary } from "./dictionaries";
 
 /**
- * Error codes the API can return, read from every C# file of the Application project (not bin/obj), so a new code
- * without a translation fails here.
+ * Error codes the API can return with the given prefix ("account", "staff"), read from every C# file of the
+ * Application project (not bin/obj), so a new code without a translation fails here.
  */
-function apiAccountErrorCodes(): string[] {
+function apiErrorCodes(prefix: string): string[] {
   const root = fileURLToPath(new URL("../../../../../src/OnlineShopping.Application/", import.meta.url));
+  // Authorization/ holds permission names such as "staff.manage", which are not error codes.
   const files = readdirSync(root, { recursive: true, encoding: "utf8" }).filter(
-    (file) => file.endsWith(".cs") && !/(^|[\\/])(bin|obj)[\\/]/.test(file),
+    (file) => file.endsWith(".cs") && !/(^|[\\/])(bin|obj|Authorization)[\\/]/.test(file),
   );
-  const codes = files.flatMap((file) => [...readFileSync(root + file, "utf8").matchAll(/= "account\.([a-z0-9_]+)"/g)].map((m) => m[1]));
+  const pattern = new RegExp(`= "${prefix}\\.([a-z0-9_]+)"`, "g");
+  const codes = files.flatMap((file) => [...readFileSync(root + file, "utf8").matchAll(pattern)].map((m) => m[1]));
   return [...new Set(codes)];
 }
 
-describe("API error code translations", () => {
-  it("finds the API's account error codes", () => {
-    expect(apiAccountErrorCodes().length).toBeGreaterThan(10);
-  });
+/** Which dictionary section translates which code prefix. */
+const sections = [
+  { prefix: "account", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).account.errors },
+  { prefix: "staff", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).admin.errors },
+] as const;
 
-  it.each(supportedLocales)("every account error code has a %s message", async (locale) => {
-    const errors = (await getDictionary(locale)).account.errors as Record<string, string>;
-    const missing = apiAccountErrorCodes().filter((code) => !errors[code]);
+for (const { prefix, errors } of sections) {
+  describe(`API error codes ${prefix}.*`, () => {
+    it("are found in the C# source", () => {
+      expect(apiErrorCodes(prefix).length).toBeGreaterThan(5);
+    });
 
-    expect(missing).toEqual([]);
+    it.each(supportedLocales)("all have a %s message", async (locale) => {
+      const texts = (await errors(locale)) as Record<string, string>;
+      const missing = apiErrorCodes(prefix).filter((code) => !texts[code]);
+
+      expect(missing).toEqual([]);
+    });
   });
-});
+}

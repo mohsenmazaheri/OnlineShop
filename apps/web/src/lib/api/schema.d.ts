@@ -618,6 +618,176 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Staff members with their roles and status, and recent invitations. */
+        get: operations["GetStaff"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Invite someone by email or mobile number with one or more staff roles (valid 7 days). */
+        post: operations["InviteStaff"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/invitations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Withdraw an open invitation. */
+        delete: operations["RevokeStaffInvitation"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/{userId}/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace a staff member's roles (not your own; at least one active Admin stays). */
+        put: operations["ChangeStaffRoles"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/{userId}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Block every sign-in of a staff member; open sessions end within a minute. */
+        post: operations["SuspendStaff"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/{userId}/reactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Allow a suspended staff member to sign in again. */
+        post: operations["ReactivateStaff"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/{userId}/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Take away every staff role; the account stays a customer account. */
+        post: operations["RemoveFromStaff"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The latest 100 staff changes: who did what, to whom, and when. */
+        get: operations["GetStaffAudit"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account/staff-invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Open staff invitations for the signed-in user's verified email or mobile number. */
+        get: operations["GetMyStaffInvitations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account/staff-invitations/{id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept an invitation: its roles are added and this session is refreshed. */
+        post: operations["AcceptStaffInvitation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -682,6 +852,9 @@ export interface components {
             currentPassword: string;
             newPassword: string;
         };
+        ChangeStaffRolesRequest: {
+            roles: string[];
+        };
         /** @description Checkout rules: whether customers may buy without an account, and where the shop ships (ISO country codes). */
         CheckoutSettings: {
             guest: boolean;
@@ -733,10 +906,22 @@ export interface components {
                 [key: string]: string[];
             };
         };
+        InviteStaffRequest: {
+            identifier: string;
+            roles: string[];
+            locale: null | string;
+        };
         LoginRequest: {
             identifier: string;
             password: string;
             rememberMe: boolean;
+        };
+        MyStaffInvitation: {
+            /** Format: uuid */
+            id: string;
+            roles: string[];
+            /** Format: date-time */
+            expiresUtc: string;
         };
         OrderData: {
             /** Format: uuid */
@@ -825,6 +1010,48 @@ export interface components {
         SignUpMethods: {
             email: boolean;
             phone: boolean;
+        };
+        /** @enum {unknown} */
+        StaffAuditAction: "Invited" | "InvitationRevoked" | "InvitationAccepted" | "RolesChanged" | "Suspended" | "Reactivated" | "RemovedFromStaff";
+        StaffAuditView: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            createdUtc: string;
+            actorUserId: string;
+            actorName: null | string;
+            action: components["schemas"]["StaffAuditAction"];
+            targetUserId: null | string;
+            targetName: null | string;
+            targetIdentifier: null | string;
+            details: null | string;
+        };
+        /** @enum {unknown} */
+        StaffInvitationStatus: "Pending" | "Accepted" | "Revoked" | "Expired";
+        StaffInvitationView: {
+            /** Format: uuid */
+            id: string;
+            email: null | string;
+            phoneNumber: null | string;
+            roles: string[];
+            /** Format: date-time */
+            createdUtc: string;
+            /** Format: date-time */
+            expiresUtc: string;
+            status: components["schemas"]["StaffInvitationStatus"];
+        };
+        StaffMember: {
+            userId: string;
+            displayName: null | string;
+            email: null | string;
+            phoneNumber: null | string;
+            roles: string[];
+            twoFactorEnabled: boolean;
+            suspended: boolean;
+        };
+        StaffOverview: {
+            members: components["schemas"]["StaffMember"][];
+            invitations: components["schemas"]["StaffInvitationView"][];
         };
         StoreInfoResponse: {
             name: string;
@@ -1871,6 +2098,229 @@ export interface operations {
         };
     };
     SetDefaultAddress: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffOverview"];
+                };
+            };
+        };
+    };
+    InviteStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InviteStaffRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffInvitationView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    RevokeStaffInvitation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ChangeStaffRoles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeStaffRolesRequest"];
+            };
+        };
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    SuspendStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ReactivateStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RemoveFromStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GetStaffAudit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffAuditView"][];
+                };
+            };
+        };
+    };
+    GetMyStaffInvitations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyStaffInvitation"][];
+                };
+            };
+        };
+    };
+    AcceptStaffInvitation: {
         parameters: {
             query?: never;
             header?: never;

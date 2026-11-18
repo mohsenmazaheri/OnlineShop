@@ -7,7 +7,15 @@ vi.mock("next/headers", () => ({
   }),
 }));
 
-import { getAddresses, getCurrentUser, getExternalLogins, getTwoFactorStatus } from "./session";
+import {
+  getAddresses,
+  getCurrentUser,
+  getExternalLogins,
+  getMyStaffInvitations,
+  getStaffAudit,
+  getStaffOverview,
+  getTwoFactorStatus,
+} from "./session";
 
 describe("getCurrentUser (server rendering)", () => {
   afterEach(() => cookieStore.clear());
@@ -97,5 +105,28 @@ describe("getAddresses", () => {
 
   it("returns null without a session", async () => {
     expect(await getAddresses(vi.fn())).toBeNull();
+  });
+});
+
+describe("staff data", () => {
+  afterEach(() => cookieStore.clear());
+
+  it("reads invitations and the admin staff endpoints with the session", async () => {
+    cookieStore.set("os_session", "abc");
+    const fetchMock = vi.fn().mockImplementation(async () => new Response(JSON.stringify([]), { status: 200 }));
+
+    expect(await getMyStaffInvitations(fetchMock)).toEqual([]);
+    expect(await getStaffOverview(fetchMock)).toEqual([]);
+    expect(await getStaffAudit(fetchMock)).toEqual([]);
+    expect(fetchMock.mock.calls.map((c) => String(c[0]).replace(/^.*\/api\/v1/, ""))).toEqual([
+      "/account/staff-invitations",
+      "/admin/staff",
+      "/admin/staff/audit",
+    ]);
+  });
+
+  it("gives null to users without the permission", async () => {
+    cookieStore.set("os_session", "abc");
+    expect(await getStaffOverview(vi.fn().mockResolvedValue(new Response(null, { status: 403 })))).toBeNull();
   });
 });

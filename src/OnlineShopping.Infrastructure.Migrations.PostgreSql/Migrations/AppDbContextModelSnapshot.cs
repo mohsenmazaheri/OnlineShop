@@ -805,6 +805,139 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.ToTable("order_items", (string)null);
                 });
 
+            modelBuilder.Entity("OnlineShopping.Domain.Staff.StaffAuditEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("action");
+
+                    b.Property<string>("ActorUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)")
+                        .HasColumnName("actor_user_id");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("details");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<string>("TargetIdentifier")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("target_identifier");
+
+                    b.Property<string>("TargetUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)")
+                        .HasColumnName("target_user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_staff_audit_entries");
+
+                    b.HasIndex("CreatedUtc")
+                        .HasDatabaseName("ix_staff_audit_entries_created_utc");
+
+                    b.ToTable("staff_audit_entries", (string)null);
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Staff.StaffInvitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AcceptedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)")
+                        .HasColumnName("accepted_by_user_id");
+
+                    b.Property<DateTime?>("AcceptedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("accepted_utc");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("email");
+
+                    b.Property<DateTime>("ExpiresUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_utc");
+
+                    b.Property<string>("InvitedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)")
+                        .HasColumnName("invited_by_user_id");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("normalized_email");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("phone_number");
+
+                    b.Property<DateTime?>("RevokedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_utc");
+
+                    b.Property<string>("Roles")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("roles");
+
+                    b.HasKey("Id")
+                        .HasName("pk_staff_invitations");
+
+                    b.HasIndex("InvitedByUserId")
+                        .HasDatabaseName("ix_staff_invitations_invited_by_user_id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("ix_staff_invitations_normalized_email");
+
+                    b.HasIndex("PhoneNumber")
+                        .HasDatabaseName("ix_staff_invitations_phone_number");
+
+                    b.ToTable("staff_invitations", (string)null);
+                });
+
             modelBuilder.Entity("OnlineShopping.Infrastructure.Identity.AppUser", b =>
                 {
                     b.Property<string>("Id")
@@ -881,6 +1014,10 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text")
                         .HasColumnName("security_stamp");
+
+                    b.Property<DateTime?>("SuspendedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("suspended_utc");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean")
@@ -1084,6 +1221,16 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasConstraintName("fk_order_items_products_product_id");
 
                     b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Staff.StaffInvitation", b =>
+                {
+                    b.HasOne("OnlineShopping.Infrastructure.Identity.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("InvitedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_staff_invitations_users_invited_by_user_id");
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Catalog.Category", b =>

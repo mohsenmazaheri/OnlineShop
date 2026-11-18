@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { CategoryGrid, CategoryGridSkeleton } from "@/components/CategoryGrid";
 import { getCategoryMenu } from "@/lib/api/storefront";
-import { isLocale, type Locale } from "@/lib/i18n/config";
+import { isLocale } from "@/lib/i18n/config";
 import { getDictionary, type Dictionary } from "@/lib/i18n/dictionaries";
 import { buildAlternates } from "@/lib/seo/config";
 import { loadStore } from "@/lib/store/load";
@@ -44,7 +45,9 @@ async function HomeContent({ dict }: { dict: Dictionary }) {
 
 export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const { locale } = await params;
-  const dict = await getDictionary(locale as Locale);
+  // Unknown first segments (/favicon.png, typos) are 404s; without this check getDictionary would throw a 500.
+  if (!isLocale(locale)) notFound();
+  const dict = await getDictionary(locale);
 
   return (
     <main className="flex-1">

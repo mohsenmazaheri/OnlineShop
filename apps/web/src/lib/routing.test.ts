@@ -67,3 +67,15 @@ describe("account pages need a session", () => {
     expect(accountRedirectTarget("/xx/account", "", false)).toBeNull();
   });
 });
+
+describe("admin panel redirect", () => {
+  it("sends signed-out visitors of the admin panel to sign in and back", () => {
+    expect(accountRedirectTarget("/en/admin", "", false)).toBe("/en/account/login?returnUrl=%2Fen%2Fadmin");
+    expect(accountRedirectTarget("/fa/admin/staff", "", false)).toBe("/fa/account/login?returnUrl=%2Ffa%2Fadmin%2Fstaff");
+  });
+
+  it("lets signed-in visitors through and ignores look-alike paths", () => {
+    expect(accountRedirectTarget("/fa/admin/staff", "", true)).toBeNull();
+    expect(accountRedirectTarget("/fa/administration", "", false)).toBeNull();
+  });
+});
