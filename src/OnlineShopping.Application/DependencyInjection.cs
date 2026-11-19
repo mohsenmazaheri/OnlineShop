@@ -38,6 +38,10 @@ public static class DependencyInjection
         services.AddScoped<ProductVariantService>();
         services.AddScoped<Seo.SynonymService>();
         services.AddScoped<Seo.RedirectService>();
+        services.AddSingleton<Catalog.Transfer.ITableFile, Catalog.Transfer.CsvTableFile>();
+        services.AddSingleton<Catalog.Transfer.TableFiles>();
+        services.AddScoped<Catalog.Transfer.ProductExportService>();
+        services.AddScoped<Catalog.Transfer.ProductImportService>();
         services.AddScoped<MediaService>();
         services.AddOptions<MediaOptions>().Bind(configuration.GetSection(MediaOptions.SectionName));
         services.AddScoped<LoginIdentifierParser>();

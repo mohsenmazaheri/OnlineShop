@@ -109,6 +109,7 @@ app.MapBrandingEndpoints();
 app.MapCatalogAdminEndpoints();
 app.MapCatalogLibraryEndpoints();
 app.MapSeoEndpoints();
+app.MapCatalogTransferEndpoints();
 app.MapMediaEndpoints();
 app.MapAccountEndpoints();
 app.MapExternalLoginEndpoints();

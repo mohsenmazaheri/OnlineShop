@@ -2286,6 +2286,148 @@
         }
       }
     },
+    "/api/v1/admin/catalog/export/products": {
+      "get": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Every product as CSV or Excel (format=csv|xlsx), in the layout the import reads.",
+        "operationId": "ExportProducts",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/catalog/export/stock": {
+      "get": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "SKU and stock of every product without variants and of every variant.",
+        "operationId": "ExportStock",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/catalog/import/products": {
+      "post": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Create or update products from CSV or Excel; with dryRun=true only check. Saved only when every row is valid.",
+        "operationId": "ImportProducts",
+        "parameters": [
+          {
+            "name": "dryRun",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportReport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/catalog/import/stock": {
+      "post": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Set stock by SKU (products and variants) from CSV or Excel; with dryRun=true only check.",
+        "operationId": "ImportStock",
+        "parameters": [
+          {
+            "name": "dryRun",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportReport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/account/register": {
       "post": {
         "tags": [
@@ -4675,6 +4817,29 @@
           }
         }
       },
+      "ImportProblem": {
+        "required": [
+          "row",
+          "column",
+          "code"
+        ],
+        "type": "object",
+        "properties": {
+          "row": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "column": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "code": {
+            "type": "string"
+          }
+        }
+      },
       "ImportRedirectsRequest": {
         "required": [
           "text"
@@ -4706,6 +4871,39 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ImportLineError"
+            }
+          }
+        }
+      },
+      "ImportReport": {
+        "required": [
+          "applied",
+          "created",
+          "updated",
+          "rows",
+          "problems"
+        ],
+        "type": "object",
+        "properties": {
+          "applied": {
+            "type": "boolean"
+          },
+          "created": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "updated": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "rows": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "problems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImportProblem"
             }
           }
         }

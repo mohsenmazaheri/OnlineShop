@@ -26,6 +26,7 @@ const sections = [
   { prefix: "currency", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).admin.currencyErrors },
   { prefix: "catalog", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).admin.catalogErrors },
   { prefix: "media", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).admin.mediaErrors },
+  { prefix: "import", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).admin.importErrors },
   { prefix: "seo", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).admin.seoErrors },
   { prefix: "branding", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).admin.brandingErrors },
 ] as const;
