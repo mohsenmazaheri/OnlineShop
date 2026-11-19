@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ProductDetail } from "@/lib/api/storefront";
 import { brandOf } from "@/lib/catalog/specs";
+import { optionOf, variantLabel } from "@/lib/catalog/variants";
 import { productPath } from "@/lib/catalog/product-path";
 import type { Locale } from "@/lib/i18n/config";
 
@@ -36,29 +37,56 @@ export function absoluteUrl(siteUrl: string, path: string): string {
   return /^https?:\/\//.test(path) ? path : `${siteUrl}${path.startsWith("/") ? "" : "/"}${path}`;
 }
 
+/** Variant specs schema.org knows as Product properties (Google reads them in ProductGroup.variesBy). */
+const schemaProperties: Record<string, string> = { color: "color", colour: "color", size: "size", material: "material", pattern: "pattern" };
+
 /**
- * schema.org Product + Offer for the page. Price, currency and availability are exactly what the page shows
- * (the same API response), as search engines require.
+ * schema.org Product + Offer for the page, or a ProductGroup with one Product per variant (Google's variant markup).
+ * Prices, currency and availability are exactly what the page shows (the same API response, converted by
+ * `priceOf` like the visible price), as search engines require.
  */
-export function productJsonLd(product: ProductDetail, pageUrl: string, currency: string, siteUrl: string) {
-  const brand = brandOf(product.specs);
-  return {
+export function productJsonLd(product: ProductDetail, pageUrl: string, currency: string, siteUrl: string, priceOf: (basePrice: number) => number = (p) => p) {
+  const brand = product.brand?.name ?? brandOf(product.specs);
+  const image = product.images.map((i) => absoluteUrl(siteUrl, i.url));
+  const offer = (price: number, inStock: boolean) => ({
+    "@type": "Offer",
+    url: pageUrl,
+    price: String(priceOf(price)),
+    priceCurrency: currency,
+    availability: inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+    itemCondition: "https://schema.org/NewCondition",
+  });
+  const common = {
     "@context": "https://schema.org",
-    "@type": "Product",
     name: product.name,
     ...(product.description ? { description: product.description } : {}),
-    sku: product.sku,
     url: pageUrl,
-    image: product.images.map((i) => absoluteUrl(siteUrl, i.url)),
+    image,
     ...(brand ? { brand: { "@type": "Brand", name: brand } } : {}),
-    offers: {
-      "@type": "Offer",
-      url: pageUrl,
-      price: String(product.price),
-      priceCurrency: currency,
-      availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-      itemCondition: "https://schema.org/NewCondition",
-    },
+  };
+
+  if (product.variants.length === 0) return { ...common, "@type": "Product", sku: product.sku, offers: offer(product.price, product.inStock) };
+
+  const known = product.variantAxes.filter((a) => schemaProperties[a.code]);
+  const other = product.variantAxes.filter((a) => !schemaProperties[a.code]);
+  const valueOf = (axis: (typeof product.variantAxes)[number], variant: (typeof product.variants)[number]) =>
+    axis.options.find((o) => o.code === optionOf(variant, axis.code))?.value ?? "";
+  return {
+    ...common,
+    "@type": "ProductGroup",
+    productGroupID: product.sku,
+    ...(known.length > 0 ? { variesBy: known.map((a) => `https://schema.org/${schemaProperties[a.code]}`) } : {}),
+    hasVariant: product.variants.map((variant) => ({
+      "@type": "Product",
+      name: `${product.name} – ${variantLabel(variant, product.variantAxes)}`,
+      sku: variant.sku,
+      image,
+      ...Object.fromEntries(known.map((a) => [schemaProperties[a.code], valueOf(a, variant)])),
+      ...(other.length > 0
+        ? { additionalProperty: other.map((a) => ({ "@type": "PropertyValue", name: a.name, value: valueOf(a, variant) })) }
+        : {}),
+      offers: offer(variant.price, variant.inStock),
+    })),
   };
 }
 

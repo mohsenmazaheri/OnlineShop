@@ -107,6 +107,7 @@ app.MapProductEndpoints();
 app.MapCurrencyEndpoints();
 app.MapBrandingEndpoints();
 app.MapCatalogAdminEndpoints();
+app.MapCatalogLibraryEndpoints();
 app.MapMediaEndpoints();
 app.MapAccountEndpoints();
 app.MapExternalLoginEndpoints();

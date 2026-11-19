@@ -1098,6 +1098,76 @@
         }
       }
     },
+    "/api/v1/admin/catalog/categories/{id}/template": {
+      "put": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Set the specs a category's products usually have (its spec template).",
+        "operationId": "SetCategoryTemplate",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveTemplateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/catalog/subcategories/{id}/template": {
+      "put": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Set the specs a sub-category adds to its category's template.",
+        "operationId": "SetSubCategoryTemplate",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveTemplateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/v1/admin/products": {
       "get": {
         "tags": [
@@ -1441,6 +1511,425 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/products/{number}/variants": {
+      "put": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Replace a product's variants (colour, size…): the specs they vary by and every variant.",
+        "operationId": "SaveProductVariants",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveVariantsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductVariantsView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/brands": {
+      "get": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Every brand with its texts in every shop language and its product count.",
+        "operationId": "ListBrands",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Add a brand.",
+        "operationId": "CreateBrand",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveBrandRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/brands/{id}": {
+      "put": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Change a brand's texts.",
+        "operationId": "UpdateBrand",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveBrandRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Delete a brand no product uses.",
+        "operationId": "DeleteBrand",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/brands/{id}/logo": {
+      "post": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Upload a brand's logo (replaces the previous one).",
+        "operationId": "SetBrandLogo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Remove a brand's logo.",
+        "operationId": "RemoveBrandLogo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/specs": {
+      "get": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "The spec library: every spec with its texts, options and usage, in display order.",
+        "operationId": "ListSpecs",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpecList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Add a spec (added at the end of the order).",
+        "operationId": "CreateSpec",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveSpecRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpecView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/specs/{id}": {
+      "put": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Change a spec and its options.",
+        "operationId": "UpdateSpec",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveSpecRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpecView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Delete a spec no product or variant uses.",
+        "operationId": "DeleteSpec",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/specs/order": {
+      "put": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Set the display order of the specs.",
+        "operationId": "ReorderSpecs",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderSpecsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpecList"
+                }
+              }
+            }
           }
         }
       }
@@ -3110,6 +3599,21 @@
           }
         }
       },
+      "AxisOption": {
+        "required": [
+          "code",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
       "BrandingImage": {
         "enum": [
           "Logo",
@@ -3150,6 +3654,84 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "BrandLink": {
+        "required": [
+          "name",
+          "slug",
+          "logoUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "BrandList": {
+        "required": [
+          "defaultLocale",
+          "locales",
+          "brands"
+        ],
+        "type": "object",
+        "properties": {
+          "defaultLocale": {
+            "type": "string"
+          },
+          "locales": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "brands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BrandView"
+            }
+          }
+        }
+      },
+      "BrandView": {
+        "required": [
+          "id",
+          "logoUrl",
+          "texts",
+          "productCount"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "logoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "texts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LocalizedText"
+            }
+          },
+          "productCount": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -3233,7 +3815,8 @@
           "id",
           "imageUrl",
           "texts",
-          "subCategories"
+          "subCategories",
+          "templateSpecs"
         ],
         "type": "object",
         "properties": {
@@ -3257,6 +3840,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SubCategoryNode"
+            }
+          },
+          "templateSpecs": {
+            "type": "array",
+            "items": {
+              "type": "string"
             }
           }
         }
@@ -3830,6 +4419,21 @@
           }
         }
       },
+      "OptionText": {
+        "required": [
+          "locale",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
       "OrderData": {
         "required": [
           "id",
@@ -4111,7 +4715,10 @@
           "category",
           "subCategory",
           "specs",
-          "alternates"
+          "alternates",
+          "brand",
+          "variantAxes",
+          "variants"
         ],
         "type": "object",
         "properties": {
@@ -4175,6 +4782,28 @@
             "items": {
               "$ref": "#/components/schemas/ProductAlternate"
             }
+          },
+          "brand": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BrandLink"
+              }
+            ]
+          },
+          "variantAxes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VariantAxis"
+            }
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VariantOffer"
+            }
           }
         }
       },
@@ -4189,7 +4818,9 @@
           "productGroupId",
           "texts",
           "specs",
-          "images"
+          "images",
+          "brandId",
+          "variants"
         ],
         "type": "object",
         "properties": {
@@ -4239,6 +4870,16 @@
             "items": {
               "$ref": "#/components/schemas/ProductImageView"
             }
+          },
+          "brandId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "variants": {
+            "$ref": "#/components/schemas/ProductVariantsView"
           }
         }
       },
@@ -4513,6 +5154,27 @@
           }
         }
       },
+      "ProductVariantsView": {
+        "required": [
+          "specCodes",
+          "variants"
+        ],
+        "type": "object",
+        "properties": {
+          "specCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VariantView"
+            }
+          }
+        }
+      },
       "PublicCurrency": {
         "required": [
           "code",
@@ -4623,6 +5285,21 @@
           }
         }
       },
+      "ReorderSpecsRequest": {
+        "required": [
+          "ids"
+        ],
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
       "ResetPasswordRequest": {
         "required": [
           "userId",
@@ -4662,6 +5339,20 @@
           },
           "homeLayout": {
             "$ref": "#/components/schemas/HomeLayout"
+          }
+        }
+      },
+      "SaveBrandRequest": {
+        "required": [
+          "texts"
+        ],
+        "type": "object",
+        "properties": {
+          "texts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LocalizedText"
+            }
           }
         }
       },
@@ -4788,6 +5479,92 @@
             "items": {
               "$ref": "#/components/schemas/ProductSpecInput"
             }
+          },
+          "brandId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "SaveSpecRequest": {
+        "required": [
+          "code",
+          "kind",
+          "isFilterable",
+          "isComparable",
+          "showInSummary",
+          "texts",
+          "options"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "kind": {
+            "type": "string"
+          },
+          "isFilterable": {
+            "type": "boolean"
+          },
+          "isComparable": {
+            "type": "boolean"
+          },
+          "showInSummary": {
+            "type": "boolean"
+          },
+          "texts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpecText"
+            }
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpecOptionInput"
+            }
+          }
+        }
+      },
+      "SaveTemplateRequest": {
+        "required": [
+          "specCodes"
+        ],
+        "type": "object",
+        "properties": {
+          "specCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "SaveVariantsRequest": {
+        "required": [
+          "specCodes",
+          "variants"
+        ],
+        "type": "object",
+        "properties": {
+          "specCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VariantInput"
+            }
           }
         }
       },
@@ -4907,6 +5684,31 @@
           "Option"
         ]
       },
+      "SpecList": {
+        "required": [
+          "defaultLocale",
+          "locales",
+          "specs"
+        ],
+        "type": "object",
+        "properties": {
+          "defaultLocale": {
+            "type": "string"
+          },
+          "locales": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "specs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpecView"
+            }
+          }
+        }
+      },
       "SpecOptionChoice": {
         "required": [
           "code",
@@ -4919,6 +5721,130 @@
           },
           "value": {
             "type": "string"
+          }
+        }
+      },
+      "SpecOptionInput": {
+        "required": [
+          "code",
+          "texts"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "texts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionText"
+            }
+          }
+        }
+      },
+      "SpecOptionView": {
+        "required": [
+          "code",
+          "texts",
+          "usageCount"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "texts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionText"
+            }
+          },
+          "usageCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "SpecText": {
+        "required": [
+          "locale",
+          "name",
+          "groupName",
+          "unit"
+        ],
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "groupName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "unit": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "SpecView": {
+        "required": [
+          "id",
+          "code",
+          "kind",
+          "isFilterable",
+          "isComparable",
+          "showInSummary",
+          "texts",
+          "options",
+          "usageCount"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "isFilterable": {
+            "type": "boolean"
+          },
+          "isComparable": {
+            "type": "boolean"
+          },
+          "showInSummary": {
+            "type": "boolean"
+          },
+          "texts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpecText"
+            }
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpecOptionView"
+            }
+          },
+          "usageCount": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -5163,7 +6089,8 @@
         "required": [
           "id",
           "texts",
-          "groups"
+          "groups",
+          "templateSpecs"
         ],
         "type": "object",
         "properties": {
@@ -5181,6 +6108,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/GroupNode"
+            }
+          },
+          "templateSpecs": {
+            "type": "array",
+            "items": {
+              "type": "string"
             }
           }
         }
@@ -5277,6 +6210,184 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "VariantAxis": {
+        "required": [
+          "code",
+          "name",
+          "options"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AxisOption"
+            }
+          }
+        }
+      },
+      "VariantChoice": {
+        "required": [
+          "axis",
+          "option"
+        ],
+        "type": "object",
+        "properties": {
+          "axis": {
+            "type": "string"
+          },
+          "option": {
+            "type": "string"
+          }
+        }
+      },
+      "VariantInput": {
+        "required": [
+          "id",
+          "sku",
+          "price",
+          "compareAtPrice",
+          "stock",
+          "options"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "price": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "compareAtPrice": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "stock": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VariantOptionInput"
+            }
+          }
+        }
+      },
+      "VariantOffer": {
+        "required": [
+          "sku",
+          "price",
+          "compareAtPrice",
+          "inStock",
+          "options"
+        ],
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "compareAtPrice": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "inStock": {
+            "type": "boolean"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VariantChoice"
+            }
+          }
+        }
+      },
+      "VariantOptionInput": {
+        "required": [
+          "spec",
+          "option"
+        ],
+        "type": "object",
+        "properties": {
+          "spec": {
+            "type": "string"
+          },
+          "option": {
+            "type": "string"
+          }
+        }
+      },
+      "VariantView": {
+        "required": [
+          "id",
+          "sku",
+          "price",
+          "compareAtPrice",
+          "stock",
+          "options"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "price": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "compareAtPrice": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "stock": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VariantOptionInput"
+            }
           }
         }
       }

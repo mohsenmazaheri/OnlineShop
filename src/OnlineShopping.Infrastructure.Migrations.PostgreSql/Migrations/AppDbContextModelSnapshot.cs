@@ -270,6 +270,57 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.ToTable("phone_verification_codes", (string)null);
                 });
 
+            modelBuilder.Entity("OnlineShopping.Domain.Catalog.Brand", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<string>("LogoUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)")
+                        .HasColumnName("logo_url");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("slug");
+
+                    b.HasKey("Id")
+                        .HasName("pk_brands");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_brands_slug")
+                        .HasFilter("is_deleted = false");
+
+                    b.ToTable("brands", (string)null);
+                });
+
             modelBuilder.Entity("OnlineShopping.Domain.Catalog.Category", b =>
                 {
                     b.Property<Guid>("Id")
@@ -323,6 +374,10 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<Guid?>("BrandId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("brand_id");
 
                     b.Property<decimal?>("CompareAtPrice")
                         .HasPrecision(18, 2)
@@ -386,6 +441,9 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_products");
+
+                    b.HasIndex("BrandId")
+                        .HasDatabaseName("ix_products_brand_id");
 
                     b.HasIndex("Name")
                         .HasDatabaseName("ix_products_name");
@@ -639,6 +697,67 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasDatabaseName("ix_product_spec_values_spec_id_option_id");
 
                     b.ToTable("product_spec_values", (string)null);
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Catalog.ProductVariant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal?>("CompareAtPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("compare_at_price");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<decimal?>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("price");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<string>("Sku")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("sku");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<int>("Stock")
+                        .HasColumnType("integer")
+                        .HasColumnName("stock");
+
+                    b.HasKey("Id")
+                        .HasName("pk_product_variants");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_product_variants_product_id");
+
+                    b.HasIndex("Sku")
+                        .IsUnique()
+                        .HasDatabaseName("ix_product_variants_sku")
+                        .HasFilter("is_deleted = false");
+
+                    b.ToTable("product_variants", (string)null);
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Catalog.SpecOption", b =>
@@ -1475,8 +1594,78 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasConstraintName("fk_user_tokens_users_user_id");
                 });
 
+            modelBuilder.Entity("OnlineShopping.Domain.Catalog.Brand", b =>
+                {
+                    b.OwnsMany("OnlineShopping.Domain.Catalog.CatalogTranslation", "Translations", b1 =>
+                        {
+                            b1.Property<Guid>("BrandId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("brand_id");
+
+                            b1.Property<string>("Locale")
+                                .HasMaxLength(8)
+                                .HasColumnType("character varying(8)")
+                                .HasColumnName("locale");
+
+                            b1.Property<string>("Description")
+                                .HasColumnType("text")
+                                .HasColumnName("description");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasMaxLength(300)
+                                .HasColumnType("character varying(300)")
+                                .HasColumnName("name");
+
+                            b1.Property<string>("Slug")
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("slug");
+
+                            b1.HasKey("BrandId", "Locale")
+                                .HasName("pk_brand_translations");
+
+                            b1.ToTable("brand_translations", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("BrandId")
+                                .HasConstraintName("fk_brand_translations_brands_brand_id");
+                        });
+
+                    b.Navigation("Translations");
+                });
+
             modelBuilder.Entity("OnlineShopping.Domain.Catalog.Category", b =>
                 {
+                    b.OwnsMany("OnlineShopping.Domain.Catalog.TemplateSpec", "TemplateSpecs", b1 =>
+                        {
+                            b1.Property<Guid>("CategoryId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("category_id");
+
+                            b1.Property<Guid>("SpecId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("spec_id");
+
+                            b1.HasKey("CategoryId", "SpecId");
+
+                            b1.HasIndex("SpecId")
+                                .HasDatabaseName("ix_category_template_specs_spec_id");
+
+                            b1.ToTable("category_template_specs", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("CategoryId")
+                                .HasConstraintName("fk_category_template_specs_categories_category_id");
+
+                            b1.HasOne("OnlineShopping.Domain.Catalog.ProductSpec", null)
+                                .WithMany()
+                                .HasForeignKey("SpecId")
+                                .OnDelete(DeleteBehavior.Cascade)
+                                .IsRequired()
+                                .HasConstraintName("fk_category_template_specs_product_specs_spec_id");
+                        });
+
                     b.OwnsMany("OnlineShopping.Domain.Catalog.CatalogTranslation", "Translations", b1 =>
                         {
                             b1.Property<Guid>("CategoryId")
@@ -1512,11 +1701,19 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                                 .HasConstraintName("fk_category_translations_categories_category_id");
                         });
 
+                    b.Navigation("TemplateSpecs");
+
                     b.Navigation("Translations");
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Catalog.Product", b =>
                 {
+                    b.HasOne("OnlineShopping.Domain.Catalog.Brand", "Brand")
+                        .WithMany()
+                        .HasForeignKey("BrandId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_products_brands_brand_id");
+
                     b.HasOne("OnlineShopping.Domain.Catalog.ProductGroup", "ProductGroup")
                         .WithMany("Products")
                         .HasForeignKey("ProductGroupId")
@@ -1559,6 +1756,8 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                                 .HasForeignKey("ProductId")
                                 .HasConstraintName("fk_product_translations_products_product_id");
                         });
+
+                    b.Navigation("Brand");
 
                     b.Navigation("ProductGroup");
 
@@ -1727,6 +1926,64 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.Navigation("Spec");
                 });
 
+            modelBuilder.Entity("OnlineShopping.Domain.Catalog.ProductVariant", b =>
+                {
+                    b.HasOne("OnlineShopping.Domain.Catalog.Product", "Product")
+                        .WithMany("Variants")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_product_variants_products_product_id");
+
+                    b.OwnsMany("OnlineShopping.Domain.Catalog.VariantOption", "Options", b1 =>
+                        {
+                            b1.Property<Guid>("VariantId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("variant_id");
+
+                            b1.Property<Guid>("SpecId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("spec_id");
+
+                            b1.Property<Guid>("OptionId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("option_id");
+
+                            b1.HasKey("VariantId", "SpecId")
+                                .HasName("pk_product_variant_options");
+
+                            b1.HasIndex("OptionId")
+                                .HasDatabaseName("ix_product_variant_options_option_id");
+
+                            b1.HasIndex("SpecId")
+                                .HasDatabaseName("ix_product_variant_options_spec_id");
+
+                            b1.ToTable("product_variant_options", (string)null);
+
+                            b1.HasOne("OnlineShopping.Domain.Catalog.SpecOption", null)
+                                .WithMany()
+                                .HasForeignKey("OptionId")
+                                .OnDelete(DeleteBehavior.Restrict)
+                                .IsRequired()
+                                .HasConstraintName("fk_product_variant_options_spec_options_option_id");
+
+                            b1.HasOne("OnlineShopping.Domain.Catalog.ProductSpec", null)
+                                .WithMany()
+                                .HasForeignKey("SpecId")
+                                .OnDelete(DeleteBehavior.Restrict)
+                                .IsRequired()
+                                .HasConstraintName("fk_product_variant_options_product_specs_spec_id");
+
+                            b1.WithOwner()
+                                .HasForeignKey("VariantId")
+                                .HasConstraintName("fk_product_variant_options_product_variants_variant_id");
+                        });
+
+                    b.Navigation("Options");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("OnlineShopping.Domain.Catalog.SpecOption", b =>
                 {
                     b.HasOne("OnlineShopping.Domain.Catalog.ProductSpec", "Spec")
@@ -1777,6 +2034,36 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_sub_categories_categories_category_id");
 
+                    b.OwnsMany("OnlineShopping.Domain.Catalog.TemplateSpec", "TemplateSpecs", b1 =>
+                        {
+                            b1.Property<Guid>("SubCategoryId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("sub_category_id");
+
+                            b1.Property<Guid>("SpecId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("spec_id");
+
+                            b1.HasKey("SubCategoryId", "SpecId")
+                                .HasName("pk_sub_category_template_specs");
+
+                            b1.HasIndex("SpecId")
+                                .HasDatabaseName("ix_sub_category_template_specs_spec_id");
+
+                            b1.ToTable("sub_category_template_specs", (string)null);
+
+                            b1.HasOne("OnlineShopping.Domain.Catalog.ProductSpec", null)
+                                .WithMany()
+                                .HasForeignKey("SpecId")
+                                .OnDelete(DeleteBehavior.Cascade)
+                                .IsRequired()
+                                .HasConstraintName("fk_sub_category_template_specs_product_specs_spec_id");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SubCategoryId")
+                                .HasConstraintName("fk_sub_category_template_specs_sub_categories_sub_category_id");
+                        });
+
                     b.OwnsMany("OnlineShopping.Domain.Catalog.CatalogTranslation", "Translations", b1 =>
                         {
                             b1.Property<Guid>("SubCategoryId")
@@ -1814,6 +2101,8 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         });
 
                     b.Navigation("Category");
+
+                    b.Navigation("TemplateSpecs");
 
                     b.Navigation("Translations");
                 });
@@ -1908,6 +2197,8 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.Navigation("Images");
 
                     b.Navigation("SpecValues");
+
+                    b.Navigation("Variants");
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Catalog.ProductGroup", b =>

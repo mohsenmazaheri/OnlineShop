@@ -16,6 +16,7 @@ import { LocalizedFields, readLocalizedFields } from "./LocalizedFields";
 type CatalogTree = components["schemas"]["CatalogTree"];
 type ProductEditView = components["schemas"]["ProductEditView"];
 type SpecChoice = components["schemas"]["SpecChoice"];
+type BrandView = components["schemas"]["BrandView"];
 export type SpecRow = components["schemas"]["ProductSpecInput"];
 type Texts = Dictionary["admin"];
 
@@ -26,6 +27,20 @@ export function groupOptions(tree: CatalogTree, locale: string): { value: string
       s.groups.map((g) => ({ value: g.id, label: `${displayName(c.texts, locale)} › ${displayName(s.texts, locale)} › ${displayName(g.texts, locale)}` })),
     ),
   );
+}
+
+/** The template spec codes for a product group: its category's, then its sub-category's (each once). */
+export function templateFor(tree: CatalogTree, groupId: string): string[] {
+  for (const c of tree.categories)
+    for (const s of c.subCategories) if (s.groups.some((g) => g.id === groupId)) return [...new Set([...c.templateSpecs, ...s.templateSpecs])];
+  return [];
+}
+
+const emptyRow = (code: string): SpecRow => ({ code, number: null, boolean: null, text: null, optionCode: null });
+
+/** The product's rows plus an empty row for every template spec it does not have yet (empty rows are not saved). */
+export function withTemplate(rows: SpecRow[], template: string[], excluded: string[] = []): SpecRow[] {
+  return [...rows, ...template.filter((code) => !excluded.includes(code) && !rows.some((r) => r.code === code)).map(emptyRow)];
 }
 
 /** A number typed with a comma or Persian/Arabic digits, or null for an empty field. */
@@ -82,19 +97,24 @@ type Props = {
   texts: Texts;
   tree: CatalogTree;
   specs: SpecChoice[];
+  brands: BrandView[];
   languageNames: Record<string, string>;
   /** The product being edited; absent for a new product. */
   product?: ProductEditView;
 };
 
 /** Create or edit a product: base data, texts per language (with "not translated" marks) and spec values. */
-export function ProductEditor({ locale, texts, tree, specs, languageNames, product }: Props) {
+export function ProductEditor({ locale, texts, tree, specs, brands, languageNames, product }: Props) {
   const router = useRouter();
   const { busy, submit, formError } = useApiForm({ ...texts.errors, ...texts.catalogErrors } as ErrorTexts);
   const [saved, setSaved] = useState(false);
-  const [rows, setRows] = useState<SpecRow[]>(product?.specs ?? []);
+  // Specs the variants vary by belong to each variant, not to the product.
+  const variantSpecs = product?.variants.specCodes ?? [];
+  const hasVariants = (product?.variants.variants.length ?? 0) > 0;
+  const [rows, setRows] = useState<SpecRow[]>(() => withTemplate(product?.specs ?? [], product ? templateFor(tree, product.productGroupId) : [], variantSpecs));
   const groups = groupOptions(tree, locale);
-  const unused = specs.filter((s) => !rows.some((r) => r.code === s.code));
+  const unused = specs.filter((s) => !rows.some((r) => r.code === s.code) && !variantSpecs.includes(s.code));
+  const brandOptions = brands.map((b) => ({ value: b.id, label: displayName(b.texts, locale) }));
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -107,8 +127,9 @@ export function ProductEditor({ locale, texts, tree, specs, languageNames, produ
       stock: parseNumber(form.get("stock")) ?? -1,
       isPublished: form.get("isPublished") === "on",
       productGroupId: String(form.get("productGroupId") ?? ""),
+      brandId: String(form.get("brandId") ?? "") || null,
       texts: readLocalizedFields(form, tree.locales),
-      specs: rows,
+      specs: rows.filter((r) => r.number != null || r.boolean != null || (r.text ?? "").trim() || r.optionCode),
     };
     const result = await submit<ProductEditView>(product ? `/api/v1/admin/products/${product.number}` : "/api/v1/admin/products", body, product ? "PUT" : "POST");
     if (!result.ok) return;
@@ -139,10 +160,26 @@ export function ProductEditor({ locale, texts, tree, specs, languageNames, produ
         <FormField label={texts.productSku} name="sku" defaultValue={product?.sku ?? ""} required maxLength={64} dir="ltr" />
         <FormField label={texts.productPrice} name="price" inputMode="decimal" defaultValue={product?.price ?? ""} required dir="ltr" />
         <FormField label={texts.productCompareAt} name="compareAtPrice" inputMode="decimal" defaultValue={product?.compareAtPrice ?? ""} hint={texts.productCompareAtHint} dir="ltr" />
-        <FormField label={texts.productStock} name="stock" inputMode="numeric" defaultValue={product?.stock ?? 0} required dir="ltr" />
+        <FormField
+          label={texts.productStock}
+          name="stock"
+          inputMode="numeric"
+          defaultValue={product?.stock ?? 0}
+          required
+          dir="ltr"
+          readOnly={hasVariants}
+          hint={hasVariants ? texts.productStockFromVariants : undefined}
+        />
       </div>
-      <div className="grid items-end gap-3 sm:grid-cols-[1fr_auto]">
-        <SelectField label={texts.productGroup} name="productGroupId" options={[{ value: "", label: "—" }, ...groups]} defaultValue={product?.productGroupId ?? ""} />
+      <div className="grid items-end gap-3 sm:grid-cols-[2fr_1fr_auto]">
+        <SelectField
+          label={texts.productGroup}
+          name="productGroupId"
+          options={[{ value: "", label: "—" }, ...groups]}
+          defaultValue={product?.productGroupId ?? ""}
+          onChange={(e) => setRows((current) => withTemplate(current, templateFor(tree, e.target.value), variantSpecs))}
+        />
+        <SelectField label={texts.productBrand} name="brandId" options={[{ value: "", label: "—" }, ...brandOptions]} defaultValue={product?.brandId ?? ""} />
         <label className="flex min-h-11 items-center gap-2 text-sm">
           <input type="checkbox" name="isPublished" defaultChecked={product?.isPublished ?? false} className="h-4 w-4" />
           {texts.productPublished}

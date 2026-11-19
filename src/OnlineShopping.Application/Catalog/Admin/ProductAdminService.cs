@@ -72,8 +72,9 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
             .Include(p => p.SpecValues).ThenInclude(v => v.Spec)
             .Include(p => p.SpecValues).ThenInclude(v => v.Option)
             .Include(p => p.Images)
+            .Include(p => p.Variants)
             .SingleOrDefaultAsync(p => p.PublicNumber == number, cancellationToken);
-        return product is null ? NotFound() : View(product);
+        return product is null ? NotFound() : await ViewAsync(product, cancellationToken);
     }
 
     /// <summary>The specs the editor offers, named in <paramref name="locale"/>.</summary>
@@ -112,7 +113,7 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
         product.PublicNumber = Math.Max(FirstPublicNumber, last + 1);
         db.Products.Add(product);
         await db.SaveChangesAsync(cancellationToken);
-        return View(product);
+        return await ViewAsync(product, cancellationToken);
     }
 
     public async Task<Result<ProductEditView>> UpdateAsync(long number, SaveProductRequest request, CancellationToken cancellationToken = default)
@@ -121,6 +122,7 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
             .Include(p => p.SpecValues).ThenInclude(v => v.Spec)
             .Include(p => p.SpecValues).ThenInclude(v => v.Option)
             .Include(p => p.Images)
+            .Include(p => p.Variants)
             .SingleOrDefaultAsync(p => p.PublicNumber == number, cancellationToken);
         if (product is null)
             return NotFound();
@@ -129,7 +131,7 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
         if (!applied.IsSuccess)
             return applied.Error!;
         await db.SaveChangesAsync(cancellationToken);
-        return View(product);
+        return await ViewAsync(product, cancellationToken);
     }
 
     /// <summary>Soft delete: the product leaves the shop, its number stays taken, and orders keep their snapshot.</summary>
@@ -150,12 +152,19 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
         if (!await db.ProductGroups.AnyAsync(g => g.Id == request.ProductGroupId, cancellationToken))
             return AppError.Validation(CatalogErrors.GroupRequired, "Choose an existing product group.");
         var sku = request.Sku.Trim();
-        if (await db.Products.AnyAsync(p => p.SKU == sku && p.Id != product.Id, cancellationToken))
-            return AppError.Conflict(CatalogErrors.SkuTaken, $"Another product has SKU {sku}.");
+        if (await db.Products.AnyAsync(p => p.SKU == sku && p.Id != product.Id, cancellationToken)
+            || await db.ProductVariants.AnyAsync(v => v.Sku == sku, cancellationToken))
+            return AppError.Conflict(CatalogErrors.SkuTaken, $"Another product or a variant has SKU {sku}.");
+        if (request.BrandId is { } brandId && !await db.Brands.AnyAsync(b => b.Id == brandId, cancellationToken))
+            return AppError.Validation(CatalogErrors.BrandNotFound, "Choose an existing brand.");
 
         var specs = await ResolveSpecsAsync(request.Specs, cancellationToken);
         if (!specs.IsSuccess)
             return specs.Error!;
+        // A spec the variants vary by belongs to each variant, not to the product.
+        var variantSpecs = product.Variants.Where(v => !v.IsDeleted).SelectMany(v => v.Options).Select(o => o.SpecId).ToHashSet();
+        if (specs.Value.Any(s => variantSpecs.Contains(s.Spec.Id)))
+            return AppError.Conflict(CatalogErrors.SpecIsVariant, "The variants vary by this spec; set it per variant.");
 
         var main = LocalizedTexts.Default(request.Texts, Store.DefaultLocale);
         product.Name = main.Name;
@@ -164,7 +173,10 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
         product.SKU = sku;
         product.Price = request.Price;
         product.CompareAtPrice = request.CompareAtPrice;
-        product.Stock = request.Stock;
+        // With variants, the stock is theirs (kept as their sum by the variant service).
+        if (!product.Variants.Any(v => !v.IsDeleted))
+            product.Stock = request.Stock;
+        product.BrandId = request.BrandId;
         product.IsPublished = request.IsPublished;
         product.ProductGroupId = request.ProductGroupId;
         LocalizedTexts.ApplyTranslations(request.Texts, Store.DefaultLocale, product.Translations, withSlug: true, withDescription: true);
@@ -226,7 +238,7 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
         }
     }
 
-    private ProductEditView View(Product p) => new(
+    private async Task<ProductEditView> ViewAsync(Product p, CancellationToken cancellationToken) => new(
         p.PublicNumber,
         p.SKU,
         p.Price,
@@ -240,7 +252,9 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
             .OrderBy(v => v.Spec.SortOrder)
             .Select(v => new ProductSpecInput(v.Spec.Code, v.NumberValue, v.BooleanValue, v.TextValue, v.Option?.Code))
             .ToList(),
-        p.Images.OrderBy(i => i.SortOrder).Select(i => CatalogImageService.ToView(i, Store)).ToList());
+        p.Images.OrderBy(i => i.SortOrder).Select(i => CatalogImageService.ToView(i, Store)).ToList(),
+        p.BrandId,
+        await ProductVariantService.ViewAsync(db, p.Variants.Where(v => !v.IsDeleted), cancellationToken));
 
     private static AppError NotFound() => AppError.NotFound(CatalogErrors.NotFound, "No such product.");
 }

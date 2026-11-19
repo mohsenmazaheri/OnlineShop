@@ -95,6 +95,24 @@ public sealed class DemoCatalogSeederTests : IDisposable
     }
 
     [Fact]
+    public async Task Adds_brands_variants_and_a_spec_template_for_every_sub_category()
+    {
+        await SeedAsync();
+
+        await using var db = _database.CreateContext();
+        Assert.Equal(DemoCatalogData.Brands.Order(), (await db.Brands.Select(b => b.Name).ToListAsync()).Order());
+        Assert.Equal(DemoCatalogData.AllProducts.Count(p => p.Brand is not null), await db.Products.CountAsync(p => p.BrandId != null));
+
+        var hoodie = await db.Products.Include(p => p.Variants).SingleAsync(p => p.SKU == "DEMO-FSH-003");
+        Assert.Equal(8, hoodie.Variants.Count);
+        Assert.Equal(hoodie.Variants.Sum(v => v.Stock), hoodie.Stock);
+        Assert.All(hoodie.Variants, v => Assert.Equal(2, v.Options.Count));
+
+        var subs = await db.SubCategories.ToListAsync();
+        Assert.All(subs, s => Assert.NotEmpty(s.TemplateSpecs));
+    }
+
+    [Fact]
     public async Task Runs_only_once()
     {
         await SeedAsync();

@@ -48,6 +48,20 @@ public sealed record ProductAlternate(string Locale, string Slug);
 /// <summary>A product image with its alternative text in the requested language (null: use the product name).</summary>
 public sealed record ProductImageInfo(string Url, string? Alt);
 
+/// <summary>A product brand as the storefront shows it (the slug is for a later brand page).</summary>
+public sealed record BrandLink(string Name, string Slug, string? LogoUrl);
+
+public sealed record AxisOption(string Code, string Value);
+
+/// <summary>A spec the product varies by ("Size") with the options its variants use, in the spec's order.</summary>
+public sealed record VariantAxis(string Code, string Name, IReadOnlyList<AxisOption> Options);
+
+/// <summary>A variant's option for one axis, by codes.</summary>
+public sealed record VariantChoice(string Axis, string Option);
+
+/// <summary>One buyable variant with its own price (its own or the product's) and stock state.</summary>
+public sealed record VariantOffer(string Sku, decimal Price, decimal? CompareAtPrice, bool InStock, IReadOnlyList<VariantChoice> Options);
+
 public sealed record ProductDetail(
     long Number,
     string Name,
@@ -62,7 +76,10 @@ public sealed record ProductDetail(
     CategoryLink Category,
     CategoryLink SubCategory,
     IReadOnlyList<ProductSpecLine> Specs,
-    IReadOnlyList<ProductAlternate> Alternates);
+    IReadOnlyList<ProductAlternate> Alternates,
+    BrandLink? Brand,
+    IReadOnlyList<VariantAxis> VariantAxes,
+    IReadOnlyList<VariantOffer> Variants);
 
 public interface IProductQueries
 {
@@ -135,6 +152,10 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
                         ?? p.ProductGroup.SubCategory.Name,
                     p.ProductGroup.SubCategory.Slug),
                 BaseSlug = p.Slug,
+                Brand = p.Brand == null ? null : new BrandLink(
+                    p.Brand.Translations.Where(t => t.Locale == locale).Select(t => t.Name).FirstOrDefault() ?? p.Brand.Name,
+                    p.Brand.Translations.Where(t => t.Locale == locale).Select(t => t.Slug).FirstOrDefault() ?? p.Brand.Slug,
+                    p.Brand.LogoUrl),
             })
             .SingleOrDefaultAsync(cancellationToken);
 
@@ -166,6 +187,8 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
                 v.Spec.ShowInSummary))
             .ToListAsync(cancellationToken);
 
+        var (axes, variants) = await VariantsAsync(product.Id, product.Price, product.CompareAtPrice, locale, cancellationToken);
+
         var translated = await db.Products.AsNoTracking()
             .Where(p => p.Id == product.Id)
             .SelectMany(p => p.Translations)
@@ -181,7 +204,51 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
         return new ProductDetail(
             product.PublicNumber, product.Name, product.Slug, product.Description, product.SKU, product.Price,
             product.CompareAtPrice, product.Stock, product.Stock > 0, images, product.Category, product.SubCategory,
-            specs, alternates);
+            specs, alternates, product.Brand, axes, variants);
+    }
+
+    /// <summary>The variants with their effective prices, and the axes with only the options they use.</summary>
+    private async Task<(List<VariantAxis> Axes, List<VariantOffer> Variants)> VariantsAsync(
+        Guid productId, decimal price, decimal? compareAt, string locale, CancellationToken cancellationToken)
+    {
+        var rows = await db.ProductVariants.AsNoTracking()
+            .Where(v => v.ProductId == productId)
+            .OrderBy(v => v.SortOrder)
+            .Select(v => new { v.Sku, v.Price, v.CompareAtPrice, v.Stock, Options = v.Options.Select(o => new { o.SpecId, o.OptionId }).ToList() })
+            .ToListAsync(cancellationToken);
+        if (rows.Count == 0)
+            return ([], []);
+
+        var specIds = rows.SelectMany(r => r.Options).Select(o => o.SpecId).Distinct().ToList();
+        var optionIds = rows.SelectMany(r => r.Options).Select(o => o.OptionId).Distinct().ToList();
+        var specs = await db.ProductSpecs.AsNoTracking()
+            .Where(s => specIds.Contains(s.Id))
+            .OrderBy(s => s.SortOrder)
+            .Select(s => new { s.Id, s.Code, Name = s.Translations.Where(t => t.Locale == locale).Select(t => t.Name).FirstOrDefault() ?? s.Name })
+            .ToListAsync(cancellationToken);
+        var options = await db.SpecOptions.AsNoTracking()
+            .Where(o => optionIds.Contains(o.Id))
+            .OrderBy(o => o.SortOrder)
+            .Select(o => new { o.Id, o.SpecId, o.Code, Value = o.Translations.Where(t => t.Locale == locale).Select(t => t.Value).FirstOrDefault() ?? o.Value })
+            .ToListAsync(cancellationToken);
+        var codes = specs.ToDictionary(s => s.Id, s => s.Code);
+        var optionCodes = options.ToDictionary(o => o.Id, o => o.Code);
+
+        var axes = specs
+            .Select(s => new VariantAxis(s.Code, s.Name, options.Where(o => o.SpecId == s.Id).Select(o => new AxisOption(o.Code, o.Value)).ToList()))
+            .ToList();
+        var offers = rows
+            .Select(r => new VariantOffer(
+                r.Sku,
+                r.Price ?? price,
+                r.Price is null ? compareAt : r.CompareAtPrice,
+                r.Stock > 0,
+                r.Options.Where(o => codes.ContainsKey(o.SpecId) && optionCodes.ContainsKey(o.OptionId))
+                    .OrderBy(o => specs.FindIndex(s => s.Id == o.SpecId))
+                    .Select(o => new VariantChoice(codes[o.SpecId], optionCodes[o.OptionId]))
+                    .ToList()))
+            .ToList();
+        return (axes, offers);
     }
 
     public async Task<Result<string>> GetSlugAsync(long number, string locale, CancellationToken cancellationToken = default)

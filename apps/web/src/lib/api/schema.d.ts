@@ -385,6 +385,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/catalog/categories/{id}/template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set the specs a category's products usually have (its spec template). */
+        put: operations["SetCategoryTemplate"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/subcategories/{id}/template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set the specs a sub-category adds to its category's template. */
+        put: operations["SetSubCategoryTemplate"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/products": {
         parameters: {
             query?: never;
@@ -469,6 +503,130 @@ export interface paths {
         post?: never;
         /** Remove a product image and its stored files. */
         delete: operations["DeleteProductImage"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{number}/variants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace a product's variants (colour, size…): the specs they vary by and every variant. */
+        put: operations["SaveProductVariants"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/brands": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every brand with its texts in every shop language and its product count. */
+        get: operations["ListBrands"];
+        put?: never;
+        /** Add a brand. */
+        post: operations["CreateBrand"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/brands/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change a brand's texts. */
+        put: operations["UpdateBrand"];
+        post?: never;
+        /** Delete a brand no product uses. */
+        delete: operations["DeleteBrand"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/brands/{id}/logo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload a brand's logo (replaces the previous one). */
+        post: operations["SetBrandLogo"];
+        /** Remove a brand's logo. */
+        delete: operations["RemoveBrandLogo"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/specs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The spec library: every spec with its texts, options and usage, in display order. */
+        get: operations["ListSpecs"];
+        put?: never;
+        /** Add a spec (added at the end of the order). */
+        post: operations["CreateSpec"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/specs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change a spec and its options. */
+        put: operations["UpdateSpec"];
+        post?: never;
+        /** Delete a spec no product or variant uses. */
+        delete: operations["DeleteSpec"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/specs/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set the display order of the specs. */
+        put: operations["ReorderSpecs"];
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1255,6 +1413,10 @@ export interface components {
             sharedKey: string;
             authenticatorUri: string;
         };
+        AxisOption: {
+            code: string;
+            value: string;
+        };
         /** @enum {unknown} */
         BrandingImage: "Logo" | "Hero";
         BrandingView: {
@@ -1264,6 +1426,24 @@ export interface components {
             homeLayout: components["schemas"]["HomeLayout"];
             logoUrl: null | string;
             heroImageUrl: null | string;
+        };
+        BrandLink: {
+            name: string;
+            slug: string;
+            logoUrl: null | string;
+        };
+        BrandList: {
+            defaultLocale: string;
+            locales: string[];
+            brands: components["schemas"]["BrandView"][];
+        };
+        BrandView: {
+            /** Format: uuid */
+            id: string;
+            logoUrl: null | string;
+            texts: components["schemas"]["LocalizedText"][];
+            /** Format: int32 */
+            productCount: number;
         };
         CartItemData: {
             productName: string;
@@ -1290,6 +1470,7 @@ export interface components {
             imageUrl: null | string;
             texts: components["schemas"]["LocalizedText"][];
             subCategories: components["schemas"]["SubCategoryNode"][];
+            templateSpecs: string[];
         };
         CategorySummary: {
             /** Format: uuid */
@@ -1433,6 +1614,10 @@ export interface components {
             /** Format: date-time */
             expiresUtc: string;
         };
+        OptionText: {
+            locale: string;
+            value: string;
+        };
         OrderData: {
             /** Format: uuid */
             id: string;
@@ -1524,6 +1709,9 @@ export interface components {
             subCategory: components["schemas"]["CategoryLink"];
             specs: components["schemas"]["ProductSpecLine"][];
             alternates: components["schemas"]["ProductAlternate"][];
+            brand: null | components["schemas"]["BrandLink"];
+            variantAxes: components["schemas"]["VariantAxis"][];
+            variants: components["schemas"]["VariantOffer"][];
         };
         ProductEditView: {
             /** Format: int64 */
@@ -1541,6 +1729,9 @@ export interface components {
             texts: components["schemas"]["LocalizedText"][];
             specs: components["schemas"]["ProductSpecInput"][];
             images: components["schemas"]["ProductImageView"][];
+            /** Format: uuid */
+            brandId: null | string;
+            variants: components["schemas"]["ProductVariantsView"];
         };
         ProductImageInfo: {
             url: string;
@@ -1610,6 +1801,10 @@ export interface components {
             value: null | string;
             inSummary: boolean;
         };
+        ProductVariantsView: {
+            specCodes: string[];
+            variants: components["schemas"]["VariantView"][];
+        };
         PublicCurrency: {
             code: string;
             symbol: null | string;
@@ -1638,6 +1833,9 @@ export interface components {
             displayName: null | string;
             locale: null | string;
         };
+        ReorderSpecsRequest: {
+            ids: string[];
+        };
         ResetPasswordRequest: {
             userId: string;
             token: string;
@@ -1648,6 +1846,9 @@ export interface components {
             corners: components["schemas"]["CornerStyle"];
             font: components["schemas"]["FontChoice"];
             homeLayout: components["schemas"]["HomeLayout"];
+        };
+        SaveBrandRequest: {
+            texts: components["schemas"]["LocalizedText"][];
         };
         SaveCatalogNodeRequest: {
             texts: components["schemas"]["LocalizedText"][];
@@ -1682,6 +1883,24 @@ export interface components {
             productGroupId: string;
             texts: components["schemas"]["LocalizedText"][];
             specs: components["schemas"]["ProductSpecInput"][];
+            /** Format: uuid */
+            brandId?: null | string;
+        };
+        SaveSpecRequest: {
+            code: null | string;
+            kind: string;
+            isFilterable: boolean;
+            isComparable: boolean;
+            showInSummary: boolean;
+            texts: components["schemas"]["SpecText"][];
+            options: components["schemas"]["SpecOptionInput"][];
+        };
+        SaveTemplateRequest: {
+            specCodes: string[];
+        };
+        SaveVariantsRequest: {
+            specCodes: string[];
+            variants: components["schemas"]["VariantInput"][];
         };
         SendPhoneCodeRequest: {
             phone: string;
@@ -1711,9 +1930,43 @@ export interface components {
         };
         /** @enum {unknown} */
         SpecKind: "Text" | "Number" | "Boolean" | "Option";
+        SpecList: {
+            defaultLocale: string;
+            locales: string[];
+            specs: components["schemas"]["SpecView"][];
+        };
         SpecOptionChoice: {
             code: string;
             value: string;
+        };
+        SpecOptionInput: {
+            code: null | string;
+            texts: components["schemas"]["OptionText"][];
+        };
+        SpecOptionView: {
+            code: string;
+            texts: components["schemas"]["OptionText"][];
+            /** Format: int32 */
+            usageCount: number;
+        };
+        SpecText: {
+            locale: string;
+            name: string;
+            groupName: null | string;
+            unit: null | string;
+        };
+        SpecView: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            kind: string;
+            isFilterable: boolean;
+            isComparable: boolean;
+            showInSummary: boolean;
+            texts: components["schemas"]["SpecText"][];
+            options: components["schemas"]["SpecOptionView"][];
+            /** Format: int32 */
+            usageCount: number;
         };
         /** @enum {unknown} */
         StaffAuditAction: "Invited" | "InvitationRevoked" | "InvitationAccepted" | "RolesChanged" | "Suspended" | "Reactivated" | "RemovedFromStaff";
@@ -1773,6 +2026,7 @@ export interface components {
             id: string;
             texts: components["schemas"]["LocalizedText"][];
             groups: components["schemas"]["GroupNode"][];
+            templateSpecs: string[];
         };
         SubCategorySummary: {
             /** Format: uuid */
@@ -1798,6 +2052,52 @@ export interface components {
         UpdateProfileRequest: {
             displayName: null | string;
             preferredLocale: null | string;
+        };
+        VariantAxis: {
+            code: string;
+            name: string;
+            options: components["schemas"]["AxisOption"][];
+        };
+        VariantChoice: {
+            axis: string;
+            option: string;
+        };
+        VariantInput: {
+            /** Format: uuid */
+            id: null | string;
+            sku: string;
+            /** Format: double */
+            price: null | number;
+            /** Format: double */
+            compareAtPrice: null | number;
+            /** Format: int32 */
+            stock: number;
+            options: components["schemas"]["VariantOptionInput"][];
+        };
+        VariantOffer: {
+            sku: string;
+            /** Format: double */
+            price: number;
+            /** Format: double */
+            compareAtPrice: null | number;
+            inStock: boolean;
+            options: components["schemas"]["VariantChoice"][];
+        };
+        VariantOptionInput: {
+            spec: string;
+            option: string;
+        };
+        VariantView: {
+            /** Format: uuid */
+            id: string;
+            sku: string;
+            /** Format: double */
+            price: null | number;
+            /** Format: double */
+            compareAtPrice: null | number;
+            /** Format: int32 */
+            stock: number;
+            options: components["schemas"]["VariantOptionInput"][];
         };
     };
     responses: never;
@@ -2610,6 +2910,54 @@ export interface operations {
             };
         };
     };
+    SetCategoryTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveTemplateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SetSubCategoryTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveTemplateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     ListAdminProducts: {
         parameters: {
             query?: {
@@ -2837,6 +3185,327 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    SaveProductVariants: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveVariantsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductVariantsView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    ListBrands: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandList"];
+                };
+            };
+        };
+    };
+    CreateBrand: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveBrandRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    UpdateBrand: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveBrandRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    DeleteBrand: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SetBrandLogo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    file: components["schemas"]["IFormFile"];
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RemoveBrandLogo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ListSpecs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpecList"];
+                };
+            };
+        };
+    };
+    CreateSpec: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveSpecRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpecView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    UpdateSpec: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveSpecRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpecView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    DeleteSpec: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ReorderSpecs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReorderSpecsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpecList"];
+                };
             };
         };
     };

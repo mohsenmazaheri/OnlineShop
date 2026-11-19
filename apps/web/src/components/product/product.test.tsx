@@ -53,6 +53,9 @@ const detail: ProductDetail = {
     { code: "network_5g", group: "Features", name: "5G support", kind: "Boolean", unit: null, number: null, boolean: true, value: null, inSummary: false },
   ],
   alternates: [{ locale: "en", slug: "orvia-x1" }],
+  brand: null,
+  variantAxes: [],
+  variants: [],
 };
 
 describe("Price", () => {
@@ -138,5 +141,22 @@ describe("ProductView", () => {
     render(<ProductView product={detail} locale="en" money={toman} baseName="euro" texts={en.product} />);
 
     expect(screen.getByText("Approximate price; you pay in euro.")).toBeTruthy();
+  });
+
+  it("names the brand and puts the variant choice in the price box", () => {
+    const withVariants: ProductDetail = {
+      ...detail,
+      brand: { name: "Orvia Inc.", slug: "orvia", logoUrl: null },
+      variantAxes: [{ code: "size", name: "Size", options: [{ code: "m", value: "M" }] }],
+      variants: [{ sku: "X1-M", price: 300, compareAtPrice: null, inStock: true, options: [{ axis: "size", option: "m" }] }],
+    };
+    render(<ProductView product={withVariants} locale="en" money={eur} baseName="euro" texts={en.product} />);
+
+    expect(screen.getByText("Orvia Inc.")).toBeTruthy();
+    // The brand itself replaces the old "brand" spec in the key facts.
+    expect(within(screen.getByRole("region", { name: en.product.keyFacts })).getAllByRole("listitem")).toHaveLength(1);
+    expect(screen.getByRole("button", { name: "M" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByText("X1-M")).toBeTruthy();
+    expect(screen.queryByText("DEMO-PHN-001")).toBeNull();
   });
 });

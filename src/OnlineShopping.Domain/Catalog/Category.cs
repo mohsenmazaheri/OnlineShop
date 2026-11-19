@@ -11,5 +11,8 @@ public class Category : BaseEntity
     public string? ImageUrl { get; set; }
 
     public ICollection<SubCategory> SubCategories { get; set; } = new List<SubCategory>();
+
+    /// <summary>The specs its products usually have (the spec template).</summary>
+    public ICollection<TemplateSpec> TemplateSpecs { get; set; } = new List<TemplateSpec>();
     public ICollection<CatalogTranslation> Translations { get; set; } = new List<CatalogTranslation>();
 }

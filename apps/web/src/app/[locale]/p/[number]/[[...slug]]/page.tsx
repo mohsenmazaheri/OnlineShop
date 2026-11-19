@@ -66,11 +66,11 @@ async function Product({ params }: { params: Params }) {
   const { locale, store, product } = data;
   const [dict, { money }] = await Promise.all([getDictionary(locale as Locale), loadDisplayCurrency(locale, store.currency)]);
   const pageUrl = `${siteUrl()}${productPath(locale, product.number, product.slug)}`;
-  const offer = jsonLdOffer(product.price, money);
+  const offer = jsonLdCurrency(money);
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd({ ...product, price: offer.price }, pageUrl, offer.currency, siteUrl())) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd(product, pageUrl, offer.currency, siteUrl(), offer.priceOf)) }} />
       <ProductView product={product} locale={locale} money={money} baseName={currencyName(money.base, locale)} texts={dict.product} />
     </>
   );
@@ -80,8 +80,10 @@ async function Product({ params }: { params: Params }) {
  * The structured-data price is the one on the screen (search engines compare them). A shop-defined currency such as
  * IRT is not ISO 4217, so structured data then keeps the base price and currency.
  */
-function jsonLdOffer(basePrice: number, money: DisplayCurrency): { price: number; currency: string } {
-  return isIsoCurrency(money.code) ? { price: convertAmount(basePrice, money), currency: money.code } : { price: basePrice, currency: money.base };
+function jsonLdCurrency(money: DisplayCurrency): { currency: string; priceOf: (basePrice: number) => number } {
+  return isIsoCurrency(money.code)
+    ? { currency: money.code, priceOf: (price) => convertAmount(price, money) }
+    : { currency: money.base, priceOf: (price) => price };
 }
 
 /** Space-keeping placeholder with the page's layout (no shift when the product streams in). */

@@ -25,7 +25,12 @@ public sealed record DemoProduct(
     decimal PriceEur,
     decimal? CompareAtEur,
     int Stock,
-    IReadOnlyList<DemoValue> Specs);
+    IReadOnlyList<DemoValue> Specs,
+    string? Brand = null,
+    IReadOnlyList<DemoVariant>? Variants = null);
+
+/// <summary>A demo variant: its SKU, stock and options (spec code → option code), all at the product's price.</summary>
+public sealed record DemoVariant(string Sku, int Stock, IReadOnlyList<DemoValue> Options);
 
 public sealed record DemoGroup(DemoText Name, IReadOnlyList<DemoProduct> Products);
 
@@ -45,6 +50,10 @@ public static class DemoCatalogData
     private static DemoValue B(string spec, bool value) => new(spec, Boolean: value);
     private static DemoValue S(string spec, string value) => new(spec, Text: value);
     private static DemoValue O(string spec, string option) => new(spec, Option: option);
+    private static DemoVariant V(string sku, int stock, string color, string size) => new(sku, stock, [O("color", color), O("size", size)]);
+
+    /// <summary>The demo brands (invented names, the same in every language).</summary>
+    public static IReadOnlyList<string> Brands { get; } = ["Orvia", "Casana", "Ranna", "Papira"];
 
     private static string ProductImage(string name) => $"/demo/products/{name}.svg";
 
@@ -73,7 +82,6 @@ public static class DemoCatalogData
 
     public static IReadOnlyList<DemoSpec> Specs { get; } =
     [
-        new("brand", SpecKind.Text, T("برند", "Brand", "Ապրանքանիշ", "Marke", "العلامة التجارية"), General, Filterable: true, Summary: true),
         new("color", SpecKind.Option, T("رنگ", "Colour", "Գույն", "Farbe", "اللون"), General, Filterable: true, Summary: true, Options:
         [
             new("black", T("مشکی", "Black", "Սև", "Schwarz", "أسود")),
@@ -85,6 +93,13 @@ public static class DemoCatalogData
             new("red", T("قرمز", "Red", "Կարմիր", "Rot", "أحمر")),
             new("beige", T("کرم", "Beige", "Բեժ", "Beige", "بيج")),
             new("multicolor", T("چندرنگ", "Multicolour", "Բազմագույն", "Mehrfarbig", "متعدد الألوان")),
+        ]),
+        new("size", SpecKind.Option, T("سایز", "Size", "Չափս", "Größe", "المقاس"), General, Filterable: true, Options:
+        [
+            new("s", T("S", "S", "S", "S", "S")),
+            new("m", T("M", "M", "M", "M", "M")),
+            new("l", T("L", "L", "L", "L", "L")),
+            new("xl", T("XL", "XL", "XL", "XL", "XL")),
         ]),
         new("material", SpecKind.Option, T("جنس", "Material", "Նյութ", "Material", "الخامة"), General, Filterable: true, Options:
         [
@@ -140,7 +155,7 @@ public static class DemoCatalogData
                           "Helles 6,5-Zoll-Display, ein 5000-mAh-Akku für den ganzen Tag und eine Dualkamera für Alltagsfotos.",
                           "شاشة ساطعة بحجم 6.5 بوصة وبطارية 5000 مللي أمبير تدوم طوال اليوم وكاميرا مزدوجة للصور اليومية."),
                         349m, 399m, 24,
-                        [S("brand", "Orvia"), O("color", "blue"), N("screen_size", 6.5m), N("storage", 128), N("ram", 8), N("battery_capacity", 5000), B("network_5g", true), N("weight", 189), N("warranty", 18)]),
+                        [O("color", "blue"), N("screen_size", 6.5m), N("storage", 128), N("ram", 8), N("battery_capacity", 5000), B("network_5g", true), N("weight", 189), N("warranty", 18)], Brand: "Orvia"),
                     new("DEMO-PHN-002", ProductImage("phone-x1-pro"),
                         T("گوشی هوشمند اورویا X1 پرو ظرفیت ۲۵۶ گیگابایت", "Orvia X1 Pro Smartphone, 256 GB", "Orvia X1 Pro սմարթֆոն, 256 ԳԲ", "Orvia X1 Pro Smartphone, 256 GB", "هاتف Orvia X1 Pro الذكي بسعة 256 غيغابايت"),
                         T("نسخهٔ حرفه‌ای با صفحهٔ ۶٫۷ اینچی، ۱۲ گیگابایت رم و دوربین سه‌گانه با زوم نوری.",
@@ -149,7 +164,7 @@ public static class DemoCatalogData
                           "Die Pro-Version mit 6,7-Zoll-Display, 12 GB RAM und Dreifachkamera mit optischem Zoom.",
                           "الإصدار الاحترافي بشاشة 6.7 بوصة وذاكرة 12 غيغابايت وكاميرا ثلاثية مع تكبير بصري."),
                         529m, null, 12,
-                        [S("brand", "Orvia"), O("color", "black"), N("screen_size", 6.7m), N("storage", 256), N("ram", 12), N("battery_capacity", 5200), B("network_5g", true), N("weight", 205), N("warranty", 18)]),
+                        [O("color", "black"), N("screen_size", 6.7m), N("storage", 256), N("ram", 12), N("battery_capacity", 5200), B("network_5g", true), N("weight", 205), N("warranty", 18)], Brand: "Orvia"),
                     new("DEMO-PHN-003", ProductImage("phone-a5"),
                         T("گوشی هوشمند اورویا A5 ظرفیت ۶۴ گیگابایت", "Orvia A5 Smartphone, 64 GB", "Orvia A5 սմարթֆոն, 64 ԳԲ", "Orvia A5 Smartphone, 64 GB", "هاتف Orvia A5 الذكي بسعة 64 غيغابايت"),
                         T("گوشی سبک و مقرون‌به‌صرفه برای تماس، پیام‌رسان‌ها و شبکه‌های اجتماعی.",
@@ -158,7 +173,7 @@ public static class DemoCatalogData
                           "Ein leichtes, günstiges Handy für Anrufe, Messenger und soziale Netzwerke.",
                           "هاتف خفيف وبسعر مناسب للمكالمات والمراسلة ووسائل التواصل الاجتماعي."),
                         159m, 189m, 40,
-                        [S("brand", "Orvia"), O("color", "green"), N("screen_size", 6.1m), N("storage", 64), N("ram", 4), N("battery_capacity", 4500), B("network_5g", false), N("weight", 172), N("warranty", 12)]),
+                        [O("color", "green"), N("screen_size", 6.1m), N("storage", 64), N("ram", 4), N("battery_capacity", 4500), B("network_5g", false), N("weight", 172), N("warranty", 12)], Brand: "Orvia"),
                 ]),
             ]),
             new("laptops", T("لپ‌تاپ", "Laptops", "Նոութբուքեր", "Laptops", "أجهزة اللابتوب"),
@@ -173,7 +188,7 @@ public static class DemoCatalogData
                           "Leichtes Aluminiumgehäuse, 14-Zoll-Display und bis zu 12 Stunden Akkulaufzeit – ideal für Studium und Alltag.",
                           "هيكل خفيف من الألومنيوم وشاشة 14 بوصة وحتى 12 ساعة بشحنة واحدة، مناسب للطلاب والعمل اليومي."),
                         749m, 849m, 9,
-                        [S("brand", "Orvia"), O("color", "silver"), O("material", "aluminium"), N("screen_size", 14), N("storage", 512), N("ram", 16), N("battery_life", 12), N("weight", 1350), N("warranty", 24)]),
+                        [O("color", "silver"), O("material", "aluminium"), N("screen_size", 14), N("storage", 512), N("ram", 16), N("battery_life", 12), N("weight", 1350), N("warranty", 24)], Brand: "Orvia"),
                     new("DEMO-LAP-002", ProductImage("laptop-16"),
                         T("لپ‌تاپ ۱۶ اینچی اورویا بوک ۱۶ پرو", "Orvia Book 16 Pro Laptop, 16-inch", "Orvia Book 16 Pro նոութբուք, 16 դյույմ", "Orvia Book 16 Pro Laptop, 16 Zoll", "حاسوب محمول Orvia Book 16 Pro بشاشة 16 بوصة"),
                         T("پردازندهٔ قدرتمند، ۳۲ گیگابایت رم و صفحهٔ ۱۶ اینچی دقیق برای طراحی، برنامه‌نویسی و تدوین.",
@@ -182,7 +197,7 @@ public static class DemoCatalogData
                           "Starker Prozessor, 32 GB RAM und ein scharfes 16-Zoll-Display für Design, Programmierung und Videoschnitt.",
                           "معالج قوي وذاكرة 32 غيغابايت وشاشة دقيقة بحجم 16 بوصة للتصميم والبرمجة وتحرير الفيديو."),
                         1249m, null, 5,
-                        [S("brand", "Orvia"), O("color", "gray"), O("material", "aluminium"), N("screen_size", 16), N("storage", 1024), N("ram", 32), N("battery_life", 10), N("weight", 1890), N("warranty", 24)]),
+                        [O("color", "gray"), O("material", "aluminium"), N("screen_size", 16), N("storage", 1024), N("ram", 32), N("battery_life", 10), N("weight", 1890), N("warranty", 24)], Brand: "Orvia"),
                 ]),
             ]),
             new("audio", T("صوتی", "Audio", "Աուդիո", "Audio", "الصوتيات"),
@@ -197,7 +212,7 @@ public static class DemoCatalogData
                           "Aktive Geräuschunterdrückung für Reisen und laute Orte, 30 Stunden Wiedergabe und Schnellladen.",
                           "إلغاء نشط للضوضاء للسفر والأماكن المزدحمة، و30 ساعة تشغيل وشحن سريع."),
                         129m, 179m, 30,
-                        [S("brand", "Orvia"), O("color", "black"), N("battery_life", 30), B("noise_cancelling", true), S("bluetooth", "5.3"), N("weight", 250), N("warranty", 12)]),
+                        [O("color", "black"), N("battery_life", 30), B("noise_cancelling", true), S("bluetooth", "5.3"), N("weight", 250), N("warranty", 12)], Brand: "Orvia"),
                     new("DEMO-AUD-002", ProductImage("earbuds"),
                         T("هندزفری بی‌سیم اورویا بادز", "Orvia Buds Wireless Earbuds", "Orvia Buds անլար ականջակալներ", "Orvia Buds kabellose In-Ear-Kopfhörer", "سماعات أذن لاسلكية Orvia Buds"),
                         T("هندزفری کوچک و سبک با کیس شارژ، مقاوم در برابر عرق برای ورزش.",
@@ -206,7 +221,7 @@ public static class DemoCatalogData
                           "Kleine, leichte In-Ear-Kopfhörer mit Ladecase, schweißresistent fürs Training.",
                           "سماعات أذن صغيرة وخفيفة مع علبة شحن، مقاومة للعرق أثناء التمارين."),
                         59m, 79m, 50,
-                        [S("brand", "Orvia"), O("color", "white"), N("battery_life", 24), B("noise_cancelling", false), B("water_resistant", true), S("bluetooth", "5.3"), N("weight", 48), N("warranty", 12)]),
+                        [O("color", "white"), N("battery_life", 24), B("noise_cancelling", false), B("water_resistant", true), S("bluetooth", "5.3"), N("weight", 48), N("warranty", 12)], Brand: "Orvia"),
                     new("DEMO-AUD-003", ProductImage("speaker"),
                         T("اسپیکر بلوتوثی قابل حمل اورویا ویو", "Orvia Wave Portable Bluetooth Speaker", "Orvia Wave դյուրակիր Bluetooth բարձրախոս", "Orvia Wave tragbarer Bluetooth-Lautsprecher", "مكبر صوت بلوتوث محمول Orvia Wave"),
                         T("اسپیکر بلوتوثی ۲۰ واتی مقاوم در برابر آب، همراه مناسب برای سفر و پیک‌نیک.",
@@ -215,7 +230,7 @@ public static class DemoCatalogData
                           "Wasserfester 20-W-Bluetooth-Lautsprecher, der ideale Begleiter für Ausflüge und Picknicks.",
                           "مكبر صوت بلوتوث بقدرة 20 واط مقاوم للماء، رفيق مثالي للرحلات والنزهات."),
                         69m, null, 22,
-                        [S("brand", "Orvia"), O("color", "red"), N("power", 20), N("battery_life", 12), B("water_resistant", true), S("bluetooth", "5.1"), N("weight", 540), N("warranty", 12)]),
+                        [O("color", "red"), N("power", 20), N("battery_life", 12), B("water_resistant", true), S("bluetooth", "5.1"), N("weight", 540), N("warranty", 12)], Brand: "Orvia"),
                 ]),
             ]),
             new("wearables", T("ساعت و مچ‌بند هوشمند", "Wearables", "Կրելի սարքեր", "Wearables", "الأجهزة القابلة للارتداء"),
@@ -230,7 +245,7 @@ public static class DemoCatalogData
                           "Herzfrequenz- und Schlaftracking, integriertes GPS fürs Laufen und bis zu eine Woche Akkulaufzeit.",
                           "تتبع نبض القلب والنوم، وGPS مدمج للجري، وحتى أسبوع من الاستخدام بشحنة واحدة."),
                         119m, 149m, 18,
-                        [S("brand", "Orvia"), O("color", "black"), N("screen_size", 1.4m), N("battery_life", 168), B("gps", true), B("water_resistant", true), N("weight", 38), N("warranty", 12)]),
+                        [O("color", "black"), N("screen_size", 1.4m), N("battery_life", 168), B("gps", true), B("water_resistant", true), N("weight", 38), N("warranty", 12)], Brand: "Orvia"),
                 ]),
             ]),
         ]),
@@ -248,7 +263,7 @@ public static class DemoCatalogData
                           "1,7-Liter-Wasserkocher aus Edelstahl mit Schnellkochfunktion, Abschaltautomatik und 360°-Sockel.",
                           "غلاية من الفولاذ المقاوم للصدأ بسعة 1.7 لتر، غليان سريع وإيقاف تلقائي وقاعدة دوّارة 360 درجة."),
                         39m, 49m, 35,
-                        [S("brand", "Casana"), O("color", "silver"), O("material", "stainless_steel"), N("power", 2200), N("capacity", 1.7m), N("warranty", 12)]),
+                        [O("color", "silver"), O("material", "stainless_steel"), N("power", 2200), N("capacity", 1.7m), N("warranty", 12)], Brand: "Casana"),
                     new("DEMO-HOM-002", ProductImage("iron"),
                         T("اتو بخار کاسانا ۲۴۰۰ وات", "Casana Steam Iron, 2400 W", "Casana գոլորշու արդուկ, 2400 Վտ", "Casana Dampfbügeleisen, 2400 W", "مكواة بخار Casana بقدرة 2400 واط"),
                         T("اتو بخار ۲۴۰۰ واتی با کفهٔ سرامیکی و بخار قوی برای چروک‌های سخت.",
@@ -257,7 +272,7 @@ public static class DemoCatalogData
                           "2400-W-Dampfbügeleisen mit Keramiksohle und kräftigem Dampfstoß für hartnäckige Falten.",
                           "مكواة بخار بقدرة 2400 واط بقاعدة سيراميك ودفعة بخار قوية للتجاعيد الصعبة."),
                         45m, null, 20,
-                        [S("brand", "Casana"), O("color", "blue"), N("power", 2400), N("capacity", 0.3m), N("warranty", 12)]),
+                        [O("color", "blue"), N("power", 2400), N("capacity", 0.3m), N("warranty", 12)], Brand: "Casana"),
                     new("DEMO-HOM-003", ProductImage("coffee-maker"),
                         T("قهوه‌ساز قطره‌ای کاسانا ۱٫۲ لیتری", "Casana Drip Coffee Maker, 1.2 L", "Casana կաթիլային սրճեփ, 1,2 լ", "Casana Filterkaffeemaschine, 1,2 l", "صانعة قهوة بالتقطير Casana، 1.2 لتر"),
                         T("قهوه‌ساز قطره‌ای برای ۱۰ فنجان با گرم‌نگه‌دار و فیلتر دائمی قابل شست‌وشو.",
@@ -266,7 +281,7 @@ public static class DemoCatalogData
                           "Filterkaffeemaschine für 10 Tassen mit Warmhalteplatte und waschbarem Dauerfilter.",
                           "صانعة قهوة بالتقطير تكفي 10 أكواب مع لوح للحفاظ على الحرارة وفلتر دائم قابل للغسل."),
                         55m, 69m, 14,
-                        [S("brand", "Casana"), O("color", "black"), N("power", 900), N("capacity", 1.2m), N("warranty", 12)]),
+                        [O("color", "black"), N("power", 900), N("capacity", 1.2m), N("warranty", 12)], Brand: "Casana"),
                 ]),
             ]),
             new("cookware", T("ظروف پخت‌وپز", "Cookware", "Խոհանոցային սպասք", "Kochgeschirr", "أواني الطهي"),
@@ -281,7 +296,7 @@ public static class DemoCatalogData
                           "8-teiliges Edelstahl-Topfset mit Glasdeckeln, für alle Herdarten inklusive Induktion.",
                           "طقم من 8 قطع من الفولاذ المقاوم للصدأ مع أغطية زجاجية، مناسب لجميع المواقد بما فيها مواقد الحث."),
                         129m, 169m, 8,
-                        [S("brand", "Casana"), O("color", "silver"), O("material", "stainless_steel"), N("pieces", 8), B("induction", true), N("warranty", 24)]),
+                        [O("color", "silver"), O("material", "stainless_steel"), N("pieces", 8), B("induction", true), N("warranty", 24)], Brand: "Casana"),
                     new("DEMO-HOM-005", ProductImage("frying-pan"),
                         T("تابهٔ نچسب کاسانا ۲۸ سانتی‌متری", "Casana Non-Stick Frying Pan, 28 cm", "Casana չկպչող տապակ, 28 սմ", "Casana Antihaft-Bratpfanne, 28 cm", "مقلاة غير لاصقة Casana بقطر 28 سم"),
                         T("تابهٔ نچسب ۲۸ سانتی‌متری با دستهٔ خنک؛ پخت با روغن کمتر و شست‌وشوی آسان.",
@@ -290,7 +305,7 @@ public static class DemoCatalogData
                           "28-cm-Bratpfanne mit Antihaftbeschichtung und kühlem Griff – weniger Öl, leichte Reinigung.",
                           "مقلاة غير لاصقة بقطر 28 سم بمقبض لا يسخن، للطهي بزيت أقل وتنظيف سهل."),
                         29m, null, 45,
-                        [S("brand", "Casana"), O("color", "gray"), O("material", "aluminium"), N("diameter", 28), B("induction", true), N("warranty", 12)]),
+                        [O("color", "gray"), O("material", "aluminium"), N("diameter", 28), B("induction", true), N("warranty", 12)], Brand: "Casana"),
                 ]),
             ]),
             new("lighting", T("روشنایی", "Lighting", "Լուսավորություն", "Beleuchtung", "الإضاءة"),
@@ -305,7 +320,7 @@ public static class DemoCatalogData
                           "LED-Schreibtischlampe mit drei Lichtfarben und fünf Helligkeitsstufen, flimmerfrei für langes Lesen.",
                           "مصباح مكتب LED بثلاثة ألوان للضوء وخمس درجات سطوع، دون وميض للقراءة الطويلة."),
                         34m, 42m, 27,
-                        [S("brand", "Casana"), O("color", "white"), O("material", "plastic"), N("power", 8), B("dimmable", true), N("warranty", 12)]),
+                        [O("color", "white"), O("material", "plastic"), N("power", 8), B("dimmable", true), N("warranty", 12)], Brand: "Casana"),
                 ]),
             ]),
         ]),
@@ -323,7 +338,7 @@ public static class DemoCatalogData
                           "Atmungsaktives Mesh-Obermaterial und weiche Sohle für lange Spaziergänge in der Stadt.",
                           "جزء علوي شبكي يسمح بالتهوية ونعل ناعم للمشي الطويل في المدينة."),
                         65m, 89m, 33,
-                        [S("brand", "Ranna"), O("color", "gray"), O("material", "mesh"), N("weight", 280)]),
+                        [O("color", "gray"), O("material", "mesh"), N("weight", 280)], Brand: "Ranna"),
                 ]),
             ]),
             new("bags", T("کیف و کوله", "Bags", "Պայուսակներ", "Taschen", "الحقائب"),
@@ -338,7 +353,7 @@ public static class DemoCatalogData
                           "Wasserfester 25-Liter-Rucksack mit Laptopfach bis 15,6 Zoll und USB-Anschluss zum Laden unterwegs.",
                           "حقيبة ظهر مقاومة للماء بسعة 25 لترًا مع جيب لحاسوب حتى 15.6 بوصة ومنفذ USB للشحن أثناء التنقل."),
                         49m, null, 21,
-                        [S("brand", "Ranna"), O("color", "black"), O("material", "polyester"), N("capacity", 25), N("laptop_fit", 15.6m), B("water_resistant", true), N("weight", 720)]),
+                        [O("color", "black"), O("material", "polyester"), N("capacity", 25), N("laptop_fit", 15.6m), B("water_resistant", true), N("weight", 720)], Brand: "Ranna"),
                 ]),
             ]),
             new("clothing", T("لباس", "Clothing", "Հագուստ", "Bekleidung", "الملابس"),
@@ -353,7 +368,14 @@ public static class DemoCatalogData
                           "Weicher Baumwoll-Hoodie mit lockerer Passform, für alle und für kühle Tage.",
                           "هودي قطني ناعم بقصة واسعة يناسب الجميع في الأيام الباردة."),
                         39m, 52m, 60,
-                        [S("brand", "Ranna"), O("color", "beige"), O("material", "cotton")]),
+                        [O("material", "cotton")], Brand: "Ranna",
+                        Variants:
+                        [
+                            V("DEMO-FSH-003-BG-S", 8, "beige", "s"), V("DEMO-FSH-003-BG-M", 14, "beige", "m"),
+                            V("DEMO-FSH-003-BG-L", 12, "beige", "l"), V("DEMO-FSH-003-BG-XL", 6, "beige", "xl"),
+                            V("DEMO-FSH-003-GR-S", 5, "gray", "s"), V("DEMO-FSH-003-GR-M", 9, "gray", "m"),
+                            V("DEMO-FSH-003-GR-L", 6, "gray", "l"), V("DEMO-FSH-003-GR-XL", 0, "gray", "xl"),
+                        ]),
                 ]),
             ]),
         ]),
@@ -395,7 +417,7 @@ public static class DemoCatalogData
                           "Liniertes Spiralheft mit festem Einband und 80-g-Papier, durch das Tinte nicht durchdrückt.",
                           "دفتر سلكي مسطر بغلاف صلب وورق 80 غرامًا لا يتسرب منه الحبر."),
                         6m, null, 120,
-                        [S("brand", "Papira"), O("color", "blue"), N("sheets", 100), S("paper_size", "A5")]),
+                        [O("color", "blue"), N("sheets", 100), S("paper_size", "A5")], Brand: "Papira"),
                     new("DEMO-STN-002", ProductImage("gel-pens"),
                         T("ست خودکار ژله‌ای پاپیرا ۱۲ رنگ", "Papira Gel Pen Set, 12 Colours", "Papira գելային գրիչների հավաքածու, 12 գույն", "Papira Gelstift-Set, 12 Farben", "طقم أقلام جل Papira بـ12 لونًا"),
                         T("۱۲ خودکار ژله‌ای با رنگ‌های روشن و نوک ۰٫۵ میلی‌متری برای یادداشت و طراحی.",
@@ -404,7 +426,7 @@ public static class DemoCatalogData
                           "12 Gelstifte in leuchtenden Farben mit 0,5-mm-Spitze für Notizen und Zeichnungen.",
                           "12 قلم جل بألوان زاهية ورأس 0.5 مم للملاحظات والرسم."),
                         9m, 12m, 80,
-                        [S("brand", "Papira"), O("color", "multicolor"), N("pieces", 12)]),
+                        [O("color", "multicolor"), N("pieces", 12)], Brand: "Papira"),
                 ]),
             ]),
         ]),

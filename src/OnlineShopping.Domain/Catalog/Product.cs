@@ -23,6 +23,15 @@ public class Product : BaseEntity
     public bool IsPublished { get; set; }
     public Guid ProductGroupId { get; set; }
     public ProductGroup ProductGroup { get; set; } = default!;
+    public Guid? BrandId { get; set; }
+    public Brand? Brand { get; set; }
+
+    /// <summary>
+    /// Buyable versions (colour, size). With variants, <see cref="Stock"/> is the sum of their stock (kept by the
+    /// admin service) and <see cref="Price"/> is the price of every variant without its own.
+    /// </summary>
+    public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
+
     public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
     public ICollection<CatalogTranslation> Translations { get; set; } = new List<CatalogTranslation>();
     public ICollection<ProductSpecValue> SpecValues { get; set; } = new List<ProductSpecValue>();

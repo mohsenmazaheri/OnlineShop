@@ -196,6 +196,18 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   `.DisableAntiforgery()` (the Origin check still applies). `CatalogImageService`: product images (max 12, order +
   per-language alt in `product_image_alt_translations`) and the category image. The web app accepts only
   `isMediaUrl()` addresses as logo/banner.
+- Brands: `Brand` (texts per language like categories, `LogoUrl` 300 px), `Product.BrandId` (Restrict; a used brand
+  cannot be deleted), `BrandAdminService`. The storefront shows `ProductDetail.Brand`; the old "brand" text spec is
+  only a fallback (`brandOf`) for data seeded before brands existed.
+- Spec library: `SpecAdminService` (texts/options per language, codes `^[a-z][a-z0-9_]*$` made from the name when
+  empty, kind fixed while used, used specs/options cannot be deleted, `PUT /admin/specs/order`). Spec templates are
+  owned `TemplateSpec` rows on `Category` and `SubCategory` (a sub-category adds to its category's), set through
+  `CatalogTreeService.Set*TemplateAsync`; the product editor offers the template specs first (`templateFor`).
+- Variants: `ProductVariant` (own SKU, stock, optional price/compare-at; owned `VariantOption` rows keyed by spec)
+  saved as one set by `ProductVariantService` (≤3 option specs, ≤100 variants, unique combinations, SKUs unique across
+  products and variants, a variant spec never also a product-level value). With variants, `Product.Stock` is their
+  sum and the product's price is every variant's default. Storefront: `ProductDetail.VariantAxes`/`Variants`
+  (effective prices), `VariantPicker` (server-rendered default = first in stock), JSON-LD `ProductGroup` + `hasVariant`.
 - Catalog admin (`Application/Catalog/Admin`, permission catalog.manage): `CatalogTreeService` (categories →
   sub-categories → groups; only empty nodes can be deleted) and `ProductAdminService` (list/search, editor view,
   create/update/soft delete, spec values checked against the spec kind; a new product gets max(PublicNumber incl.

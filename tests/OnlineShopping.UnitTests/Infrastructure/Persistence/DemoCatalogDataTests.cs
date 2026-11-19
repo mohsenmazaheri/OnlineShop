@@ -65,6 +65,35 @@ public sealed class DemoCatalogDataTests
     }
 
     [Fact]
+    public void Brands_and_variants_are_consistent()
+    {
+        var specs = DemoCatalogData.Specs.ToDictionary(s => s.Code);
+        Assert.All(Products.Where(p => p.Brand is not null), p => Assert.Contains(p.Brand!, DemoCatalogData.Brands));
+        Assert.All(DemoCatalogData.Brands, b => Assert.Contains(Products, p => p.Brand == b));
+
+        var variants = Products.SelectMany(p => (p.Variants ?? []).Select(v => (Product: p, Variant: v))).ToList();
+        Assert.NotEmpty(variants);
+        Assert.Equal(variants.Count, variants.Select(v => v.Variant.Sku).Distinct().Count());
+        Assert.All(variants, v =>
+        {
+            Assert.DoesNotContain(v.Variant.Sku, Products.Select(p => p.Sku));
+            Assert.All(v.Variant.Options, o =>
+            {
+                Assert.Equal(SpecKind.Option, specs[o.Spec].Kind);
+                Assert.Contains(specs[o.Spec].Options!, x => x.Code == o.Option);
+                // A variant spec is not also one of the product's own values.
+                Assert.DoesNotContain(v.Product.Specs, s => s.Spec == o.Spec);
+            });
+        });
+        // Every combination once per product, and the product's stock is their sum.
+        foreach (var product in Products.Where(p => p.Variants is { Count: > 0 }))
+        {
+            Assert.Equal(product.Variants!.Count, product.Variants.Select(v => string.Join("|", v.Options.Select(o => o.Option))).Distinct().Count());
+            Assert.Equal(product.Stock, product.Variants.Sum(v => v.Stock));
+        }
+    }
+
+    [Fact]
     public void Every_image_exists_in_the_web_app()
     {
         var publicFolder = Path.Combine(RepositoryRoot(), "apps", "web", "public");

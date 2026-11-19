@@ -3,10 +3,11 @@ import { Suspense } from "react";
 import { AdminCard, AdminShell } from "@/components/admin/AdminShell";
 import { ProductEditor } from "@/components/admin/ProductEditor";
 import { ProductImagesEditor } from "@/components/admin/ProductImagesEditor";
+import { ProductVariantsEditor } from "@/components/admin/ProductVariantsEditor";
 import { requirePermission } from "@/lib/admin/access";
 import { languageNames } from "@/lib/admin/language-names";
 import { accountMetadata, routeLocale } from "@/lib/account/page-helpers";
-import { getAdminProduct, getCatalogTree, getSpecChoices } from "@/lib/account/session";
+import { getAdminProduct, getBrands, getCatalogTree, getSpecChoices } from "@/lib/account/session";
 import { getDictionary, type Dictionary } from "@/lib/i18n/dictionaries";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/admin/products/[number]">) {
@@ -24,7 +25,7 @@ async function EditProduct({ params }: { params: Params }) {
   const user = await requirePermission(locale, "catalog.manage", `/${locale}/admin/products/${rawNumber}`);
   const number = /^\d{1,15}$/.test(rawNumber) ? Number(rawNumber) : null;
   if (number === null) notFound();
-  const [product, tree, specs] = await Promise.all([getAdminProduct(number), getCatalogTree(), getSpecChoices(locale)]);
+  const [product, tree, specs, brands] = await Promise.all([getAdminProduct(number), getCatalogTree(), getSpecChoices(locale), getBrands()]);
   if (!product) notFound();
   const catalog = tree ?? { defaultLocale: locale, locales: [locale], categories: [] };
 
@@ -36,8 +37,20 @@ async function EditProduct({ params }: { params: Params }) {
           texts={texts}
           tree={catalog}
           specs={specs ?? []}
+          brands={brands?.brands ?? []}
           languageNames={languageNames(catalog.locales)}
           product={product}
+        />
+      </AdminCard>
+      <AdminCard title={texts.variantsTitle} id="product-variants">
+        <ProductVariantsEditor
+          locale={locale}
+          number={product.number}
+          productSku={product.sku}
+          specs={specs ?? []}
+          productSpecCodes={product.specs.map((s) => s.code)}
+          view={product.variants}
+          texts={texts}
         />
       </AdminCard>
       <AdminCard title={texts.imagesTitle} id="product-images">
