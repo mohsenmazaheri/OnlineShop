@@ -453,7 +453,9 @@
       "variant_repeated": "Zwei Varianten haben dieselben Optionen.",
       "too_many_variants": "Höchstens 100 Varianten pro Produkt.",
       "gtin_invalid": "Der Barcode ist ungültig (8, 12, 13 oder 14 Ziffern mit korrekter Prüfziffer).",
-      "weight_invalid": "Das Gewicht muss zwischen 0 und 1.000.000 Gramm liegen."
+      "weight_invalid": "Das Gewicht muss zwischen 0 und 1.000.000 Gramm liegen.",
+      "too_many_videos": "Ein Produkt hat höchstens 3 Videos.",
+      "videos_mismatch": "Die Liste der Videos hat sich geändert; laden Sie die Seite neu."
     },
     "imagesTitle": "Bilder",
     "imageUpload": "Bilder hinzufügen",
@@ -475,7 +477,9 @@
       "type_not_allowed": "Nur JPEG-, PNG-, WebP- oder GIF-Bilder werden angenommen.",
       "invalid_image": "Die Bilddatei ist beschädigt.",
       "too_many_pixels": "Das Bild hat zu viele Pixel.",
-      "not_found": "Bild nicht gefunden."
+      "not_found": "Bild nicht gefunden.",
+      "invalid_video": "Nur MP4-Videos werden angenommen (keine MOV- oder defekten Dateien).",
+      "video_too_large": "Das Video ist größer als 50 MB; komprimieren Sie es zuerst."
     },
     "navBrands": "Marken",
     "navSpecs": "Merkmale",
@@ -634,7 +638,17 @@
       "group_invalid": "Schreiben Sie die Gruppe als „Kategorie > Unterkategorie > Gruppe“.",
       "option_unknown": "Diese Option ist für dieses Merkmal nicht definiert.",
       "stock_on_variants": "Dieses Produkt hat Varianten: Geben Sie den Bestand jeder Variante mit ihrer Artikelnummer an."
-    }
+    },
+    "videosTitle": "Videos",
+    "videosIntro": "Bis zu 3 MP4-Videos (je 50 MB). Videos werden so gespeichert, wie sie hochgeladen werden; komprimieren Sie sie vorher (z. B. 720p H.264). Der Shop zeigt sie nach den Bildern und lädt sie erst beim Abspielen.",
+    "videoNone": "Noch keine Videos.",
+    "videoUpload": "Video hochladen (MP4)",
+    "videoUploading": "Video wird hochgeladen",
+    "videoHint": "Höchstens 50 MB",
+    "videoTitle": "Titel",
+    "videoPoster": "Bild vor dem Abspielen",
+    "videosSave": "Reihenfolge und Titel speichern",
+    "confirmDeleteVideo": "Dieses Video löschen?"
   },
   "footer": {
     "shopping": "Einkaufen",
@@ -685,6 +699,7 @@
     "approximate": "Ungefährer Preis; Sie bezahlen in {base}.",
     "images": "Produktbilder",
     "brand": "Marke",
-    "soldOutOption": "Diese Kombination ist ausverkauft"
+    "soldOutOption": "Diese Kombination ist ausverkauft",
+    "video": "Video"
   }
 }

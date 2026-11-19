@@ -41,6 +41,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
     public DbSet<SearchSynonym> SearchSynonyms => Set<SearchSynonym>();
     public DbSet<Redirect> Redirects => Set<Redirect>();
+    public DbSet<ProductVideo> ProductVideos => Set<ProductVideo>();
     public DbSet<Cart> Carts => Set<Cart>();
     public DbSet<CartItem> CartItems => Set<CartItem>();
     public DbSet<Order> Orders => Set<Order>();
@@ -260,6 +261,27 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             e.Property(x => x.Gtin).HasMaxLength(14);
             e.HasIndex(x => x.Gtin);
+        });
+
+        b.Entity<ProductVideo>(e =>
+        {
+            e.ToTable("product_videos");
+            e.Property(x => x.Url).HasMaxLength(2048);
+            e.Property(x => x.PosterUrl).HasMaxLength(2048);
+            e.Property(x => x.Title).HasMaxLength(200);
+            e.HasIndex(x => x.ProductId);
+            e.HasOne(v => v.Product)
+                .WithMany(p => p.Videos)
+                .HasForeignKey(v => v.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.OwnsMany(x => x.TitleTranslations, t =>
+            {
+                t.ToTable("product_video_title_translations");
+                t.WithOwner().HasForeignKey("ProductVideoId");
+                t.HasKey("ProductVideoId", nameof(VideoTitleTranslation.Locale));
+                t.Property(x => x.Locale).HasMaxLength(8);
+                t.Property(x => x.Title).HasMaxLength(200);
+            });
         });
 
         b.Entity<SearchSynonym>(e =>

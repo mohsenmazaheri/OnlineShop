@@ -37,6 +37,8 @@ public static class CatalogErrors
     public const string TooManyVariants = "catalog.too_many_variants";
     public const string GtinInvalid = "catalog.gtin_invalid";
     public const string WeightInvalid = "catalog.weight_invalid";
+    public const string TooManyVideos = "catalog.too_many_videos";
+    public const string VideosMismatch = "catalog.videos_mismatch";
 }
 
 /// <summary>
@@ -115,7 +117,8 @@ public sealed record ProductEditView(
     string? Gtin,
     string? Mpn,
     int? WeightGrams,
-    IReadOnlyList<SeoText> Seo);
+    IReadOnlyList<SeoText> Seo,
+    IReadOnlyList<ProductVideoView> Videos);
 
 /// <summary>An image's alternative text in one language (empty: not translated).</summary>
 public sealed record ImageAltText(string Locale, string Alt);

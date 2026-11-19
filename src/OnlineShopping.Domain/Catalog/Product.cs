@@ -50,6 +50,7 @@ public class Product : BaseEntity
     public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
 
     public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
+    public ICollection<ProductVideo> Videos { get; set; } = new List<ProductVideo>();
     public ICollection<CatalogTranslation> Translations { get; set; } = new List<CatalogTranslation>();
     public ICollection<ProductSpecValue> SpecValues { get; set; } = new List<ProductSpecValue>();
 }

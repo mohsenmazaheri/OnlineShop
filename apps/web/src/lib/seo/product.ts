@@ -56,6 +56,19 @@ export function productJsonLd(product: ProductDetail, pageUrl: string, currency:
     availability: inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
     itemCondition: "https://schema.org/NewCondition",
   });
+  // Each video as a VideoObject about this product (thumbnail: its poster, else the main image).
+  const videos = product.videos.map((video) => {
+    const thumbnail = video.posterUrl ?? product.images[0]?.url;
+    return {
+      "@type": "VideoObject",
+      name: video.title || product.name,
+      description: product.description || video.title || product.name,
+      contentUrl: absoluteUrl(siteUrl, video.url),
+      uploadDate: video.uploadedUtc,
+      ...(thumbnail ? { thumbnailUrl: absoluteUrl(siteUrl, thumbnail) } : {}),
+      ...(video.durationSeconds ? { duration: isoDuration(video.durationSeconds) } : {}),
+    };
+  });
   const common = {
     "@context": "https://schema.org",
     name: product.name,
@@ -63,6 +76,7 @@ export function productJsonLd(product: ProductDetail, pageUrl: string, currency:
     url: pageUrl,
     image,
     ...(brand ? { brand: { "@type": "Brand", name: brand } } : {}),
+    ...(videos.length > 0 ? { subjectOf: videos } : {}),
   };
 
   const codes = {
@@ -95,6 +109,13 @@ export function productJsonLd(product: ProductDetail, pageUrl: string, currency:
       offers: offer(variant.price, variant.inStock),
     })),
   };
+}
+
+/** ISO 8601 duration for schema.org ("PT1M5S"). */
+export function isoDuration(seconds: number): string {
+  const total = Math.max(0, Math.round(seconds));
+  const [h, m, s] = [Math.floor(total / 3600), Math.floor((total % 3600) / 60), total % 60];
+  return `PT${h ? `${h}H` : ""}${m ? `${m}M` : ""}${s || (!h && !m) ? `${s}S` : ""}`;
 }
 
 /** JSON for a <script type="application/ld+json">: "<" escaped so product text can never close the script tag. */

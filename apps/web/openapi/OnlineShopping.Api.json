@@ -31,7 +31,7 @@
         "tags": [
           "Storefront"
         ],
-        "summary": "An uploaded image in one of its sizes (/api/v1/media/{key}/{1200|600|300}.webp).",
+        "summary": "An uploaded image in one of its sizes (/api/v1/media/{key}/{1200|600|300}.webp) or a product video (/api/v1/media/{key}/video.mp4).",
         "operationId": "GetMedia",
         "parameters": [
           {
@@ -54,6 +54,9 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "206": {
+            "description": "Partial Content"
           },
           "404": {
             "description": "Not Found"
@@ -1563,6 +1566,207 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/products/{number}/videos": {
+      "post": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Upload a product video (MP4, at most 50 MB; checked, stored as uploaded).",
+        "operationId": "AddProductVideo",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductVideoView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Reorder a product's videos and save their titles.",
+        "operationId": "SaveProductVideos",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveProductVideosRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/products/{number}/videos/{id}": {
+      "delete": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Remove a product video and its stored files.",
+        "operationId": "DeleteProductVideo",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/products/{number}/videos/{id}/poster": {
+      "post": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Upload the still image shown before a video plays.",
+        "operationId": "SetProductVideoPoster",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Remove a video's poster (the product image is shown instead).",
+        "operationId": "RemoveProductVideoPoster",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -5324,7 +5528,8 @@
           "mpn",
           "weightGrams",
           "metaTitle",
-          "metaDescription"
+          "metaDescription",
+          "videos"
         ],
         "type": "object",
         "properties": {
@@ -5441,6 +5646,12 @@
               "null",
               "string"
             ]
+          },
+          "videos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductVideoInfo"
+            }
           }
         }
       },
@@ -5461,7 +5672,8 @@
           "gtin",
           "mpn",
           "weightGrams",
-          "seo"
+          "seo",
+          "videos"
         ],
         "type": "object",
         "properties": {
@@ -5545,6 +5757,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SeoText"
+            }
+          },
+          "videos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductVideoView"
             }
           }
         }
@@ -5837,6 +6055,106 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/VariantView"
+            }
+          }
+        }
+      },
+      "ProductVideoInfo": {
+        "required": [
+          "url",
+          "posterUrl",
+          "title",
+          "durationSeconds",
+          "uploadedUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "posterUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "durationSeconds": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "uploadedUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ProductVideoInput": {
+        "required": [
+          "id",
+          "titles"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "titles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VideoTitleText"
+            }
+          }
+        }
+      },
+      "ProductVideoView": {
+        "required": [
+          "id",
+          "url",
+          "posterUrl",
+          "sizeBytes",
+          "durationSeconds",
+          "titles"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "url": {
+            "type": "string"
+          },
+          "posterUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "durationSeconds": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "titles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VideoTitleText"
             }
           }
         }
@@ -6259,6 +6577,20 @@
             ],
             "items": {
               "$ref": "#/components/schemas/SeoText"
+            }
+          }
+        }
+      },
+      "SaveProductVideosRequest": {
+        "required": [
+          "videos"
+        ],
+        "type": "object",
+        "properties": {
+          "videos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductVideoInput"
             }
           }
         }
@@ -7298,6 +7630,21 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "VideoTitleText": {
+        "required": [
+          "locale",
+          "title"
+        ],
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
           }
         }
       }

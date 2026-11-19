@@ -30,6 +30,7 @@ public interface IApplicationDbContext
     DbSet<ProductVariant> ProductVariants { get; }
     DbSet<SearchSynonym> SearchSynonyms { get; }
     DbSet<Redirect> Redirects { get; }
+    DbSet<ProductVideo> ProductVideos { get; }
     DbSet<Cart> Carts { get; }
     DbSet<CartItem> CartItems { get; }
     DbSet<Order> Orders { get; }

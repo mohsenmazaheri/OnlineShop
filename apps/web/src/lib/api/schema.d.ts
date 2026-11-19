@@ -28,7 +28,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** An uploaded image in one of its sizes (/api/v1/media/{key}/{1200|600|300}.webp). */
+        /** An uploaded image in one of its sizes (/api/v1/media/{key}/{1200|600|300}.webp) or a product video (/api/v1/media/{key}/video.mp4). */
         get: operations["GetMedia"];
         put?: never;
         post?: never;
@@ -520,6 +520,59 @@ export interface paths {
         put: operations["SaveProductVariants"];
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{number}/videos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Reorder a product's videos and save their titles. */
+        put: operations["SaveProductVideos"];
+        /** Upload a product video (MP4, at most 50 MB; checked, stored as uploaded). */
+        post: operations["AddProductVideo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{number}/videos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a product video and its stored files. */
+        delete: operations["DeleteProductVideo"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{number}/videos/{id}/poster": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload the still image shown before a video plays. */
+        post: operations["SetProductVideoPoster"];
+        /** Remove a video's poster (the product image is shown instead). */
+        delete: operations["RemoveProductVideoPoster"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1940,6 +1993,7 @@ export interface components {
             weightGrams: null | number;
             metaTitle: null | string;
             metaDescription: null | string;
+            videos: components["schemas"]["ProductVideoInfo"][];
         };
         ProductEditView: {
             /** Format: int64 */
@@ -1965,6 +2019,7 @@ export interface components {
             /** Format: int32 */
             weightGrams: null | number;
             seo: components["schemas"]["SeoText"][];
+            videos: components["schemas"]["ProductVideoView"][];
         };
         ProductImageInfo: {
             url: string;
@@ -2037,6 +2092,31 @@ export interface components {
         ProductVariantsView: {
             specCodes: string[];
             variants: components["schemas"]["VariantView"][];
+        };
+        ProductVideoInfo: {
+            url: string;
+            posterUrl: null | string;
+            title: null | string;
+            /** Format: double */
+            durationSeconds: null | number;
+            /** Format: date-time */
+            uploadedUtc: string;
+        };
+        ProductVideoInput: {
+            /** Format: uuid */
+            id: string;
+            titles: components["schemas"]["VideoTitleText"][];
+        };
+        ProductVideoView: {
+            /** Format: uuid */
+            id: string;
+            url: string;
+            posterUrl: null | string;
+            /** Format: int64 */
+            sizeBytes: number;
+            /** Format: double */
+            durationSeconds: null | number;
+            titles: components["schemas"]["VideoTitleText"][];
         };
         PublicCurrency: {
             code: string;
@@ -2144,6 +2224,9 @@ export interface components {
             /** Format: int32 */
             weightGrams?: null | number;
             seo?: null | components["schemas"]["SeoText"][];
+        };
+        SaveProductVideosRequest: {
+            videos: components["schemas"]["ProductVideoInput"][];
         };
         SaveRedirectRequest: {
             fromPath: string;
@@ -2386,6 +2469,10 @@ export interface components {
             options: components["schemas"]["VariantOptionInput"][];
             gtin: null | string;
         };
+        VideoTitleText: {
+            locale: string;
+            title: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -2429,6 +2516,13 @@ export interface operations {
         responses: {
             /** @description OK */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Partial Content */
+            206: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3507,6 +3601,127 @@ export interface operations {
                 content: {
                     "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
                 };
+            };
+        };
+    };
+    SaveProductVideos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveProductVideosRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AddProductVideo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    file: components["schemas"]["IFormFile"];
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductVideoView"];
+                };
+            };
+        };
+    };
+    DeleteProductVideo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SetProductVideoPoster: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    file: components["schemas"]["IFormFile"];
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RemoveProductVideoPoster: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

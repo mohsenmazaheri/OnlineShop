@@ -87,6 +87,12 @@ const paths = {
   bolt: <path d="M13 2L4 14h7l-1 8 9-12h-7z" />,
   // Points to the reading direction's "forward"; flipped for RTL with the rtl:-scale-x-100 class.
   chevron: <path d="M9 6l6 6-6 6" />,
+  play: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M10 8.5v7l6-3.5z" />
+    </>
+  ),
 } as const;
 
 export type IconName = keyof typeof paths;

@@ -217,6 +217,11 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   `/`, `/api`, `/_next`; one hop, no loops; CSV import). `proxy.ts` answers them before the locale redirects from a
   one-minute in-memory table (`createRedirectCache`, `GET /api/v1/redirects`) and counts hits with
   `event.waitUntil(POST /api/v1/redirects/hits)`. Error codes `seo.*` → `admin.seoErrors`. Admin: `/{locale}/admin/seo`.
+- Product videos: `CatalogVideoService` (≤3 per product, poster image, titles per language) on
+  `MediaService.SaveVideoAsync`: streamed to `IFileStorage` as `{key}/video.mp4`, then checked by `Mp4Inspector`
+  (ftyp brand, moov, duration from mvhd) and deleted when refused; never re-encoded. `GET /api/v1/media/{key}/video.mp4`
+  serves it with Range (206). Uploads above 10 MB need `experimental.proxyClientMaxBodySize` (next.config, 52mb)
+  and nginx `client_max_body_size`; endpoints set `RequestSizeLimitAttribute(MediaEndpoints.MaxVideoRequestBytes)`.
 - Bulk transfer (`Application/Catalog/Transfer`): `ITableFile` formats (`CsvTableFile` in Application,
   `XlsxTableFile` in Infrastructure via MiniExcel; `TableFiles.Detect` picks Excel by the ZIP signature).
   `ProductExportService` writes the columns of `ProductColumns` (per-language `name:fa`…, `spec:{code}`); use flat

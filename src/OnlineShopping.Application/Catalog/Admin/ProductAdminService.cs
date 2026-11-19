@@ -73,6 +73,7 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
             .Include(p => p.SpecValues).ThenInclude(v => v.Option)
             .Include(p => p.Images)
             .Include(p => p.Variants)
+            .Include(p => p.Videos)
             .SingleOrDefaultAsync(p => p.PublicNumber == number, cancellationToken);
         return product is null ? NotFound() : await ViewAsync(product, cancellationToken);
     }
@@ -123,6 +124,7 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
             .Include(p => p.SpecValues).ThenInclude(v => v.Option)
             .Include(p => p.Images)
             .Include(p => p.Variants)
+            .Include(p => p.Videos)
             .SingleOrDefaultAsync(p => p.PublicNumber == number, cancellationToken);
         if (product is null)
             return NotFound();
@@ -304,7 +306,8 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
         p.Gtin,
         p.Mpn,
         p.WeightGrams,
-        ReadSeo(p));
+        ReadSeo(p),
+        p.Videos.Where(v => !v.IsDeleted).OrderBy(v => v.SortOrder).Select(v => CatalogVideoService.ToView(v, Store)).ToList());
 
     private static AppError NotFound() => AppError.NotFound(CatalogErrors.NotFound, "No such product.");
 }

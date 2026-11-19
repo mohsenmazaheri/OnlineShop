@@ -16,6 +16,13 @@ internal sealed class InMemoryFileStorage : IFileStorage
         return Task.CompletedTask;
     }
 
+    public async Task SaveAsync(string path, Stream content, CancellationToken cancellationToken = default)
+    {
+        using var copy = new MemoryStream();
+        await content.CopyToAsync(copy, cancellationToken);
+        Files[path] = copy.ToArray();
+    }
+
     public Task<Stream?> OpenReadAsync(string path, CancellationToken cancellationToken = default) =>
         Task.FromResult<Stream?>(Files.TryGetValue(path, out var bytes) ? new MemoryStream(bytes) : null);
 

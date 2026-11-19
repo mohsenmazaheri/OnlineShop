@@ -800,6 +800,66 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.ToTable("product_variants", (string)null);
                 });
 
+            modelBuilder.Entity("OnlineShopping.Domain.Catalog.ProductVideo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<double?>("DurationSeconds")
+                        .HasColumnType("double precision")
+                        .HasColumnName("duration_seconds");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<string>("PosterUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)")
+                        .HasColumnName("poster_url");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("size_bytes");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)")
+                        .HasColumnName("url");
+
+                    b.HasKey("Id")
+                        .HasName("pk_product_videos");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_product_videos_product_id");
+
+                    b.ToTable("product_videos", (string)null);
+                });
+
             modelBuilder.Entity("OnlineShopping.Domain.Catalog.SpecOption", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2179,6 +2239,47 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("OnlineShopping.Domain.Catalog.ProductVideo", b =>
+                {
+                    b.HasOne("OnlineShopping.Domain.Catalog.Product", "Product")
+                        .WithMany("Videos")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_product_videos_products_product_id");
+
+                    b.OwnsMany("OnlineShopping.Domain.Catalog.VideoTitleTranslation", "TitleTranslations", b1 =>
+                        {
+                            b1.Property<Guid>("ProductVideoId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("product_video_id");
+
+                            b1.Property<string>("Locale")
+                                .HasMaxLength(8)
+                                .HasColumnType("character varying(8)")
+                                .HasColumnName("locale");
+
+                            b1.Property<string>("Title")
+                                .IsRequired()
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("title");
+
+                            b1.HasKey("ProductVideoId", "Locale")
+                                .HasName("pk_product_video_title_translations");
+
+                            b1.ToTable("product_video_title_translations", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("ProductVideoId")
+                                .HasConstraintName("fk_product_video_title_translations_product_videos_product_vid");
+                        });
+
+                    b.Navigation("Product");
+
+                    b.Navigation("TitleTranslations");
+                });
+
             modelBuilder.Entity("OnlineShopping.Domain.Catalog.SpecOption", b =>
                 {
                     b.HasOne("OnlineShopping.Domain.Catalog.ProductSpec", "Spec")
@@ -2409,6 +2510,8 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.Navigation("SpecValues");
 
                     b.Navigation("Variants");
+
+                    b.Navigation("Videos");
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Catalog.ProductGroup", b =>

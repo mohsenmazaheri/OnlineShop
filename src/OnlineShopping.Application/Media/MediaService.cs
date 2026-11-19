@@ -36,6 +36,41 @@ public sealed class MediaService(IImageProcessor images, IFileStorage storage, I
         return new StoredImage(key, MediaUrls.For(key, MediaUrls.Sizes[0]), processed.Value.Width, processed.Value.Height);
     }
 
+    /// <summary>
+    /// Stores an uploaded MP4 video under a new key after checking it really is one (<see cref="Mp4Inspector"/>). Videos
+    /// are not re-encoded in v1: they are served as video/mp4 with nosniff, so a browser never runs them as anything else.
+    /// </summary>
+    public async Task<Result<StoredVideo>> SaveVideoAsync(Stream upload, long length, CancellationToken cancellationToken = default)
+    {
+        if (length <= 0)
+            return AppError.Validation(MediaErrors.Empty, "The file is empty.");
+        if (length > options.Value.MaxVideoBytes)
+            return AppError.Validation(MediaErrors.VideoTooLarge, $"The video is larger than {options.Value.MaxVideoBytes} bytes.");
+
+        var key = Guid.NewGuid().ToString("N");
+        var path = $"{key}/{MediaUrls.VideoFile}";
+        await storage.SaveAsync(path, upload, cancellationToken);
+
+        Mp4Info? info = null;
+        long size = 0;
+        await using (var stored = await storage.OpenReadAsync(path, cancellationToken))
+        {
+            if (stored is not null)
+            {
+                size = stored.Length;
+                info = size <= options.Value.MaxVideoBytes ? Mp4Inspector.Inspect(stored) : null;
+            }
+        }
+        if (info is null)
+        {
+            await storage.DeleteFolderAsync(key, cancellationToken);
+            return size > options.Value.MaxVideoBytes
+                ? AppError.Validation(MediaErrors.VideoTooLarge, "The video is too large.")
+                : AppError.Validation(MediaErrors.InvalidVideo, "Only MP4 videos are accepted.");
+        }
+        return new StoredVideo(key, MediaUrls.Video(key), size, info.DurationSeconds);
+    }
+
     /// <summary>Deletes the files behind a media address; other addresses (demo images, external) are left alone.</summary>
     public async Task DeleteAsync(string? url, CancellationToken cancellationToken = default)
     {

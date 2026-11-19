@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ProductDetail } from "@/lib/api/storefront";
-import { absoluteUrl, jsonLdScript, productAlternates, productJsonLd } from "./product";
+import { absoluteUrl, isoDuration, jsonLdScript, productAlternates, productJsonLd } from "./product";
 
 const site = "https://shop.example.com";
 
@@ -33,6 +33,7 @@ const product: ProductDetail = {
   weightGrams: 189,
   metaTitle: null,
   metaDescription: null,
+  videos: [],
 };
 
 const offers = (data: ReturnType<typeof productJsonLd>) => ("offers" in data ? data.offers : undefined);
@@ -101,6 +102,30 @@ describe("productJsonLd", () => {
       offers: { price: "698", priceCurrency: "USD", availability: "https://schema.org/InStock" },
     });
     expect(second).toMatchObject({ offers: { price: "798", availability: "https://schema.org/OutOfStock" } });
+  });
+
+  it("describes videos as VideoObjects about the product", () => {
+    const data = productJsonLd(
+      { ...product, videos: [{ url: "/api/v1/media/" + "a".repeat(32) + "/video.mp4", posterUrl: null, title: "Unboxing", durationSeconds: 65.4, uploadedUtc: "2026-11-19T10:00:00Z" }] },
+      "u",
+      "EUR",
+      site,
+    ) as Record<string, unknown>;
+
+    expect(data.subjectOf).toEqual([
+      {
+        "@type": "VideoObject",
+        name: "Unboxing",
+        description: "A phone.",
+        contentUrl: `${site}/api/v1/media/${"a".repeat(32)}/video.mp4`,
+        uploadDate: "2026-11-19T10:00:00Z",
+        thumbnailUrl: `${site}/demo/products/phone-x1.svg`,
+        duration: "PT1M5S",
+      },
+    ]);
+    expect(isoDuration(3600)).toBe("PT1H");
+    expect(isoDuration(0)).toBe("PT0S");
+    expect(isoDuration(3725)).toBe("PT1H2M5S");
   });
 
   it("is safe to embed in a script tag", () => {

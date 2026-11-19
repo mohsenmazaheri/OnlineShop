@@ -61,6 +61,7 @@ const detail: ProductDetail = {
   weightGrams: null,
   metaTitle: null,
   metaDescription: null,
+  videos: [],
 };
 
 describe("Price", () => {

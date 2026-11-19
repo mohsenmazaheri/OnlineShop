@@ -453,7 +453,9 @@
       "variant_repeated": "Two variants have the same options.",
       "too_many_variants": "At most 100 variants per product.",
       "gtin_invalid": "The barcode is not valid (8, 12, 13 or 14 digits with a correct check digit).",
-      "weight_invalid": "The weight must be between 0 and 1,000,000 grams."
+      "weight_invalid": "The weight must be between 0 and 1,000,000 grams.",
+      "too_many_videos": "A product has at most 3 videos.",
+      "videos_mismatch": "The list of videos has changed; reload the page."
     },
     "imagesTitle": "Images",
     "imageUpload": "Add images",
@@ -475,7 +477,9 @@
       "type_not_allowed": "Only JPEG, PNG, WebP or GIF images are accepted.",
       "invalid_image": "The image file is damaged.",
       "too_many_pixels": "The image is too large in pixels.",
-      "not_found": "Image not found."
+      "not_found": "Image not found.",
+      "invalid_video": "Only MP4 videos are accepted (not MOV or broken files).",
+      "video_too_large": "The video is larger than 50 MB; compress it first."
     },
     "navBrands": "Brands",
     "navSpecs": "Specs",
@@ -634,7 +638,17 @@
       "group_invalid": "Write the group as \"Category > Sub-category > Group\".",
       "option_unknown": "This option is not defined for this spec.",
       "stock_on_variants": "This product has variants: give each variant's stock with its own SKU."
-    }
+    },
+    "videosTitle": "Videos",
+    "videosIntro": "Up to 3 MP4 videos (50 MB each). Videos are stored as uploaded, so compress them first (for example 720p H.264). The shop shows them after the images and loads them only when played.",
+    "videoNone": "No videos yet.",
+    "videoUpload": "Upload a video (MP4)",
+    "videoUploading": "Uploading the video",
+    "videoHint": "At most 50 MB",
+    "videoTitle": "Title",
+    "videoPoster": "Image before playing",
+    "videosSave": "Save order and titles",
+    "confirmDeleteVideo": "Delete this video?"
   },
   "footer": {
     "shopping": "Shopping",
@@ -685,6 +699,7 @@
     "approximate": "Approximate price; you pay in {base}.",
     "images": "Product images",
     "brand": "Brand",
-    "soldOutOption": "This combination is sold out"
+    "soldOutOption": "This combination is sold out",
+    "video": "Video"
   }
 }
