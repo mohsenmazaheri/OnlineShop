@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using OnlineShopping.Api.Common;
 using OnlineShopping.Application.Authorization;
 using OnlineShopping.Application.Settings;
@@ -21,6 +22,22 @@ public static class BrandingEndpoints
             .Validate<SaveBrandingRequest>()
             .WithName("SaveBranding")
             .WithSummary("Change the shop's look; applied by the storefront at runtime, no rebuild.");
+
+        admin.MapPost("/{kind}", async (BrandingImage kind, IFormFile file, BrandingService branding, CancellationToken ct) =>
+            {
+                await using var stream = file.OpenReadStream();
+                return (await branding.SetImageAsync(kind, stream, file.Length, ct)).ToHttpResult();
+            })
+            .DisableAntiforgery()
+            .WithMetadata(new RequestSizeLimitAttribute(MediaEndpoints.MaxRequestBytes))
+            .WithName("SetBrandingImage")
+            .WithSummary("Upload the logo (kind Logo) or the home banner image (kind Hero); replaces the previous one.")
+            .Produces<BrandingView>();
+
+        admin.MapDelete("/{kind}", async (BrandingImage kind, BrandingService branding, CancellationToken ct) =>
+                TypedResults.Ok(await branding.RemoveImageAsync(kind, ct)))
+            .WithName("RemoveBrandingImage")
+            .WithSummary("Remove the logo or the home banner image.");
 
         return app;
     }

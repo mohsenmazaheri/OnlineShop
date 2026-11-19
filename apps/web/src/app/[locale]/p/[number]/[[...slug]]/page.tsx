@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { ProductView } from "@/components/product/ProductView";
 import { getProduct } from "@/lib/api/storefront";
 import { productPath } from "@/lib/catalog/product-path";
+import { imageVariant } from "@/lib/media/image";
 import { convertAmount, isIsoCurrency, type DisplayCurrency } from "@/lib/currency/display";
 import { loadDisplayCurrency } from "@/lib/currency/load";
 import { currencyName } from "@/lib/i18n/display-names";
@@ -37,7 +38,8 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/p/[numbe
 
   const { alternates, indexable } = productAlternates(product, locale, store.locales, store.defaultLocale, siteUrl());
   const description = product.description?.slice(0, 160);
-  const image = product.images[0];
+  // Social networks don't show SVG previews: use the first raster image.
+  const image = product.images.find((i) => !i.url.endsWith(".svg"))?.url;
   return {
     title: product.name,
     description,
@@ -51,8 +53,8 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/p/[numbe
       title: product.name,
       description,
       url: alternates.canonical as string,
-      // Link previews do not render SVG; real product photos (phase 4) will be used here.
-      ...(image && !image.endsWith(".svg") ? { images: [absoluteUrl(siteUrl(), image)] } : {}),
+      // Link previews do not render SVG (the demo illustrations); uploaded photos are WebP.
+      ...(image ? { images: [absoluteUrl(siteUrl(), imageVariant(image, 1200))] } : {}),
     },
   };
 }

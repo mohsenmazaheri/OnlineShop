@@ -7,6 +7,7 @@ namespace OnlineShopping.UnitTests.Application;
 public sealed class BrandingServiceTests : IDisposable
 {
     private readonly SqliteTestDatabase _database = new();
+    private readonly InMemoryFileStorage _storage = new();
 
     public void Dispose() => _database.Dispose();
 
@@ -15,7 +16,7 @@ public sealed class BrandingServiceTests : IDisposable
     {
         await using var db = _database.CreateContext();
 
-        Assert.Equal(BrandingService.Defaults, await new BrandingService(db).GetAsync());
+        Assert.Equal(BrandingService.Defaults, await new BrandingService(db, _storage.Media()).GetAsync());
     }
 
     [Fact]
@@ -23,13 +24,13 @@ public sealed class BrandingServiceTests : IDisposable
     {
         await using (var db = _database.CreateContext())
         {
-            await new BrandingService(db).SaveAsync(new SaveBrandingRequest("#AA3300", CornerStyle.Round, FontChoice.System, HomeLayout.Catalog));
-            await new BrandingService(db).SaveAsync(new SaveBrandingRequest("#1D4ED8", CornerStyle.Sharp, FontChoice.Vazirmatn, HomeLayout.Showcase));
+            await new BrandingService(db, _storage.Media()).SaveAsync(new SaveBrandingRequest("#AA3300", CornerStyle.Round, FontChoice.System, HomeLayout.Catalog));
+            await new BrandingService(db, _storage.Media()).SaveAsync(new SaveBrandingRequest("#1D4ED8", CornerStyle.Sharp, FontChoice.Vazirmatn, HomeLayout.Showcase));
         }
 
         await using var check = _database.CreateContext();
         Assert.Single(check.StoreBranding);
-        Assert.Equal(new BrandingView("#1d4ed8", CornerStyle.Sharp, FontChoice.Vazirmatn, HomeLayout.Showcase), await new BrandingService(check).GetAsync());
+        Assert.Equal(new BrandingView("#1d4ed8", CornerStyle.Sharp, FontChoice.Vazirmatn, HomeLayout.Showcase, null, null), await new BrandingService(check, _storage.Media()).GetAsync());
     }
 
     [Theory]
@@ -53,5 +54,27 @@ public sealed class BrandingServiceTests : IDisposable
         var result = new SaveBrandingRequestValidator().Validate(new SaveBrandingRequest("#000000", (CornerStyle)9, FontChoice.System, (HomeLayout)9));
 
         Assert.Equal(2, result.Errors.Count);
+    }
+
+    [Fact]
+    public async Task The_logo_and_banner_are_uploaded_replaced_and_removed()
+    {
+        await using var db = _database.CreateContext();
+        var service = new BrandingService(db, _storage.Media());
+        var png = TestImages.Png(400, 200);
+
+        var first = (await service.SetImageAsync(BrandingImage.Logo, new MemoryStream(png), png.Length)).Value;
+        var second = (await service.SetImageAsync(BrandingImage.Logo, new MemoryStream(png), png.Length)).Value;
+        var hero = (await service.SetImageAsync(BrandingImage.Hero, new MemoryStream(png), png.Length)).Value;
+
+        Assert.EndsWith("/300.webp", second.LogoUrl);
+        Assert.EndsWith("/1200.webp", hero.HeroImageUrl);
+        Assert.NotEqual(first.LogoUrl, second.LogoUrl);
+        Assert.Equal(6, _storage.Files.Count);
+
+        var removed = await service.RemoveImageAsync(BrandingImage.Logo);
+        Assert.Null(removed.LogoUrl);
+        Assert.Equal(3, _storage.Files.Count);
+        Assert.Equal("media.type_not_allowed", (await service.SetImageAsync(BrandingImage.Hero, new MemoryStream("x"u8.ToArray()), 1)).Error!.Code);
     }
 }

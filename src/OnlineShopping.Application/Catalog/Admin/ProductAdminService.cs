@@ -240,7 +240,7 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
             .OrderBy(v => v.Spec.SortOrder)
             .Select(v => new ProductSpecInput(v.Spec.Code, v.NumberValue, v.BooleanValue, v.TextValue, v.Option?.Code))
             .ToList(),
-        p.Images.OrderBy(i => i.SortOrder).Select(i => i.Url).ToList());
+        p.Images.OrderBy(i => i.SortOrder).Select(i => CatalogImageService.ToView(i, Store)).ToList());
 
     private static AppError NotFound() => AppError.NotFound(CatalogErrors.NotFound, "No such product.");
 }

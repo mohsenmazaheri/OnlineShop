@@ -30,6 +30,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      # Uploaded product, category and branding images (keep it in backups).
+      - media:/app/App_Data/media
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__Default: Host=db;Port=5432;Database=${POSTGRES_DB:-onlineshop};Username=${POSTGRES_USER:-onlineshop};Password=${POSTGRES_PASSWORD}
@@ -102,6 +105,7 @@ services:
 
 volumes:
   db-data:
+  media:
 
 networks:
   backend:

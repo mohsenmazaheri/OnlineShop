@@ -67,6 +67,7 @@ async function StoreFooter({ locale, dict }: { locale: Locale; dict: Dictionary 
     <SiteFooter
       locale={locale}
       storeName={store.name}
+      logoUrl={store.branding.logoUrl}
       locales={store.locales}
       description={dict.meta.description}
       texts={dict.footer}

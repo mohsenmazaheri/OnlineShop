@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using OnlineShopping.Application.Accounts;
 using OnlineShopping.Application.Catalog.Admin;
 using OnlineShopping.IntegrationTests.TestSupport;
+using SkiaSharp;
 
 namespace OnlineShopping.IntegrationTests;
 
@@ -20,6 +21,8 @@ public sealed class CatalogAdminApiTests(CatalogAdminApiTests.AdminFactory facto
         {
             ["Database:AdminEmail"] = AdminEmail,
             ["Database:AdminPassword"] = AdminPassword,
+            // Uploads go to a throwaway folder.
+            ["Storage:LocalPath"] = Path.Combine(Path.GetTempPath(), "os-it-media-" + Guid.NewGuid().ToString("N")),
         };
     }
 
@@ -80,5 +83,44 @@ public sealed class CatalogAdminApiTests(CatalogAdminApiTests.AdminFactory facto
 
         Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync("/api/v1/admin/catalog")).StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.PostAsJsonAsync("/api/v1/admin/products", new { })).StatusCode);
+    }
+
+    [Fact]
+    public async Task Product_images_are_uploaded_served_with_long_caching_and_deleted()
+    {
+        using var admin = await AdminAsync();
+        var suffix = Guid.NewGuid().ToString("N")[..8];
+        var category = await ReadAsync<CatalogNodeView>(await admin.PostAsJsonAsync("/api/v1/admin/catalog/categories", Texts($"تصویر {suffix}")));
+        var sub = await ReadAsync<CatalogNodeView>(await admin.PostAsJsonAsync($"/api/v1/admin/catalog/categories/{category.Id}/subcategories", Texts("زیر")));
+        var group = await ReadAsync<CatalogNodeView>(await admin.PostAsJsonAsync($"/api/v1/admin/catalog/subcategories/{sub.Id}/groups", Texts("گروه")));
+        var product = await ReadAsync<ProductEditView>(await admin.PostAsJsonAsync("/api/v1/admin/products",
+            new SaveProductRequest($"IMG-{suffix}", 10, null, 1, true, group.Id, [new("fa", "کالا با تصویر", null, null)], [])));
+
+        using var upload = new MultipartFormDataContent { { new ByteArrayContent(Png(900, 600)), "file", "photo.png" } };
+        var image = await ReadAsync<ProductImageView>(await admin.PostAsync($"/api/v1/admin/products/{product.Number}/images", upload));
+
+        using var anonymous = factory.CreateClient();
+        using var served = await anonymous.GetAsync(image.Url.Replace("/1200.webp", "/600.webp", StringComparison.Ordinal));
+        Assert.Equal(HttpStatusCode.OK, served.StatusCode);
+        Assert.Equal("image/webp", served.Content.Headers.ContentType?.MediaType);
+        Assert.Contains("immutable", served.Headers.CacheControl?.ToString(), StringComparison.Ordinal);
+        Assert.Equal((900, 600), (image.Width, image.Height));
+
+        using var fake = new MultipartFormDataContent { { new ByteArrayContent("<svg/>"u8.ToArray()), "file", "x.png" } };
+        using var refused = await admin.PostAsync($"/api/v1/admin/products/{product.Number}/images", fake);
+        Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
+
+        Assert.Equal(HttpStatusCode.OK, (await admin.DeleteAsync($"/api/v1/admin/products/{product.Number}/images/{image.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await anonymous.GetAsync(image.Url)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await anonymous.GetAsync("/api/v1/media/..%2F..%2Fappsettings/600.webp")).StatusCode);
+    }
+
+    private static byte[] Png(int width, int height)
+    {
+        using var bitmap = new SKBitmap(width, height);
+        using (var canvas = new SKCanvas(bitmap))
+            canvas.Clear(SKColors.Teal);
+        using var data = bitmap.Encode(SKEncodedImageFormat.Png, 90);
+        return data.ToArray();
     }
 }

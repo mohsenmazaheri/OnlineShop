@@ -438,7 +438,31 @@
       "stock_invalid": "موجودی نامعتبر است.",
       "group_required": "یک گروه کالا انتخاب کنید.",
       "spec_not_found": "این مشخصه وجود ندارد.",
-      "spec_value_invalid": "مقدار با نوع مشخصه نمی‌خواند."
+      "spec_value_invalid": "مقدار با نوع مشخصه نمی‌خواند.",
+      "too_many_images": "هر کالا حداکثر ۱۲ تصویر دارد.",
+      "images_mismatch": "فهرست تصاویر به‌روز نیست؛ صفحه را دوباره باز کنید."
+    },
+    "imagesTitle": "تصاویر",
+    "imageUpload": "افزودن تصویر",
+    "imageUploading": "در حال بارگذاری…",
+    "imageHint": "JPEG، PNG، WebP یا GIF تا ۱۰ مگابایت؛ به WebP در سه اندازه تبدیل می‌شود.",
+    "imageNone": "بدون تصویر",
+    "imageMain": "تصویر اصلی",
+    "imageAlt": "متن جایگزین (برای نابینایان و جستجوی تصویر)",
+    "imageMoveUp": "بالاتر",
+    "imageMoveDown": "پایین‌تر",
+    "imagesSave": "ذخیرهٔ ترتیب و متن‌ها",
+    "categoryImage": "تصویر دسته",
+    "brandingImagesTitle": "لوگو و بنر",
+    "logo": "لوگو",
+    "heroImage": "تصویر بنر صفحهٔ اول",
+    "mediaErrors": {
+      "empty": "فایل خالی است.",
+      "too_large": "حجم فایل بیشتر از حد مجاز است.",
+      "type_not_allowed": "فقط تصویر JPEG، PNG، WebP یا GIF پذیرفته می‌شود.",
+      "invalid_image": "فایل تصویر سالم نیست.",
+      "too_many_pixels": "ابعاد تصویر بیش از حد بزرگ است.",
+      "not_found": "تصویر پیدا نشد."
     }
   },
   "footer": {
@@ -487,6 +511,7 @@
     "breadcrumb": "مسیر صفحه",
     "home": "خانه",
     "sku": "کد کالا",
-    "approximate": "قیمت تقریبی است؛ پرداخت به {base} انجام می‌شود."
+    "approximate": "قیمت تقریبی است؛ پرداخت به {base} انجام می‌شود.",
+    "images": "تصاویر کالا"
   }
 }

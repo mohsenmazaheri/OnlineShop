@@ -21,6 +21,8 @@ using OnlineShopping.Infrastructure.Persistence.Interceptors;
 using OnlineShopping.Infrastructure.Persistence.Seeding;
 using OnlineShopping.Infrastructure.Persistence.Seeding.Demo;
 using OnlineShopping.Infrastructure.Pricing;
+using OnlineShopping.Infrastructure.Media;
+using OnlineShopping.Application.Media;
 
 namespace OnlineShopping.Infrastructure;
 
@@ -73,6 +75,9 @@ public static class DependencyInjection
         services.AddScoped<DemoCatalogSeeder>();
         services.AddScoped<CurrencySeeder>();
         AddExchangeRates(services, configuration);
+        services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
+        services.AddSingleton<IFileStorage, LocalFileStorage>();
+        services.AddSingleton<IImageProcessor, SkiaImageProcessor>();
         services.AddScoped<DataSeeder>();
 
         services.AddHealthChecks()

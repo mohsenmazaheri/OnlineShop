@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using OnlineShopping.Api.Common;
 using OnlineShopping.Application.Authorization;
@@ -70,6 +71,43 @@ public static class CatalogAdminEndpoints
             .Validate<SaveProductRequest>().WithName("UpdateProduct").WithSummary("Change a product.").Produces<ProductEditView>();
         products.MapDelete("/{number:long}", async (long number, ProductAdminService admin, CancellationToken ct) => (await admin.DeleteAsync(number, ct)).ToHttpResult())
             .WithName("DeleteProduct").WithSummary("Remove a product from the shop (its number is never reused).");
+
+        // Uploads: multipart with one "file"; the Origin check (OriginCheckMiddleware) protects them against CSRF.
+        products.MapPost("/{number:long}/images", async (long number, IFormFile file, CatalogImageService images, CancellationToken ct) =>
+            {
+                await using var stream = file.OpenReadStream();
+                return (await images.AddProductImageAsync(number, stream, file.Length, ct)).ToHttpResult();
+            })
+            .DisableAntiforgery()
+            .WithMetadata(new RequestSizeLimitAttribute(MediaEndpoints.MaxRequestBytes))
+            .WithName("AddProductImage")
+            .WithSummary("Upload a product image (JPEG, PNG, WebP or GIF; checked, re-encoded to WebP in three sizes).")
+            .Produces<ProductImageView>();
+
+        products.MapPut("/{number:long}/images", async (long number, SaveProductImagesRequest request, CatalogImageService images, CancellationToken ct) =>
+                (await images.SaveProductImagesAsync(number, request, ct)).ToHttpResult())
+            .WithName("SaveProductImages")
+            .WithSummary("Reorder a product's images (the first is the main one) and save their alternative texts.");
+
+        products.MapDelete("/{number:long}/images/{id:guid}", async (long number, Guid id, CatalogImageService images, CancellationToken ct) =>
+                (await images.DeleteProductImageAsync(number, id, ct)).ToHttpResult())
+            .WithName("DeleteProductImage")
+            .WithSummary("Remove a product image and its stored files.");
+
+        tree.MapPost("/categories/{id:guid}/image", async (Guid id, IFormFile file, CatalogImageService images, CancellationToken ct) =>
+            {
+                await using var stream = file.OpenReadStream();
+                return (await images.SetCategoryImageAsync(id, stream, file.Length, ct)).ToHttpResult();
+            })
+            .DisableAntiforgery()
+            .WithMetadata(new RequestSizeLimitAttribute(MediaEndpoints.MaxRequestBytes))
+            .WithName("SetCategoryImage")
+            .WithSummary("Upload a category's tile image (replaces the previous one).");
+
+        tree.MapDelete("/categories/{id:guid}/image", async (Guid id, CatalogImageService images, CancellationToken ct) =>
+                (await images.RemoveCategoryImageAsync(id, ct)).ToHttpResult())
+            .WithName("RemoveCategoryImage")
+            .WithSummary("Remove a category's tile image.");
 
         return app;
     }

@@ -40,6 +40,16 @@ describe("toBranding", () => {
       corners: "Sharp",
       font: "System",
       homeLayout: "Catalog",
+      logoUrl: null,
+      heroImageUrl: null,
+    });
+  });
+
+  it("accepts only the API's own media addresses as logo and banner", () => {
+    const key = "0123456789abcdef0123456789abcdef";
+    expect(toBranding({ logoUrl: `/api/v1/media/${key}/300.webp`, heroImageUrl: "javascript:alert(1)" })).toMatchObject({
+      logoUrl: `/api/v1/media/${key}/300.webp`,
+      heroImageUrl: null,
     });
   });
 

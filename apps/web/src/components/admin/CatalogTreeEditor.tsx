@@ -9,6 +9,7 @@ import type { ErrorTexts } from "@/lib/account/problems";
 import { refreshStorefront } from "@/lib/admin/refresh";
 import type { components } from "@/lib/api/schema";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
+import { ImageUploadField } from "./ImageUploadField";
 import { LocalizedFields, readLocalizedFields, type LocalizedText } from "./LocalizedFields";
 
 type CatalogTree = components["schemas"]["CatalogTree"];
@@ -114,6 +115,16 @@ export function CatalogTreeEditor(shared: Shared) {
       {tree.categories.map((category) => (
         <Node key={category.id} title={displayName(category.texts, locale)} meta={texts.childCount.replace("{count}", String(category.subCategories.length))}>
           <NodeForm {...shared} kind="category" id={category.id} values={category.texts} />
+          <ImageUploadField
+            locale={locale}
+            label={texts.categoryImage}
+            currentUrl={category.imageUrl}
+            uploadPath={`/api/v1/admin/catalog/categories/${category.id}/image`}
+            removePath={`/api/v1/admin/catalog/categories/${category.id}/image`}
+            texts={texts}
+            errorTexts={{ ...texts.errors, ...texts.catalogErrors, ...texts.mediaErrors } as ErrorTexts}
+            refresh={["catalog"]}
+          />
           <div className="flex flex-col gap-2 border-s-2 border-border ps-3">
             {category.subCategories.map((sub) => (
               <Node key={sub.id} title={displayName(sub.texts, locale)} meta={texts.childCount.replace("{count}", String(sub.groups.length))}>

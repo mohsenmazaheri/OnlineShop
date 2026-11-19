@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ProductCard as ProductCardData } from "@/lib/api/storefront";
 import { productPath } from "@/lib/catalog/product-path";
+import { imageVariant } from "@/lib/media/image";
 import type { DisplayCurrency } from "@/lib/currency/display";
 import { Price, type PriceTexts } from "./Price";
 
@@ -26,7 +27,7 @@ export function ProductCard({ product, locale, money, texts, priority = false }:
       <span className="relative block aspect-square overflow-hidden rounded-xl bg-surface-muted">
         {product.imageUrl && (
           <Image
-            src={product.imageUrl}
+            src={imageVariant(product.imageUrl, 600)}
             alt=""
             width={300}
             height={300}

@@ -79,7 +79,7 @@ public sealed class ProductQueriesTests : IDisposable
         Assert.Equal("orvia-x1-pro-smartphone-256-gb", phone.Slug);
         Assert.Equal("Elektronik", phone.Category.Name);
         Assert.Equal("Handys", phone.SubCategory.Name);
-        Assert.Equal(["/demo/products/phone-x1-pro.svg"], phone.Images);
+        Assert.Equal([new ProductImageInfo("/demo/products/phone-x1-pro.svg", null)], phone.Images);
         Assert.True(phone.InStock);
 
         var color = phone.Specs.Single(s => s.Code == "color");

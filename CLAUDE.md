@@ -186,6 +186,16 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   defaults on a new shop. `ExchangeRateSyncWorker` refreshes `AutoUpdate` rates through `IExchangeRateSource`
   (`CurrencyApiRateSource`, fawazahmed0/exchange-api with fallback URL; `None` in tests).
 - Branding: one `StoreBranding` row (`BrandingService`), returned in `GET /store`; the colour is validated as #rrggbb.
+- Media (`Application/Media`): uploads go through `MediaService.SaveImageAsync` only — type from magic bytes
+  (`ImageSignatures`), size and pixel limits (`Media` options), then `IImageProcessor` (`SkiaImageProcessor`) always
+  re-encodes to WebP 1200/600/300 (EXIF orientation applied, metadata dropped, never enlarged). Files live in
+  `IFileStorage` (`LocalFileStorage`, `Storage:LocalPath`, rejects paths outside the root) as `{key}/{size}.webp` and
+  are served by `GET /api/v1/media/{key}/{size}.webp` with immutable caching — so a key is never overwritten: a new
+  upload gets a new key and the old files are deleted. Store the 1200 URL (category: 600, logo: 300) and pick other
+  sizes with `MediaUrls.For` / web `imageVariant()`. Upload endpoints take multipart field `file` and
+  `.DisableAntiforgery()` (the Origin check still applies). `CatalogImageService`: product images (max 12, order +
+  per-language alt in `product_image_alt_translations`) and the category image. The web app accepts only
+  `isMediaUrl()` addresses as logo/banner.
 - Catalog admin (`Application/Catalog/Admin`, permission catalog.manage): `CatalogTreeService` (categories →
   sub-categories → groups; only empty nodes can be deleted) and `ProductAdminService` (list/search, editor view,
   create/update/soft delete, spec values checked against the spec kind; a new product gets max(PublicNumber incl.

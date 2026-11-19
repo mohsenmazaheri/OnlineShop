@@ -29,6 +29,9 @@
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.2.0" />
     <PackageVersion Include="MailKit" Version="4.18.2" />
     <PackageVersion Include="libphonenumber-csharp" Version="9.0.43" />
+    <!-- Images: decode JPEG/PNG/WebP/GIF, re-encode WebP (MIT). Linux natives without extra system packages. -->
+    <PackageVersion Include="SkiaSharp" Version="4.157.0" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.157.0" />
   </ItemGroup>
 
   <ItemGroup Label="Testing">

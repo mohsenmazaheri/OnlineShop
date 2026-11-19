@@ -15,6 +15,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" />
     <PackageReference Include="libphonenumber-csharp" />
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="OnlineShopping.UnitTests" />

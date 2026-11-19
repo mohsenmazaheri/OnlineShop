@@ -44,3 +44,22 @@ function safeJson(text: string): unknown {
     return null;
   }
 }
+
+/**
+ * Upload one file to the API from the browser as multipart form data (field "file"). Same origin, so the session cookie
+ * travels and the API's Origin check passes; the browser sets the multipart boundary itself.
+ */
+export async function uploadFile<T>(path: `/api/v1/${string}`, file: File, fetchImpl: typeof fetch = fetch): Promise<ApiResult<T>> {
+  const body = new FormData();
+  body.append("file", file);
+  let response: Response;
+  try {
+    response = await fetchImpl(path, { method: "POST", credentials: "same-origin", headers: { Accept: "application/json" }, body });
+  } catch {
+    return { ok: false, problem: { status: 0, code: "network", fieldErrors: {} } };
+  }
+  const text = await response.text();
+  const json: unknown = text ? safeJson(text) : null;
+  if (!response.ok) return { ok: false, problem: parseProblem(response.status, json) };
+  return { ok: true, data: json as T };
+}

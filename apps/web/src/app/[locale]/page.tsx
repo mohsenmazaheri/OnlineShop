@@ -37,6 +37,7 @@ async function StoreHero({ locale, dict }: { locale: Locale; dict: Dictionary })
       badge={dict.home.heroBadge}
       cta={dict.home.heroCta}
       ctaHref={`/${locale}#categories`}
+      imageUrl={store.branding.heroImageUrl}
     />
   );
 }

@@ -22,6 +22,8 @@ public static class CatalogErrors
     public const string GroupRequired = "catalog.group_required";
     public const string SpecNotFound = "catalog.spec_not_found";
     public const string SpecValueInvalid = "catalog.spec_value_invalid";
+    public const string TooManyImages = "catalog.too_many_images";
+    public const string ImagesMismatch = "catalog.images_mismatch";
 }
 
 /// <summary>
@@ -81,7 +83,18 @@ public sealed record ProductEditView(
     Guid ProductGroupId,
     IReadOnlyList<LocalizedText> Texts,
     IReadOnlyList<ProductSpecInput> Specs,
-    IReadOnlyList<string> Images);
+    IReadOnlyList<ProductImageView> Images);
+
+/// <summary>An image's alternative text in one language (empty: not translated).</summary>
+public sealed record ImageAltText(string Locale, string Alt);
+
+/// <summary>A product image for the admin: its address, size and alternative text in every shop language.</summary>
+public sealed record ProductImageView(Guid Id, string Url, int? Width, int? Height, IReadOnlyList<ImageAltText> Alts);
+
+public sealed record ProductImageInput(Guid Id, IReadOnlyList<ImageAltText> Alts);
+
+/// <summary>All of a product's images in their new order, with their alternative texts.</summary>
+public sealed record SaveProductImagesRequest(IReadOnlyList<ProductImageInput> Images);
 
 public sealed record SpecOptionChoice(string Code, string Value);
 
