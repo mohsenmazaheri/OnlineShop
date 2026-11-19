@@ -121,3 +121,16 @@ export function getBrands(fetchImpl: typeof fetch = fetch): Promise<BrandList | 
 export function getSpecLibrary(fetchImpl: typeof fetch = fetch): Promise<SpecList | null> {
   return getForUser<SpecList>("/api/v1/admin/specs", fetchImpl);
 }
+
+export type SynonymList = components["schemas"]["SynonymList"];
+export type RedirectView = components["schemas"]["RedirectView"];
+
+/** Every search synonym group (admin). */
+export function getSynonyms(fetchImpl: typeof fetch = fetch): Promise<SynonymList | null> {
+  return getForUser<SynonymList>("/api/v1/admin/seo/synonyms", fetchImpl);
+}
+
+/** Every redirect with its usage (admin). */
+export function getRedirects(fetchImpl: typeof fetch = fetch): Promise<RedirectView[] | null> {
+  return getForUser<RedirectView[]>("/api/v1/admin/seo/redirects", fetchImpl);
+}

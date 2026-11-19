@@ -166,8 +166,15 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
         if (specs.Value.Any(s => variantSpecs.Contains(s.Spec.Id)))
             return AppError.Conflict(CatalogErrors.SpecIsVariant, "The variants vary by this spec; set it per variant.");
 
+        var gtin = ProductCodes.NormalizeGtin(request.Gtin);
+        if (!string.IsNullOrWhiteSpace(request.Gtin) && gtin is null)
+            return AppError.Validation(CatalogErrors.GtinInvalid, $"{request.Gtin} is not a valid barcode.");
+
         var main = LocalizedTexts.Default(request.Texts, Store.DefaultLocale);
         product.Name = main.Name;
+        product.Gtin = gtin;
+        product.Mpn = string.IsNullOrWhiteSpace(request.Mpn) ? null : request.Mpn.Trim();
+        product.WeightGrams = request.WeightGrams;
         product.Slug = LocalizedTexts.SlugFor(main);
         product.Description = main.Description;
         product.SKU = sku;
@@ -181,8 +188,47 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
         product.ProductGroupId = request.ProductGroupId;
         LocalizedTexts.ApplyTranslations(request.Texts, Store.DefaultLocale, product.Translations, withSlug: true, withDescription: true);
         ApplySpecs(product, specs.Value);
+        if (request.Seo is { } seo)
+            ApplySeo(product, seo);
         return true;
     }
+
+    /// <summary>
+    /// Search texts: the default language into the product's columns, the others into its translation rows (a
+    /// language without a translated name has no row, and no search texts either: its page is not indexed).
+    /// </summary>
+    private void ApplySeo(Product product, IReadOnlyList<SeoText> seo)
+    {
+        static string? Clean(string? text, int max)
+        {
+            var trimmed = text?.Trim();
+            return string.IsNullOrEmpty(trimmed) ? null : trimmed.Length > max ? trimmed[..max] : trimmed;
+        }
+        foreach (var text in seo)
+        {
+            var title = Clean(text.MetaTitle, 200);
+            var description = Clean(text.MetaDescription, 400);
+            var tags = ProductCodes.NormalizeTags(text.Tags, 500);
+            if (text.Locale == Store.DefaultLocale)
+            {
+                (product.MetaTitle, product.MetaDescription, product.Tags) = (title, description, tags);
+            }
+            else if (product.Translations.FirstOrDefault(t => t.Locale == text.Locale) is { } translation)
+            {
+                (translation.MetaTitle, translation.MetaDescription, translation.Tags) = (title, description, tags);
+            }
+        }
+    }
+
+    /// <summary>The search texts in every shop language (empty where not written).</summary>
+    private List<SeoText> ReadSeo(Product p) => Store.LocaleList
+        .OrderBy(l => l == Store.DefaultLocale ? 0 : 1)
+        .Select(l => l == Store.DefaultLocale
+            ? new SeoText(l, p.MetaTitle, p.MetaDescription, p.Tags)
+            : p.Translations.FirstOrDefault(t => t.Locale == l) is { } t
+                ? new SeoText(l, t.MetaTitle, t.MetaDescription, t.Tags)
+                : new SeoText(l, null, null, null))
+        .ToList();
 
     private sealed record ResolvedSpec(ProductSpec Spec, decimal? Number, bool? Boolean, string? Text, SpecOption? Option);
 
@@ -254,7 +300,11 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
             .ToList(),
         p.Images.OrderBy(i => i.SortOrder).Select(i => CatalogImageService.ToView(i, Store)).ToList(),
         p.BrandId,
-        await ProductVariantService.ViewAsync(db, p.Variants.Where(v => !v.IsDeleted), cancellationToken));
+        await ProductVariantService.ViewAsync(db, p.Variants.Where(v => !v.IsDeleted), cancellationToken),
+        p.Gtin,
+        p.Mpn,
+        p.WeightGrams,
+        ReadSeo(p));
 
     private static AppError NotFound() => AppError.NotFound(CatalogErrors.NotFound, "No such product.");
 }

@@ -632,6 +632,129 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/seo/synonyms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every search synonym group, with the shop's languages. */
+        get: operations["ListSynonyms"];
+        put?: never;
+        /** Add a group of words that mean the same. */
+        post: operations["CreateSynonym"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/seo/synonyms/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change a synonym group. */
+        put: operations["UpdateSynonym"];
+        post?: never;
+        /** Delete a synonym group. */
+        delete: operations["DeleteSynonym"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/seo/redirects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every redirect with how often it was used. */
+        get: operations["ListRedirects"];
+        put?: never;
+        /** Add a redirect of an old address. */
+        post: operations["CreateRedirect"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/seo/redirects/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change a redirect. */
+        put: operations["UpdateRedirect"];
+        post?: never;
+        /** Delete a redirect. */
+        delete: operations["DeleteRedirect"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/seo/redirects/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add or update redirects from CSV lines (old,new[,301|302|410]). */
+        post: operations["ImportRedirects"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/redirects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every redirect rule; the storefront keeps them in memory for a minute. */
+        get: operations["GetRedirectRules"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/redirects/hits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Count a use of a redirect (sent by the storefront). */
+        post: operations["RecordRedirectHit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/account/register": {
         parameters: {
             query?: never;
@@ -1587,6 +1710,21 @@ export interface components {
             locale: string;
             alt: string;
         };
+        ImportLineError: {
+            /** Format: int32 */
+            line: number;
+            code: string;
+        };
+        ImportRedirectsRequest: {
+            text: string;
+        };
+        ImportRedirectsResult: {
+            /** Format: int32 */
+            added: number;
+            /** Format: int32 */
+            updated: number;
+            errors: components["schemas"]["ImportLineError"][];
+        };
         InviteStaffRequest: {
             identifier: string;
             roles: string[];
@@ -1712,6 +1850,12 @@ export interface components {
             brand: null | components["schemas"]["BrandLink"];
             variantAxes: components["schemas"]["VariantAxis"][];
             variants: components["schemas"]["VariantOffer"][];
+            gtin: null | string;
+            mpn: null | string;
+            /** Format: int32 */
+            weightGrams: null | number;
+            metaTitle: null | string;
+            metaDescription: null | string;
         };
         ProductEditView: {
             /** Format: int64 */
@@ -1732,6 +1876,11 @@ export interface components {
             /** Format: uuid */
             brandId: null | string;
             variants: components["schemas"]["ProductVariantsView"];
+            gtin: null | string;
+            mpn: null | string;
+            /** Format: int32 */
+            weightGrams: null | number;
+            seo: components["schemas"]["SeoText"][];
         };
         ProductImageInfo: {
             url: string;
@@ -1827,6 +1976,27 @@ export interface components {
         RecoveryCodeSignInRequest: {
             recoveryCode: string;
         };
+        RedirectHitRequest: {
+            fromPath: string;
+        };
+        /** @enum {unknown} */
+        RedirectKind: "Permanent" | "Temporary" | "Gone";
+        RedirectRule: {
+            fromPath: string;
+            toPath: null | string;
+            kind: components["schemas"]["RedirectKind"];
+        };
+        RedirectView: {
+            /** Format: uuid */
+            id: string;
+            fromPath: string;
+            toPath: null | string;
+            kind: components["schemas"]["RedirectKind"];
+            /** Format: int64 */
+            hitCount: number;
+            /** Format: date-time */
+            lastHitUtc: null | string;
+        };
         RegisterRequest: {
             email: null | string;
             password: string;
@@ -1885,6 +2055,16 @@ export interface components {
             specs: components["schemas"]["ProductSpecInput"][];
             /** Format: uuid */
             brandId?: null | string;
+            gtin?: null | string;
+            mpn?: null | string;
+            /** Format: int32 */
+            weightGrams?: null | number;
+            seo?: null | components["schemas"]["SeoText"][];
+        };
+        SaveRedirectRequest: {
+            fromPath: string;
+            toPath: null | string;
+            kind: components["schemas"]["RedirectKind"];
         };
         SaveSpecRequest: {
             code: null | string;
@@ -1894,6 +2074,10 @@ export interface components {
             showInSummary: boolean;
             texts: components["schemas"]["SpecText"][];
             options: components["schemas"]["SpecOptionInput"][];
+        };
+        SaveSynonymRequest: {
+            locale: string;
+            terms: string[];
         };
         SaveTemplateRequest: {
             specCodes: string[];
@@ -1905,6 +2089,12 @@ export interface components {
         SendPhoneCodeRequest: {
             phone: string;
             locale: null | string;
+        };
+        SeoText: {
+            locale: string;
+            metaTitle: null | string;
+            metaDescription: null | string;
+            tags: null | string;
         };
         SetLocaleCurrencyRequest: {
             currencyCode: string;
@@ -2034,6 +2224,16 @@ export interface components {
             name: string;
             slug: string;
         };
+        SynonymList: {
+            locales: string[];
+            groups: components["schemas"]["SynonymView"][];
+        };
+        SynonymView: {
+            /** Format: uuid */
+            id: string;
+            locale: string;
+            terms: string[];
+        };
         TwoFactorCodeRequest: {
             code: string;
         };
@@ -2073,6 +2273,7 @@ export interface components {
             /** Format: int32 */
             stock: number;
             options: components["schemas"]["VariantOptionInput"][];
+            gtin?: null | string;
         };
         VariantOffer: {
             sku: string;
@@ -2082,6 +2283,7 @@ export interface components {
             compareAtPrice: null | number;
             inStock: boolean;
             options: components["schemas"]["VariantChoice"][];
+            gtin: null | string;
         };
         VariantOptionInput: {
             spec: string;
@@ -2098,6 +2300,7 @@ export interface components {
             /** Format: int32 */
             stock: number;
             options: components["schemas"]["VariantOptionInput"][];
+            gtin: null | string;
         };
     };
     responses: never;
@@ -3506,6 +3709,288 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["SpecList"];
                 };
+            };
+        };
+    };
+    ListSynonyms: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SynonymList"];
+                };
+            };
+        };
+    };
+    CreateSynonym: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveSynonymRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SynonymView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    UpdateSynonym: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveSynonymRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SynonymView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    DeleteSynonym: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ListRedirects: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RedirectView"][];
+                };
+            };
+        };
+    };
+    CreateRedirect: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveRedirectRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RedirectView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    UpdateRedirect: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveRedirectRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RedirectView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    DeleteRedirect: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ImportRedirects: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportRedirectsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportRedirectsResult"];
+                };
+            };
+        };
+    };
+    GetRedirectRules: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RedirectRule"][];
+                };
+            };
+        };
+    };
+    RecordRedirectHit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RedirectHitRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

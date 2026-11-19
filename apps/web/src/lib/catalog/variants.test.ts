@@ -3,6 +3,7 @@ import { defaultVariant, optionState, selectVariant, variantLabel, type VariantA
 
 const v = (sku: string, color: string, size: string, inStock = true): VariantOffer => ({
   sku,
+  gtin: null,
   price: 10,
   compareAtPrice: null,
   inStock,

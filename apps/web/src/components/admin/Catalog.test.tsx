@@ -145,7 +145,7 @@ describe("ProductEditor", () => {
 
   it("creates a product with texts, numbers and specs, then opens it", async () => {
     respond(200, { number: 1050 });
-    render(<ProductEditor locale="en" texts={texts} tree={tree} specs={specs} brands={brands} languageNames={names} />);
+    render(<ProductEditor locale="en" texts={texts} tree={tree} specs={specs} brands={brands} languageNames={names} shopName="Shop" siteUrl="https://shop.test" />);
 
     fireEvent.change(screen.getByLabelText(texts.productSku), { target: { value: "N-1" } });
     fireEvent.change(screen.getByLabelText(texts.productPrice), { target: { value: "۱۲۰٬۰۰۰" } });
@@ -153,7 +153,10 @@ describe("ProductEditor", () => {
     // The category's template offers "weight" at once; left empty, it is not sent.
     expect(screen.getByLabelText("Weight")).toBeTruthy();
     fireEvent.change(screen.getByLabelText(texts.productBrand), { target: { value: "b1" } });
-    fireEvent.change(within(screen.getByRole("group", { name: /فارسی/ })).getByLabelText(texts.nameLabel), { target: { value: "کالا" } });
+    fireEvent.change(screen.getByLabelText(texts.productGtin), { target: { value: "4006381333931" } });
+    fireEvent.change(screen.getByLabelText(texts.productWeight), { target: { value: "۷۲۰" } });
+    fireEvent.change(screen.getAllByLabelText(texts.seoTitle)[1], { target: { value: "Search title" } });
+    fireEvent.change(within(screen.getAllByRole("group", { name: /فارسی/ })[0]).getByLabelText(texts.nameLabel), { target: { value: "کالا" } });
     fireEvent.change(screen.getByLabelText(texts.productAddSpec), { target: { value: "color" } });
     fireEvent.change(screen.getByLabelText("Colour"), { target: { value: "red" } });
     fireEvent.click(screen.getByRole("button", { name: texts.productCreate }));
@@ -162,6 +165,11 @@ describe("ProductEditor", () => {
     const body = JSON.parse(String((apiCalls()[0][1] as RequestInit).body));
     expect(body).toMatchObject({ sku: "N-1", price: 120000, compareAtPrice: null, productGroupId: "g1", isPublished: false, brandId: "b1" });
     expect(body.specs).toEqual([{ code: "color", number: null, boolean: null, text: null, optionCode: "red" }]);
+    expect(body).toMatchObject({ gtin: "4006381333931", mpn: null, weightGrams: 720 });
+    expect(body.seo).toEqual([
+      { locale: "fa", metaTitle: null, metaDescription: null, tags: null },
+      { locale: "en", metaTitle: "Search title", metaDescription: null, tags: null },
+    ]);
   });
 
   it("saves an existing product with PUT and shows the error of a taken SKU", async () => {
@@ -170,8 +178,9 @@ describe("ProductEditor", () => {
       number: 1001, sku: "A", price: 10, compareAtPrice: null, stock: 1, isPublished: true, productGroupId: "g1",
       texts: [{ locale: "fa", name: "کالا", slug: "kala", description: null }], specs: [], images: [], brandId: null,
       variants: { specCodes: [], variants: [] },
+      gtin: null, mpn: null, weightGrams: null, seo: [],
     };
-    render(<ProductEditor locale="en" texts={texts} tree={tree} specs={specs} brands={brands} languageNames={names} product={product} />);
+    render(<ProductEditor locale="en" texts={texts} tree={tree} specs={specs} brands={brands} languageNames={names} product={product} shopName="Shop" siteUrl="https://shop.test" />);
 
     fireEvent.click(screen.getByRole("button", { name: texts.save }));
 

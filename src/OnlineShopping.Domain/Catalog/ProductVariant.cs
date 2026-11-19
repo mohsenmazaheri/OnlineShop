@@ -14,6 +14,9 @@ public sealed class ProductVariant : BaseEntity
 
     public required string Sku { get; set; }
 
+    /// <summary>The variant's own barcode (each colour/size usually has one).</summary>
+    public string? Gtin { get; set; }
+
     /// <summary>Its own price; null means the product's price.</summary>
     public decimal? Price { get; set; }
 

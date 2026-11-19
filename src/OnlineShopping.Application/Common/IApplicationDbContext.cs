@@ -5,6 +5,7 @@ using OnlineShopping.Domain.Customers;
 using OnlineShopping.Domain.Pricing;
 using OnlineShopping.Domain.Settings;
 using OnlineShopping.Domain.Sales;
+using OnlineShopping.Domain.Seo;
 using OnlineShopping.Domain.Staff;
 
 namespace OnlineShopping.Application.Common;
@@ -25,6 +26,8 @@ public interface IApplicationDbContext
     DbSet<ProductSpecValue> ProductSpecValues { get; }
     DbSet<Brand> Brands { get; }
     DbSet<ProductVariant> ProductVariants { get; }
+    DbSet<SearchSynonym> SearchSynonyms { get; }
+    DbSet<Redirect> Redirects { get; }
     DbSet<Cart> Carts { get; }
     DbSet<CartItem> CartItems { get; }
     DbSet<Order> Orders { get; }

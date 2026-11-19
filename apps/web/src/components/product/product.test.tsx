@@ -56,6 +56,11 @@ const detail: ProductDetail = {
   brand: null,
   variantAxes: [],
   variants: [],
+  gtin: null,
+  mpn: null,
+  weightGrams: null,
+  metaTitle: null,
+  metaDescription: null,
 };
 
 describe("Price", () => {
@@ -148,7 +153,7 @@ describe("ProductView", () => {
       ...detail,
       brand: { name: "Orvia Inc.", slug: "orvia", logoUrl: null },
       variantAxes: [{ code: "size", name: "Size", options: [{ code: "m", value: "M" }] }],
-      variants: [{ sku: "X1-M", price: 300, compareAtPrice: null, inStock: true, options: [{ axis: "size", option: "m" }] }],
+      variants: [{ sku: "X1-M", gtin: null, price: 300, compareAtPrice: null, inStock: true, options: [{ axis: "size", option: "m" }] }],
     };
     render(<ProductView product={withVariants} locale="en" money={eur} baseName="euro" texts={en.product} />);
 

@@ -19,7 +19,7 @@ type Texts = Dictionary["admin"];
 export const maxVariantSpecs = 3;
 
 /** A variant row as edited: numbers stay text until saving (Persian digits, commas). */
-export type VariantRow = { id: string | null; sku: string; price: string; compareAtPrice: string; stock: string; options: Choice[] };
+export type VariantRow = { id: string | null; sku: string; gtin: string; price: string; compareAtPrice: string; stock: string; options: Choice[] };
 
 const key = (options: Choice[]) =>
   options
@@ -43,7 +43,7 @@ export function variantSku(productSku: string, options: Choice[]): string {
 export function buildVariants(axes: { spec: string; options: string[] }[], rows: VariantRow[], productSku: string): VariantRow[] {
   const existing = new Map(rows.map((r) => [key(r.options), r]));
   return combinations(axes).map(
-    (options) => existing.get(key(options)) ?? { id: null, sku: variantSku(productSku, options), price: "", compareAtPrice: "", stock: "0", options },
+    (options) => existing.get(key(options)) ?? { id: null, sku: variantSku(productSku, options), gtin: "", price: "", compareAtPrice: "", stock: "0", options },
   );
 }
 
@@ -54,6 +54,7 @@ export function toVariantsRequest(specCodes: string[], rows: VariantRow[]) {
     variants: rows.map((r) => ({
       id: r.id,
       sku: r.sku.trim(),
+      gtin: r.gtin.trim() || null,
       price: parseNumber(r.price),
       compareAtPrice: parseNumber(r.compareAtPrice),
       stock: parseNumber(r.stock) ?? -1,
@@ -90,6 +91,7 @@ export function ProductVariantsEditor({ locale, number, productSku, specs, produ
     view.variants.map((v) => ({
       id: v.id,
       sku: v.sku,
+      gtin: v.gtin ?? "",
       price: v.price == null ? "" : String(v.price),
       compareAtPrice: v.compareAtPrice == null ? "" : String(v.compareAtPrice),
       stock: String(v.stock),
@@ -189,6 +191,7 @@ export function ProductVariantsEditor({ locale, number, productSku, specs, produ
               <tr>
                 <th className="p-1 text-start font-medium">{texts.variantName}</th>
                 <th className="p-1 text-start font-medium">{texts.productSku}</th>
+                <th className="p-1 text-start font-medium">{texts.productGtin}</th>
                 <th className="p-1 text-start font-medium">{texts.variantPrice}</th>
                 <th className="p-1 text-start font-medium">{texts.productCompareAt}</th>
                 <th className="p-1 text-start font-medium">{texts.productStock}</th>
@@ -201,6 +204,9 @@ export function ProductVariantsEditor({ locale, number, productSku, specs, produ
                   <td className="p-1 font-medium">{label(row.options)}</td>
                   <td className="p-1">
                     <input aria-label={`${texts.productSku} ${label(row.options)}`} value={row.sku} onChange={(e) => setRow(i, { sku: e.target.value })} maxLength={64} dir="ltr" className={input} />
+                  </td>
+                  <td className="p-1">
+                    <input aria-label={`${texts.productGtin} ${label(row.options)}`} value={row.gtin} onChange={(e) => setRow(i, { gtin: e.target.value })} maxLength={20} inputMode="numeric" dir="ltr" className={input} />
                   </td>
                   <td className="p-1">
                     <input aria-label={`${texts.variantPrice} ${label(row.options)}`} value={row.price} onChange={(e) => setRow(i, { price: e.target.value })} placeholder={texts.variantPriceHint} inputMode="decimal" dir="ltr" className={input} />

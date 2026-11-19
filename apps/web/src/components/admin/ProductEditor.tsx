@@ -12,6 +12,7 @@ import type { components } from "@/lib/api/schema";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { displayName } from "./CatalogTreeEditor";
 import { LocalizedFields, readLocalizedFields } from "./LocalizedFields";
+import { SeoFields, readSeoFields, type SeoText } from "./SeoFields";
 
 type CatalogTree = components["schemas"]["CatalogTree"];
 type ProductEditView = components["schemas"]["ProductEditView"];
@@ -99,12 +100,41 @@ type Props = {
   specs: SpecChoice[];
   brands: BrandView[];
   languageNames: Record<string, string>;
+  /** For the search-result preview. */
+  shopName: string;
+  siteUrl: string;
   /** The product being edited; absent for a new product. */
   product?: ProductEditView;
 };
 
 /** Create or edit a product: base data, texts per language (with "not translated" marks) and spec values. */
-export function ProductEditor({ locale, texts, tree, specs, brands, languageNames, product }: Props) {
+/** Per-language texts as typed, for the live search-result preview. */
+type Live = { names: Record<string, string>; slugs: Record<string, string>; descriptions: Record<string, string>; seo: SeoText[] };
+
+function initialLive(product: ProductEditView | undefined, locales: string[]): Live {
+  const pick = (key: "name" | "slug" | "description") => Object.fromEntries((product?.texts ?? []).map((t) => [t.locale, t[key] ?? ""]));
+  return {
+    names: pick("name"),
+    slugs: pick("slug"),
+    descriptions: pick("description"),
+    seo: locales.map((l) => product?.seo.find((s) => s.locale === l) ?? { locale: l, metaTitle: null, metaDescription: null, tags: null }),
+  };
+}
+
+/** Applies one typed field ("name-fa", "seo-title-en", …) to the live texts. */
+export function applyLiveInput(live: Live, field: string, value: string): Live {
+  const text = field.match(/^(name|slug|description)-(.+)$/);
+  if (text) {
+    const key = ({ name: "names", slug: "slugs", description: "descriptions" } as const)[text[1] as "name" | "slug" | "description"];
+    return { ...live, [key]: { ...live[key], [text[2]]: value } };
+  }
+  const seo = field.match(/^seo-(title|description|tags)-(.+)$/);
+  if (!seo) return live;
+  const key = ({ title: "metaTitle", description: "metaDescription", tags: "tags" } as const)[seo[1] as "title" | "description" | "tags"];
+  return { ...live, seo: live.seo.map((s) => (s.locale === seo[2] ? { ...s, [key]: value } : s)) };
+}
+
+export function ProductEditor({ locale, texts, tree, specs, brands, languageNames, product, shopName, siteUrl }: Props) {
   const router = useRouter();
   const { busy, submit, formError } = useApiForm({ ...texts.errors, ...texts.catalogErrors } as ErrorTexts);
   const [saved, setSaved] = useState(false);
@@ -115,6 +145,9 @@ export function ProductEditor({ locale, texts, tree, specs, brands, languageName
   const groups = groupOptions(tree, locale);
   const unused = specs.filter((s) => !rows.some((r) => r.code === s.code) && !variantSpecs.includes(s.code));
   const brandOptions = brands.map((b) => ({ value: b.id, label: displayName(b.texts, locale) }));
+  const [live, setLive] = useState(() => initialLive(product, tree.locales));
+  const images = product?.images ?? [];
+  const imagesWithoutAlt = Object.fromEntries(tree.locales.map((l) => [l, images.filter((i) => !i.alts.find((a) => a.locale === l)?.alt).length]));
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -128,6 +161,10 @@ export function ProductEditor({ locale, texts, tree, specs, brands, languageName
       isPublished: form.get("isPublished") === "on",
       productGroupId: String(form.get("productGroupId") ?? ""),
       brandId: String(form.get("brandId") ?? "") || null,
+      gtin: String(form.get("gtin") ?? "").trim() || null,
+      mpn: String(form.get("mpn") ?? "").trim() || null,
+      weightGrams: parseNumber(form.get("weightGrams")),
+      seo: readSeoFields(form, tree.locales),
       texts: readLocalizedFields(form, tree.locales),
       specs: rows.filter((r) => r.number != null || r.boolean != null || (r.text ?? "").trim() || r.optionCode),
     };
@@ -152,7 +189,15 @@ export function ProductEditor({ locale, texts, tree, specs, brands, languageName
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
+    <form
+      onSubmit={onSubmit}
+      onInput={(e) => {
+        const field = e.target as HTMLInputElement;
+        if (field.name) setLive((current) => applyLiveInput(current, field.name, field.value));
+      }}
+      noValidate
+      className="flex flex-col gap-5"
+    >
       {formError && <FormAlert kind="error">{formError}</FormAlert>}
       {saved && <FormAlert kind="success">{texts.saved}</FormAlert>}
 
@@ -184,6 +229,12 @@ export function ProductEditor({ locale, texts, tree, specs, brands, languageName
           <input type="checkbox" name="isPublished" defaultChecked={product?.isPublished ?? false} className="h-4 w-4" />
           {texts.productPublished}
         </label>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        <FormField label={texts.productGtin} name="gtin" defaultValue={product?.gtin ?? ""} hint={texts.productGtinHint} maxLength={20} inputMode="numeric" dir="ltr" />
+        <FormField label={texts.productMpn} name="mpn" defaultValue={product?.mpn ?? ""} maxLength={70} dir="ltr" />
+        <FormField label={texts.productWeight} name="weightGrams" defaultValue={product?.weightGrams ?? ""} inputMode="numeric" dir="ltr" />
       </div>
 
       <LocalizedFields locales={tree.locales} defaultLocale={tree.defaultLocale} values={product?.texts ?? []} languageNames={languageNames} texts={texts} withSlug withDescription />
@@ -219,6 +270,25 @@ export function ProductEditor({ locale, texts, tree, specs, brands, languageName
             ))}
           </select>
         )}
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-3 rounded-xl border border-border p-3">
+        <legend className="px-1 text-sm font-bold">{texts.seoTitleSection}</legend>
+        <SeoFields
+          locales={tree.locales}
+          defaultLocale={tree.defaultLocale}
+          values={live.seo}
+          names={live.names}
+          slugs={live.slugs}
+          descriptions={live.descriptions}
+          number={product?.number}
+          shopName={shopName}
+          siteUrl={siteUrl}
+          imageCount={images.length}
+          imagesWithoutAlt={imagesWithoutAlt}
+          languageNames={languageNames}
+          texts={texts}
+        />
       </fieldset>
 
       <div className="flex flex-wrap items-center gap-2">

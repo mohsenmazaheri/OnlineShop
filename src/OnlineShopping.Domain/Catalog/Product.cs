@@ -17,6 +17,23 @@ public class Product : BaseEntity
     /// <summary>URL slug in the default language (other languages: <see cref="Translations"/>).</summary>
     public string Slug { get; set; } = string.Empty;
 
+    /// <summary>Barcode (GTIN-8/12/13/14, digits only, check digit valid); shopping feeds and structured data need it.</summary>
+    public string? Gtin { get; set; }
+
+    /// <summary>Manufacturer part number.</summary>
+    public string? Mpn { get; set; }
+
+    /// <summary>Shipping weight in grams.</summary>
+    public int? WeightGrams { get; set; }
+
+    /// <summary>Search-result title in the default language (empty: made from the name); other languages: <see cref="Translations"/>.</summary>
+    public string? MetaTitle { get; set; }
+
+    public string? MetaDescription { get; set; }
+
+    /// <summary>Extra search words in the default language, comma-separated.</summary>
+    public string? Tags { get; set; }
+
     public decimal Price { get; set; }
     public decimal? CompareAtPrice { get; set; }
     public int Stock { get; set; }

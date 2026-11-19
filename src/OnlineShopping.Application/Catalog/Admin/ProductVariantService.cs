@@ -54,6 +54,8 @@ public sealed class ProductVariantService(IApplicationDbContext db)
             var price = input.Price ?? product.Price;
             if (input.CompareAtPrice is { } compareAt && compareAt <= price)
                 return AppError.Validation(CatalogErrors.CompareAtInvalid, "An old price must be above the price.");
+            if (!string.IsNullOrWhiteSpace(input.Gtin) && ProductCodes.NormalizeGtin(input.Gtin) is null)
+                return AppError.Validation(CatalogErrors.GtinInvalid, $"{input.Gtin} is not a valid barcode.");
             if (input.Id is { } id && product.Variants.All(v => v.Id != id))
                 return AppError.NotFound(CatalogErrors.NotFound, "No such variant of this product.");
             resolved.Add((input, input.Sku.Trim(), options));
@@ -95,6 +97,7 @@ public sealed class ProductVariantService(IApplicationDbContext db)
                 db.ProductVariants.Add(variant);
             }
             variant.Sku = sku;
+            variant.Gtin = ProductCodes.NormalizeGtin(input.Gtin);
             variant.Price = input.Price;
             variant.CompareAtPrice = input.CompareAtPrice;
             variant.Stock = input.Stock;
@@ -138,7 +141,8 @@ public sealed class ProductVariantService(IApplicationDbContext db)
                     v.CompareAtPrice,
                     v.Stock,
                     specs.Select(s => new VariantOptionInput(s.Code, optionCodes.GetValueOrDefault(v.Options.FirstOrDefault(o => o.SpecId == s.Id)?.OptionId ?? Guid.Empty, "")))
-                        .ToList()))
+                        .ToList(),
+                    v.Gtin))
                 .ToList());
     }
 

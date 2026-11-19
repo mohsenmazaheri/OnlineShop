@@ -392,6 +392,11 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasColumnType("text")
                         .HasColumnName("description");
 
+                    b.Property<string>("Gtin")
+                        .HasMaxLength(14)
+                        .HasColumnType("character varying(14)")
+                        .HasColumnName("gtin");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
@@ -400,9 +405,24 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_published");
 
+                    b.Property<string>("MetaDescription")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)")
+                        .HasColumnName("meta_description");
+
+                    b.Property<string>("MetaTitle")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("meta_title");
+
                     b.Property<DateTime?>("ModifiedUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("modified_utc");
+
+                    b.Property<string>("Mpn")
+                        .HasMaxLength(70)
+                        .HasColumnType("character varying(70)")
+                        .HasColumnName("mpn");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -439,11 +459,23 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("stock");
 
+                    b.Property<string>("Tags")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("tags");
+
+                    b.Property<int?>("WeightGrams")
+                        .HasColumnType("integer")
+                        .HasColumnName("weight_grams");
+
                     b.HasKey("Id")
                         .HasName("pk_products");
 
                     b.HasIndex("BrandId")
                         .HasDatabaseName("ix_products_brand_id");
+
+                    b.HasIndex("Gtin")
+                        .HasDatabaseName("ix_products_gtin");
 
                     b.HasIndex("Name")
                         .HasDatabaseName("ix_products_name");
@@ -715,6 +747,11 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_utc");
 
+                    b.Property<string>("Gtin")
+                        .HasMaxLength(14)
+                        .HasColumnType("character varying(14)")
+                        .HasColumnName("gtin");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
@@ -748,6 +785,9 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_product_variants");
+
+                    b.HasIndex("Gtin")
+                        .HasDatabaseName("ix_product_variants_gtin");
 
                     b.HasIndex("ProductId")
                         .HasDatabaseName("ix_product_variants_product_id");
@@ -1235,6 +1275,101 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.ToTable("order_items", (string)null);
                 });
 
+            modelBuilder.Entity("OnlineShopping.Domain.Seo.Redirect", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<string>("FromPath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("from_path");
+
+                    b.Property<long>("HitCount")
+                        .HasColumnType("bigint")
+                        .HasColumnName("hit_count");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("kind");
+
+                    b.Property<DateTime?>("LastHitUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_hit_utc");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<string>("ToPath")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)")
+                        .HasColumnName("to_path");
+
+                    b.HasKey("Id")
+                        .HasName("pk_redirects");
+
+                    b.HasIndex("FromPath")
+                        .IsUnique()
+                        .HasDatabaseName("ix_redirects_from_path")
+                        .HasFilter("is_deleted = false");
+
+                    b.ToTable("redirects", (string)null);
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Seo.SearchSynonym", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<string>("Locale")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("locale");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<string>("Terms")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("terms");
+
+                    b.HasKey("Id")
+                        .HasName("pk_search_synonyms");
+
+                    b.HasIndex("Locale")
+                        .HasDatabaseName("ix_search_synonyms_locale");
+
+                    b.ToTable("search_synonyms", (string)null);
+                });
+
             modelBuilder.Entity("OnlineShopping.Domain.Settings.StoreBranding", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1611,6 +1746,16 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                                 .HasColumnType("text")
                                 .HasColumnName("description");
 
+                            b1.Property<string>("MetaDescription")
+                                .HasMaxLength(400)
+                                .HasColumnType("character varying(400)")
+                                .HasColumnName("meta_description");
+
+                            b1.Property<string>("MetaTitle")
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("meta_title");
+
                             b1.Property<string>("Name")
                                 .IsRequired()
                                 .HasMaxLength(300)
@@ -1621,6 +1766,11 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                                 .HasMaxLength(200)
                                 .HasColumnType("character varying(200)")
                                 .HasColumnName("slug");
+
+                            b1.Property<string>("Tags")
+                                .HasMaxLength(500)
+                                .HasColumnType("character varying(500)")
+                                .HasColumnName("tags");
 
                             b1.HasKey("BrandId", "Locale")
                                 .HasName("pk_brand_translations");
@@ -1681,6 +1831,16 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                                 .HasColumnType("text")
                                 .HasColumnName("description");
 
+                            b1.Property<string>("MetaDescription")
+                                .HasMaxLength(400)
+                                .HasColumnType("character varying(400)")
+                                .HasColumnName("meta_description");
+
+                            b1.Property<string>("MetaTitle")
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("meta_title");
+
                             b1.Property<string>("Name")
                                 .IsRequired()
                                 .HasMaxLength(300)
@@ -1691,6 +1851,11 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                                 .HasMaxLength(200)
                                 .HasColumnType("character varying(200)")
                                 .HasColumnName("slug");
+
+                            b1.Property<string>("Tags")
+                                .HasMaxLength(500)
+                                .HasColumnType("character varying(500)")
+                                .HasColumnName("tags");
 
                             b1.HasKey("CategoryId", "Locale");
 
@@ -1736,6 +1901,16 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                                 .HasColumnType("text")
                                 .HasColumnName("description");
 
+                            b1.Property<string>("MetaDescription")
+                                .HasMaxLength(400)
+                                .HasColumnType("character varying(400)")
+                                .HasColumnName("meta_description");
+
+                            b1.Property<string>("MetaTitle")
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("meta_title");
+
                             b1.Property<string>("Name")
                                 .IsRequired()
                                 .HasMaxLength(300)
@@ -1746,6 +1921,11 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                                 .HasMaxLength(200)
                                 .HasColumnType("character varying(200)")
                                 .HasColumnName("slug");
+
+                            b1.Property<string>("Tags")
+                                .HasMaxLength(500)
+                                .HasColumnType("character varying(500)")
+                                .HasColumnName("tags");
 
                             b1.HasKey("ProductId", "Locale")
                                 .HasName("pk_product_translations");
@@ -1788,6 +1968,16 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                                 .HasColumnType("text")
                                 .HasColumnName("description");
 
+                            b1.Property<string>("MetaDescription")
+                                .HasMaxLength(400)
+                                .HasColumnType("character varying(400)")
+                                .HasColumnName("meta_description");
+
+                            b1.Property<string>("MetaTitle")
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("meta_title");
+
                             b1.Property<string>("Name")
                                 .IsRequired()
                                 .HasMaxLength(300)
@@ -1798,6 +1988,11 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                                 .HasMaxLength(200)
                                 .HasColumnType("character varying(200)")
                                 .HasColumnName("slug");
+
+                            b1.Property<string>("Tags")
+                                .HasMaxLength(500)
+                                .HasColumnType("character varying(500)")
+                                .HasColumnName("tags");
 
                             b1.HasKey("ProductGroupId", "Locale")
                                 .HasName("pk_product_group_translations");
@@ -2079,6 +2274,16 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                                 .HasColumnType("text")
                                 .HasColumnName("description");
 
+                            b1.Property<string>("MetaDescription")
+                                .HasMaxLength(400)
+                                .HasColumnType("character varying(400)")
+                                .HasColumnName("meta_description");
+
+                            b1.Property<string>("MetaTitle")
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("meta_title");
+
                             b1.Property<string>("Name")
                                 .IsRequired()
                                 .HasMaxLength(300)
@@ -2089,6 +2294,11 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                                 .HasMaxLength(200)
                                 .HasColumnType("character varying(200)")
                                 .HasColumnName("slug");
+
+                            b1.Property<string>("Tags")
+                                .HasMaxLength(500)
+                                .HasColumnType("character varying(500)")
+                                .HasColumnName("tags");
 
                             b1.HasKey("SubCategoryId", "Locale")
                                 .HasName("pk_sub_category_translations");

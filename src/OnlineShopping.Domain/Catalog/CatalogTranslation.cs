@@ -16,4 +16,13 @@ public sealed class CatalogTranslation
     public string? Slug { get; set; }
 
     public string? Description { get; set; }
+
+    /// <summary>Search-result title in this language (empty: made from the name).</summary>
+    public string? MetaTitle { get; set; }
+
+    /// <summary>Search-result description in this language (empty: the start of the description).</summary>
+    public string? MetaDescription { get; set; }
+
+    /// <summary>Extra search words in this language, comma-separated ("phone, mobile").</summary>
+    public string? Tags { get; set; }
 }
