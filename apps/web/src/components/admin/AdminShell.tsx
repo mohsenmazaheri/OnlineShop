@@ -1,9 +1,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { Icon } from "@/components/ui/Icon";
 import { Card } from "@/components/ui/Surface";
+import { adminHref, sectionsByGroup, type AdminSection } from "@/lib/admin/sections";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
-export type AdminSection = "home" | "products" | "import" | "catalog" | "brands" | "specs" | "seo" | "staff" | "currencies" | "branding";
+export type { AdminSection } from "@/lib/admin/sections";
 
 type Props = {
   locale: string;
@@ -14,43 +16,64 @@ type Props = {
   children: ReactNode;
 };
 
-/** Frame of every admin page: title, section links the user is allowed to open, and a way back to the shop. */
-export function AdminShell({ locale, texts, current, permissions, children }: Props) {
-  const items: { section: AdminSection; href: string; label: string; permission?: string }[] = [
-    { section: "home", href: `/${locale}/admin`, label: texts.navHome },
-    { section: "products", href: `/${locale}/admin/products`, label: texts.navProducts, permission: "catalog.manage" },
-    { section: "import", href: `/${locale}/admin/import`, label: texts.navImport, permission: "catalog.manage" },
-    { section: "catalog", href: `/${locale}/admin/catalog`, label: texts.navCatalog, permission: "catalog.manage" },
-    { section: "brands", href: `/${locale}/admin/brands`, label: texts.navBrands, permission: "catalog.manage" },
-    { section: "specs", href: `/${locale}/admin/specs`, label: texts.navSpecs, permission: "catalog.manage" },
-    { section: "seo", href: `/${locale}/admin/seo`, label: texts.navSeo, permission: "catalog.manage" },
-    { section: "staff", href: `/${locale}/admin/staff`, label: texts.navStaff, permission: "staff.manage" },
-    { section: "currencies", href: `/${locale}/admin/currencies`, label: texts.navCurrencies, permission: "settings.manage" },
-    { section: "branding", href: `/${locale}/admin/branding`, label: texts.navBranding, permission: "settings.manage" },
-  ];
+function NavLink({ href, label, icon, active, compact }: { href: string; label: string; icon: Parameters<typeof Icon>[0]["name"]; active: boolean; compact?: boolean }) {
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 px-4 py-6">
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={`flex items-center gap-2 rounded-lg font-medium whitespace-nowrap ${compact ? "px-3 py-2" : "px-3 py-2.5"} ${
+        active ? "bg-primary/10 text-primary" : "text-muted hover:bg-background hover:text-foreground"
+      }`}
+    >
+      <Icon name={icon} size={18} />
+      {label}
+    </Link>
+  );
+}
+
+/**
+ * Frame of every admin page: the sections this user may open, grouped (a side menu on large screens, a scrolling bar
+ * on phones), the page content, and a way back to the shop.
+ */
+export function AdminShell({ locale, texts, current, permissions, children }: Props) {
+  const groups = sectionsByGroup(permissions);
+  const home = { href: adminHref(locale), label: texts.navHome, icon: "dashboard" as const, active: current === "home" };
+
+  return (
+    <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-4 px-4 py-6 md:px-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-xl font-bold">{texts.title}</h1>
         <Link href={`/${locale}`} className="text-sm text-primary underline">
           {texts.backToShop}
         </Link>
       </div>
-      <nav aria-label={texts.title} className="flex gap-1 overflow-x-auto rounded-xl bg-background p-1 text-sm">
-        {items
-          .filter((item) => !item.permission || permissions.includes(item.permission))
-          .map((item) => (
-            <Link
-              key={item.section}
-              href={item.href}
-              aria-current={item.section === current ? "page" : undefined}
-              className={`whitespace-nowrap rounded-lg px-4 py-2 font-medium ${item.section === current ? "bg-surface shadow-sm" : "text-muted hover:text-foreground"}`}
-            >
-              {item.label}
-            </Link>
+
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:items-start">
+        {/* Phones and tablets: every section in one scrolling row. */}
+        <nav aria-label={texts.title} className="flex gap-1 overflow-x-auto rounded-xl bg-background p-1 text-sm lg:hidden">
+          <NavLink {...home} compact />
+          {groups.flatMap(({ sections }) =>
+            sections.map((s) => (
+              <NavLink key={s.section} href={adminHref(locale, s.path)} label={texts[s.label as keyof typeof texts] as string} icon={s.icon} active={s.section === current} compact />
+            )),
+          )}
+        </nav>
+
+        {/* Large screens: a side menu with a heading per group. */}
+        <nav aria-label={texts.title} className="sticky top-24 hidden flex-col gap-4 rounded-2xl border border-border bg-surface p-3 text-sm lg:flex">
+          <NavLink {...home} />
+          {groups.map(({ group, sections }) => (
+            <div key={group} className="flex flex-col gap-0.5">
+              <p className="px-3 pb-1 text-xs font-bold text-muted">{texts.groups[group]}</p>
+              {sections.map((s) => (
+                <NavLink key={s.section} href={adminHref(locale, s.path)} label={texts[s.label as keyof typeof texts] as string} icon={s.icon} active={s.section === current} />
+              ))}
+            </div>
           ))}
-      </nav>
-      {children}
+        </nav>
+
+        <div className="flex min-w-0 flex-col gap-4">{children}</div>
+      </div>
     </main>
   );
 }

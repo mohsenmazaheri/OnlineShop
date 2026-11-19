@@ -51,7 +51,8 @@
     "bottomMenu": "Menü unten",
     "home": "Start",
     "categoriesShort": "Kategorien",
-    "currency": "Währung"
+    "currency": "Währung",
+    "adminPanel": "Verwaltung"
   },
   "account": {
     "loginTitle": "Anmelden",
@@ -648,7 +649,23 @@
     "videoTitle": "Titel",
     "videoPoster": "Bild vor dem Abspielen",
     "videosSave": "Reihenfolge und Titel speichern",
-    "confirmDeleteVideo": "Dieses Video löschen?"
+    "confirmDeleteVideo": "Dieses Video löschen?",
+    "groups": {
+      "catalog": "Katalog",
+      "store": "Shop",
+      "team": "Team"
+    },
+    "sectionHints": {
+      "products": "Produkte anlegen und bearbeiten: Preis, Bestand, Bilder, Videos und Varianten",
+      "catalog": "Kategorien, Unterkategorien und Produktgruppen mit Merkmalvorlagen",
+      "brands": "Marken mit Namen je Sprache und Logos",
+      "specs": "Merkmale und Optionen für Datenblatt, Filter und Varianten",
+      "import": "Produkte und Bestand gesammelt als Excel oder CSV importieren und exportieren",
+      "seo": "Weiterleitungen alter Adressen und Such-Synonyme",
+      "branding": "Logo, Banner, Farbe, Schrift und Aufbau der Startseite",
+      "currencies": "Anzeigewährungen, Kurse und Rundung",
+      "staff": "Mitarbeitende, Rollen, Einladungen und Änderungsprotokoll"
+    }
   },
   "footer": {
     "shopping": "Einkaufen",

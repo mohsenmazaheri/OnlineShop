@@ -51,7 +51,8 @@
     "bottomMenu": "Bottom menu",
     "home": "Home",
     "categoriesShort": "Categories",
-    "currency": "Currency"
+    "currency": "Currency",
+    "adminPanel": "Admin panel"
   },
   "account": {
     "loginTitle": "Sign in",
@@ -648,7 +649,23 @@
     "videoTitle": "Title",
     "videoPoster": "Image before playing",
     "videosSave": "Save order and titles",
-    "confirmDeleteVideo": "Delete this video?"
+    "confirmDeleteVideo": "Delete this video?",
+    "groups": {
+      "catalog": "Catalog",
+      "store": "Shop",
+      "team": "Team"
+    },
+    "sectionHints": {
+      "products": "Add and edit products: price, stock, images, videos and variants",
+      "catalog": "Categories, sub-categories and product groups with spec templates",
+      "brands": "Brands with names per language and logos",
+      "specs": "Specs and options for specifications, filters and variants",
+      "import": "Bulk import and export of products and stock as Excel or CSV",
+      "seo": "Redirects of old addresses and search synonyms",
+      "branding": "Logo, banner, colour, font and home page layout",
+      "currencies": "Display currencies, rates and rounding",
+      "staff": "Staff, roles, invitations and the change log"
+    }
   },
   "footer": {
     "shopping": "Shopping",

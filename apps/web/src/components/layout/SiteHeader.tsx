@@ -3,11 +3,13 @@ import { Suspense } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Icon } from "@/components/ui/Icon";
 import { getCurrentUser } from "@/lib/account/session";
+import { adminHref, isStaff, sectionsByGroup } from "@/lib/admin/sections";
 import type { Locale } from "@/lib/i18n/config";
 import { loadDisplayCurrency } from "@/lib/currency/load";
 import { currencyName, nativeLanguageName } from "@/lib/i18n/display-names";
-import type { Dictionary } from "@/lib/i18n/dictionaries";
+import { getDictionary, type Dictionary } from "@/lib/i18n/dictionaries";
 import { loadStore } from "@/lib/store/load";
+import { AdminMenu } from "./AdminMenu";
 import { Brand } from "./Brand";
 import { CurrencySwitcher } from "./CurrencySwitcher";
 import { LanguageSwitcher } from "./LanguageSwitcher";
@@ -18,10 +20,13 @@ type Props = { locale: Locale; texts: Dictionary["header"] };
 const accountClass =
   "flex h-11 max-w-48 items-center gap-2 rounded-xl border border-border px-4 text-sm font-medium text-foreground hover:border-primary";
 
-/** Per-visitor link: reads the session, so it streams separately and never ends up in a shared cache. */
-async function AccountLink({ locale, texts }: Props) {
+/**
+ * Per-visitor part: reads the session, so it streams separately and never ends up in a shared cache. Staff also get
+ * the admin menu (on every screen size); the account link shows from md up (phones have it in the bottom bar).
+ */
+async function AccountArea({ locale, texts }: Props) {
   const user = await getCurrentUser();
-  return user ? (
+  const account = user ? (
     <Link href={`/${locale}/account`} className={accountClass}>
       <Icon name="user" size={20} />
       <span className="truncate">{user.displayName || texts.myAccount}</span>
@@ -31,6 +36,19 @@ async function AccountLink({ locale, texts }: Props) {
       <Icon name="user" size={20} />
       <span className="truncate">{texts.signIn}</span>
     </Link>
+  );
+  if (!user || !isStaff(user.permissions)) return <div className="hidden md:block">{account}</div>;
+
+  const admin = (await getDictionary(locale)).admin;
+  const groups = sectionsByGroup(user.permissions).map(({ group, sections }) => ({
+    title: admin.groups[group],
+    items: sections.map((s) => ({ href: adminHref(locale, s.path), label: admin[s.label as keyof typeof admin] as string, icon: s.icon })),
+  }));
+  return (
+    <>
+      <AdminMenu label={texts.adminPanel} homeHref={adminHref(locale)} homeLabel={admin.navHome} groups={groups} />
+      <div className="hidden md:block">{account}</div>
+    </>
   );
 }
 
@@ -78,11 +96,9 @@ export function SiteHeader({ locale, texts }: Props) {
             <Suspense fallback={<span className="h-10 w-10" />}>
               <StoreCurrencies locale={locale} label={texts.currency} />
             </Suspense>
-            <div className="hidden md:block">
-              <Suspense fallback={<span className="block h-11 w-36 animate-pulse rounded-xl bg-border" />}>
-                <AccountLink locale={locale} texts={texts} />
-              </Suspense>
-            </div>
+            <Suspense fallback={<span className="hidden h-11 w-36 animate-pulse rounded-xl bg-border md:block" />}>
+              <AccountArea locale={locale} texts={texts} />
+            </Suspense>
             <span aria-hidden className="hidden h-7 w-px bg-border md:block" />
             <Link
               href={`/${locale}/cart`}

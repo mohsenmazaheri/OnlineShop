@@ -320,6 +320,9 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   never act on your own account, always keep one active Admin, write a `StaffAuditEntry` for every change. A role
   change keeps the session (claims refresh at the one-minute security-stamp check); suspension renews the stamp
   and locks the account out (`AppUser.SuspendedUtc` + Identity lockout), so every sign-in path is blocked.
+- Admin sections are listed once in `src/lib/admin/sections.ts` (path, label, icon, group, permission): `AdminShell`
+  (side menu from lg, scrolling bar below), the admin start page tiles (`admin.sectionHints`) and the staff-only
+  `AdminMenu` in `SiteHeader` all read it — add a new section there, with its texts in every dictionary.
 - Admin panel (web): pages under `src/app/[locale]/admin/`, framed by `AdminShell`; each page calls
   `requirePermission()` / `requireStaff()` (`src/lib/admin/access.ts`) inside its `<Suspense>`: signed out → sign-in,
   no permission → `notFound()`. `proxy.ts` also sends signed-out visitors of `/{locale}/admin` to sign-in.
