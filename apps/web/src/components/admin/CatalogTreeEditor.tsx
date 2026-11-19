@@ -11,8 +11,10 @@ import type { components } from "@/lib/api/schema";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { ImageUploadField } from "./ImageUploadField";
 import { LocalizedFields, readLocalizedFields, type LocalizedText } from "./LocalizedFields";
+import { TemplatePicker } from "./TemplatePicker";
 
 type CatalogTree = components["schemas"]["CatalogTree"];
+type SpecChoice = components["schemas"]["SpecChoice"];
 type Texts = Dictionary["admin"];
 export type NodeKind = "category" | "subcategory" | "group";
 
@@ -105,7 +107,7 @@ function Node({ title, meta, children }: { title: string; meta?: string; childre
  * The whole category tree: every node opens to its form (names and slugs per language, save, delete) and to the forms
  * that add children. Deleting works only for empty nodes; the API explains otherwise.
  */
-export function CatalogTreeEditor(shared: Shared) {
+export function CatalogTreeEditor({ specs, ...shared }: Shared & { specs: SpecChoice[] }) {
   const { locale, texts, tree } = shared;
   const empty: LocalizedText[] = [];
 
@@ -125,10 +127,18 @@ export function CatalogTreeEditor(shared: Shared) {
             errorTexts={{ ...texts.errors, ...texts.catalogErrors, ...texts.mediaErrors } as ErrorTexts}
             refresh={["catalog"]}
           />
+          <TemplatePicker texts={texts} path={`/api/v1/admin/catalog/categories/${category.id}/template`} specs={specs} selected={category.templateSpecs} />
           <div className="flex flex-col gap-2 border-s-2 border-border ps-3">
             {category.subCategories.map((sub) => (
               <Node key={sub.id} title={displayName(sub.texts, locale)} meta={texts.childCount.replace("{count}", String(sub.groups.length))}>
                 <NodeForm {...shared} kind="subcategory" id={sub.id} values={sub.texts} />
+                <TemplatePicker
+                  texts={texts}
+                  path={`/api/v1/admin/catalog/subcategories/${sub.id}/template`}
+                  specs={specs}
+                  selected={sub.templateSpecs}
+                  inherited={category.templateSpecs}
+                />
                 <div className="flex flex-col gap-2 border-s-2 border-border ps-3">
                   {sub.groups.map((group) => (
                     <Node key={group.id} title={displayName(group.texts, locale)} meta={texts.productCount.replace("{count}", String(group.productCount))}>

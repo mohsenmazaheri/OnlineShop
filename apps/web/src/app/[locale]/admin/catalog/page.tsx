@@ -4,7 +4,7 @@ import { CatalogTreeEditor } from "@/components/admin/CatalogTreeEditor";
 import { requirePermission } from "@/lib/admin/access";
 import { languageNames } from "@/lib/admin/language-names";
 import { accountMetadata, routeLocale } from "@/lib/account/page-helpers";
-import { getCatalogTree } from "@/lib/account/session";
+import { getCatalogTree, getSpecChoices } from "@/lib/account/session";
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary, type Dictionary } from "@/lib/i18n/dictionaries";
 
@@ -16,13 +16,14 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/admin/ca
 /** Categories, sub-categories and product groups with their texts per language (permission catalog.manage). */
 async function Catalog({ locale, texts }: { locale: Locale; texts: Dictionary["admin"] }) {
   const user = await requirePermission(locale, "catalog.manage", `/${locale}/admin/catalog`);
-  const tree = (await getCatalogTree()) ?? { defaultLocale: locale, locales: [locale], categories: [] };
+  const [loaded, specs] = await Promise.all([getCatalogTree(), getSpecChoices(locale)]);
+  const tree = loaded ?? { defaultLocale: locale, locales: [locale], categories: [] };
 
   return (
     <AdminShell locale={locale} texts={texts} current="catalog" permissions={user.permissions}>
       <p className="text-sm text-muted">{texts.catalogIntro}</p>
       <AdminCard title={texts.catalogTitle} id="catalog-tree">
-        <CatalogTreeEditor locale={locale} texts={texts} tree={tree} languageNames={languageNames(tree.locales)} />
+        <CatalogTreeEditor locale={locale} texts={texts} tree={tree} specs={specs ?? []} languageNames={languageNames(tree.locales)} />
       </AdminCard>
     </AdminShell>
   );

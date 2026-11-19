@@ -24,6 +24,17 @@ public static class CatalogErrors
     public const string SpecValueInvalid = "catalog.spec_value_invalid";
     public const string TooManyImages = "catalog.too_many_images";
     public const string ImagesMismatch = "catalog.images_mismatch";
+    public const string BrandNotFound = "catalog.brand_not_found";
+    public const string CodeInvalid = "catalog.code_invalid";
+    public const string CodeTaken = "catalog.code_taken";
+    public const string SpecInUse = "catalog.spec_in_use";
+    public const string OptionInUse = "catalog.option_in_use";
+    public const string OptionRepeated = "catalog.option_repeated";
+    public const string SpecIsVariant = "catalog.spec_is_variant";
+    public const string VariantSpecInvalid = "catalog.variant_spec_invalid";
+    public const string VariantOptionsInvalid = "catalog.variant_options_invalid";
+    public const string VariantRepeated = "catalog.variant_repeated";
+    public const string TooManyVariants = "catalog.too_many_variants";
 }
 
 /// <summary>
@@ -34,9 +45,14 @@ public sealed record LocalizedText(string Locale, string Name, string? Slug, str
 
 public sealed record GroupNode(Guid Id, IReadOnlyList<LocalizedText> Texts, int ProductCount);
 
-public sealed record SubCategoryNode(Guid Id, IReadOnlyList<LocalizedText> Texts, IReadOnlyList<GroupNode> Groups);
+/// <summary><see cref="TemplateSpecs"/>: codes of the template's specs, in the specs' order.</summary>
+public sealed record SubCategoryNode(Guid Id, IReadOnlyList<LocalizedText> Texts, IReadOnlyList<GroupNode> Groups, IReadOnlyList<string> TemplateSpecs);
 
-public sealed record CategoryNode(Guid Id, string? ImageUrl, IReadOnlyList<LocalizedText> Texts, IReadOnlyList<SubCategoryNode> SubCategories);
+/// <summary>The spec codes of a category's or sub-category's template (replaces the previous set).</summary>
+public sealed record SaveTemplateRequest(IReadOnlyList<string> SpecCodes);
+
+public sealed record CategoryNode(
+    Guid Id, string? ImageUrl, IReadOnlyList<LocalizedText> Texts, IReadOnlyList<SubCategoryNode> SubCategories, IReadOnlyList<string> TemplateSpecs);
 
 /// <summary>The whole category tree for the admin, with the languages to fill in.</summary>
 public sealed record CatalogTree(string DefaultLocale, IReadOnlyList<string> Locales, IReadOnlyList<CategoryNode> Categories);
@@ -57,7 +73,8 @@ public sealed record SaveProductRequest(
     bool IsPublished,
     Guid ProductGroupId,
     IReadOnlyList<LocalizedText> Texts,
-    IReadOnlyList<ProductSpecInput> Specs);
+    IReadOnlyList<ProductSpecInput> Specs,
+    Guid? BrandId = null);
 
 /// <summary>A product row of the admin list. <see cref="MissingLocales"/>: shop languages without a translation.</summary>
 public sealed record ProductListItem(
@@ -83,7 +100,9 @@ public sealed record ProductEditView(
     Guid ProductGroupId,
     IReadOnlyList<LocalizedText> Texts,
     IReadOnlyList<ProductSpecInput> Specs,
-    IReadOnlyList<ProductImageView> Images);
+    IReadOnlyList<ProductImageView> Images,
+    Guid? BrandId,
+    ProductVariantsView Variants);
 
 /// <summary>An image's alternative text in one language (empty: not translated).</summary>
 public sealed record ImageAltText(string Locale, string Alt);

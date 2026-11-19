@@ -33,6 +33,9 @@ public static class DependencyInjection
         services.AddScoped<CatalogTreeService>();
         services.AddScoped<ProductAdminService>();
         services.AddScoped<CatalogImageService>();
+        services.AddScoped<BrandAdminService>();
+        services.AddScoped<SpecAdminService>();
+        services.AddScoped<ProductVariantService>();
         services.AddScoped<MediaService>();
         services.AddOptions<MediaOptions>().Bind(configuration.GetSection(MediaOptions.SectionName));
         services.AddScoped<LoginIdentifierParser>();

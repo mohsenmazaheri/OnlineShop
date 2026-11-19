@@ -36,6 +36,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<ProductSpec> ProductSpecs => Set<ProductSpec>();
     public DbSet<SpecOption> SpecOptions => Set<SpecOption>();
     public DbSet<ProductSpecValue> ProductSpecValues => Set<ProductSpecValue>();
+    public DbSet<Brand> Brands => Set<Brand>();
+    public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
     public DbSet<Cart> Carts => Set<Cart>();
     public DbSet<CartItem> CartItems => Set<CartItem>();
     public DbSet<Order> Orders => Set<Order>();
@@ -169,8 +171,47 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         });
         b.Entity<SubCategory>().OwnsMany(x => x.Translations, t => ConfigureTranslation(t, "sub_category_translations", "SubCategoryId"));
         b.Entity<ProductGroup>().OwnsMany(x => x.Translations, t => ConfigureTranslation(t, "product_group_translations", "ProductGroupId"));
+        b.Entity<Brand>(e =>
+        {
+            e.ToTable("brands");
+            e.Property(x => x.Name).HasMaxLength(200);
+            e.Property(x => x.Slug).HasMaxLength(200);
+            e.Property(x => x.LogoUrl).HasMaxLength(2048);
+            e.HasIndex(x => x.Slug).IsUnique().HasFilter(NotDeletedFilter);
+            e.OwnsMany(x => x.Translations, t => ConfigureTranslation(t, "brand_translations", "BrandId"));
+        });
+
+        b.Entity<ProductVariant>(e =>
+        {
+            e.ToTable("product_variants");
+            e.Property(x => x.Sku).HasMaxLength(64);
+            e.HasIndex(x => x.Sku).IsUnique().HasFilter(NotDeletedFilter);
+            e.HasIndex(x => x.ProductId);
+            e.HasOne(v => v.Product)
+                .WithMany(p => p.Variants)
+                .HasForeignKey(v => v.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.OwnsMany(x => x.Options, o =>
+            {
+                o.ToTable("product_variant_options");
+                o.WithOwner().HasForeignKey("VariantId");
+                o.HasKey("VariantId", nameof(VariantOption.SpecId));
+                o.HasOne<ProductSpec>().WithMany().HasForeignKey(x => x.SpecId).OnDelete(DeleteBehavior.Restrict);
+                o.HasOne<SpecOption>().WithMany().HasForeignKey(x => x.OptionId).OnDelete(DeleteBehavior.Restrict);
+                // "Which variants are beige": the base of colour/size filters.
+                o.HasIndex(x => x.OptionId);
+            });
+        });
+
+        b.Entity<Category>().OwnsMany(x => x.TemplateSpecs, t => ConfigureTemplate(t, "category_template_specs", "CategoryId"));
+        b.Entity<SubCategory>().OwnsMany(x => x.TemplateSpecs, t => ConfigureTemplate(t, "sub_category_template_specs", "SubCategoryId"));
+
         b.Entity<Product>(e =>
         {
+            e.HasOne(p => p.Brand)
+                .WithMany()
+                .HasForeignKey(p => p.BrandId)
+                .OnDelete(DeleteBehavior.Restrict);
             e.Property(x => x.Slug).HasMaxLength(200);
             // Numbers are never reused, so the index ignores soft deletes on purpose.
             e.HasIndex(x => x.PublicNumber).IsUnique();
@@ -190,6 +231,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         t.Property(x => x.Locale).HasMaxLength(8);
         t.Property(x => x.Name).HasMaxLength(300);
         t.Property(x => x.Slug).HasMaxLength(200);
+    }
+
+    private static void ConfigureTemplate<TOwner>(OwnedNavigationBuilder<TOwner, TemplateSpec> t, string table, string ownerKey)
+        where TOwner : class
+    {
+        t.ToTable(table);
+        t.WithOwner().HasForeignKey(ownerKey);
+        t.HasKey(ownerKey, nameof(TemplateSpec.SpecId));
+        t.HasOne<ProductSpec>().WithMany().HasForeignKey(x => x.SpecId).OnDelete(DeleteBehavior.Cascade);
     }
 
     private static void ConfigureSpecs(ModelBuilder b)

@@ -23,6 +23,8 @@ public interface IApplicationDbContext
     DbSet<ProductSpec> ProductSpecs { get; }
     DbSet<SpecOption> SpecOptions { get; }
     DbSet<ProductSpecValue> ProductSpecValues { get; }
+    DbSet<Brand> Brands { get; }
+    DbSet<ProductVariant> ProductVariants { get; }
     DbSet<Cart> Carts { get; }
     DbSet<CartItem> CartItems { get; }
     DbSet<Order> Orders { get; }

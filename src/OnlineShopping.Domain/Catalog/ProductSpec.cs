@@ -101,3 +101,12 @@ public sealed class ProductSpecValue : BaseEntity
     public Guid? OptionId { get; set; }
     public SpecOption? Option { get; set; }
 }
+
+/// <summary>
+/// One spec of a category's or sub-category's spec template: the product editor offers these first for products in
+/// it (a sub-category's template adds to its category's). Listed in the specs' own order.
+/// </summary>
+public sealed class TemplateSpec
+{
+    public Guid SpecId { get; set; }
+}

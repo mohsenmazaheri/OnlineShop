@@ -104,6 +104,20 @@ public static class CatalogAdminEndpoints
             .WithName("SetCategoryImage")
             .WithSummary("Upload a category's tile image (replaces the previous one).");
 
+        tree.MapPut("/categories/{id:guid}/template", async (Guid id, SaveTemplateRequest request, CatalogTreeService catalog, CancellationToken ct) =>
+                (await catalog.SetCategoryTemplateAsync(id, request, ct)).ToHttpResult())
+            .WithName("SetCategoryTemplate").WithSummary("Set the specs a category's products usually have (its spec template).");
+        tree.MapPut("/subcategories/{id:guid}/template", async (Guid id, SaveTemplateRequest request, CatalogTreeService catalog, CancellationToken ct) =>
+                (await catalog.SetSubCategoryTemplateAsync(id, request, ct)).ToHttpResult())
+            .WithName("SetSubCategoryTemplate").WithSummary("Set the specs a sub-category adds to its category's template.");
+
+        products.MapPut("/{number:long}/variants", async (long number, SaveVariantsRequest request, ProductVariantService variants, CancellationToken ct) =>
+                (await variants.SaveAsync(number, request, ct)).ToHttpResult())
+            .Validate<SaveVariantsRequest>()
+            .WithName("SaveProductVariants")
+            .WithSummary("Replace a product's variants (colour, size…): the specs they vary by and every variant.")
+            .Produces<ProductVariantsView>();
+
         tree.MapDelete("/categories/{id:guid}/image", async (Guid id, CatalogImageService images, CancellationToken ct) =>
                 (await images.RemoveCategoryImageAsync(id, ct)).ToHttpResult())
             .WithName("RemoveCategoryImage")

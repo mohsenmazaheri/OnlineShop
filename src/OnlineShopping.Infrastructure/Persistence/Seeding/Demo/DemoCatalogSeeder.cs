@@ -43,6 +43,7 @@ public sealed partial class DemoCatalogSeeder(
         var currency = store.Value.Currency;
 
         var specs = await EnsureSpecsAsync(baseLocale, cancellationToken);
+        var brands = await EnsureBrandsAsync(cancellationToken);
         var nextNumber = Math.Max(
             FirstPublicNumber,
             (await db.Products.IgnoreQueryFilters().MaxAsync(p => (long?)p.PublicNumber, cancellationToken) ?? 0) + 1);
@@ -74,6 +75,12 @@ public sealed partial class DemoCatalogSeeder(
                     db.SubCategories.Add(sub);
                 }
                 AddMissingTranslations(sub.Translations, demoSub.Name, baseLocale, withSlug: true);
+                // The sub-category's spec template: the specs its demo products have (only when it has none yet).
+                if (sub.TemplateSpecs.Count == 0)
+                {
+                    foreach (var code in demoSub.Groups.SelectMany(g => g.Products).SelectMany(p => p.Specs).Select(v => v.Spec).Distinct())
+                        sub.TemplateSpecs.Add(new TemplateSpec { SpecId = specs[code].Spec.Id });
+                }
 
                 foreach (var demoGroup in demoSub.Groups)
                 {
@@ -88,7 +95,7 @@ public sealed partial class DemoCatalogSeeder(
 
                     foreach (var demoProduct in demoGroup.Products)
                     {
-                        var product = CreateProduct(demoProduct, nextNumber++, baseLocale, currency, specs);
+                        var product = CreateProduct(demoProduct, nextNumber++, baseLocale, currency, specs, brands);
                         group.Products.Add(product);
                         db.Products.Add(product);
                         added++;
@@ -101,7 +108,7 @@ public sealed partial class DemoCatalogSeeder(
         LogSeeded(logger, added, baseLocale, currency);
     }
 
-    private static Product CreateProduct(DemoProduct demo, long number, string baseLocale, string currency, SpecLookup specs)
+    private Product CreateProduct(DemoProduct demo, long number, string baseLocale, string currency, SpecLookup specs, Dictionary<string, Brand> brands)
     {
         var name = demo.Name.For(baseLocale);
         var product = new Product
@@ -115,6 +122,7 @@ public sealed partial class DemoCatalogSeeder(
             CompareAtPrice = demo.CompareAtEur is { } compareAt ? DemoPrices.Convert(compareAt, currency) : null,
             Stock = demo.Stock,
             IsPublished = true,
+            Brand = demo.Brand is null ? null : brands[demo.Brand],
         };
         product.Images.Add(new ProductImage { Url = demo.Image, SortOrder = 0 });
 
@@ -143,7 +151,40 @@ public sealed partial class DemoCatalogSeeder(
             });
         }
 
+        var sortOrder = 0;
+        foreach (var demoVariant in demo.Variants ?? [])
+        {
+            var variant = new ProductVariant { Sku = demoVariant.Sku, Stock = demoVariant.Stock, SortOrder = sortOrder++, Product = product };
+            foreach (var choice in demoVariant.Options)
+            {
+                var (spec, optionsByCode) = specs[choice.Spec];
+                variant.Options.Add(new VariantOption { SpecId = spec.Id, OptionId = optionsByCode[choice.Option!].Id });
+            }
+            product.Variants.Add(variant);
+            db.ProductVariants.Add(variant);
+        }
+        if (product.Variants.Count > 0)
+            product.Stock = product.Variants.Sum(v => v.Stock);
+
         return product;
+    }
+
+    /// <summary>The demo brands, reusing any with the same name.</summary>
+    private async Task<Dictionary<string, Brand>> EnsureBrandsAsync(CancellationToken cancellationToken)
+    {
+        var existing = await db.Brands.ToListAsync(cancellationToken);
+        var lookup = new Dictionary<string, Brand>(StringComparer.Ordinal);
+        foreach (var name in DemoCatalogData.Brands)
+        {
+            var brand = existing.FirstOrDefault(b => string.Equals(b.Name, name, StringComparison.OrdinalIgnoreCase));
+            if (brand is null)
+            {
+                brand = new Brand { Name = name, Slug = Slugs.From(name) };
+                db.Brands.Add(brand);
+            }
+            lookup[name] = brand;
+        }
+        return lookup;
     }
 
     /// <summary>The demo specs, reusing any with the same code (a real shop may already have "color").</summary>

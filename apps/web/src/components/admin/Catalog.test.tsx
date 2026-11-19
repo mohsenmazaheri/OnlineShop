@@ -54,8 +54,10 @@ const tree: CatalogTree = {
           id: "s1",
           texts: [{ locale: "fa", name: "رمان", slug: "novels", description: null }, { locale: "en", name: "", slug: null, description: null }],
           groups: [{ id: "g1", texts: [{ locale: "fa", name: "رمان ایرانی", slug: null, description: null }, { locale: "en", name: "", slug: null, description: null }], productCount: 3 }],
+          templateSpecs: [],
         },
       ],
+      templateSpecs: ["weight"],
     },
   ],
 };
@@ -105,7 +107,7 @@ describe("CatalogTreeEditor", () => {
   it("shows the tree and adds a category, then refreshes the shop and the page", async () => {
     respond(200, { id: "c2", texts: [] });
     respond(200, { refreshed: ["catalog"] });
-    render(<CatalogTreeEditor locale="en" texts={texts} tree={tree} languageNames={names} />);
+    render(<CatalogTreeEditor locale="en" texts={texts} tree={tree} specs={[]} languageNames={names} />);
 
     expect(screen.getByText("Books")).toBeTruthy();
     expect(screen.getByText(texts.productCount.replace("{count}", "3"))).toBeTruthy();
@@ -124,7 +126,7 @@ describe("CatalogTreeEditor", () => {
   it("shows the API's reason when a node cannot be deleted", async () => {
     vi.stubGlobal("confirm", () => true);
     respond(409, { status: 409, code: "catalog.has_products" });
-    render(<CatalogTreeEditor locale="en" texts={texts} tree={tree} languageNames={names} />);
+    render(<CatalogTreeEditor locale="en" texts={texts} tree={tree} specs={[]} languageNames={names} />);
 
     const group = screen.getByText("رمان ایرانی").closest("details")!;
     fireEvent.click(within(group).getByRole("button", { name: texts.remove }));
@@ -139,14 +141,18 @@ describe("ProductEditor", () => {
     { code: "color", name: "Colour", groupName: "General", kind: "Option", unit: null, options: [{ code: "red", value: "Red" }] },
     { code: "weight", name: "Weight", groupName: "Size", kind: "Number", unit: "g", options: [] },
   ];
+  const brands = [{ id: "b1", logoUrl: null, productCount: 0, texts: [{ locale: "fa", name: "اورویا", slug: "orvia", description: null }, { locale: "en", name: "Orvia", slug: "orvia", description: null }] }];
 
   it("creates a product with texts, numbers and specs, then opens it", async () => {
     respond(200, { number: 1050 });
-    render(<ProductEditor locale="en" texts={texts} tree={tree} specs={specs} languageNames={names} />);
+    render(<ProductEditor locale="en" texts={texts} tree={tree} specs={specs} brands={brands} languageNames={names} />);
 
     fireEvent.change(screen.getByLabelText(texts.productSku), { target: { value: "N-1" } });
     fireEvent.change(screen.getByLabelText(texts.productPrice), { target: { value: "۱۲۰٬۰۰۰" } });
     fireEvent.change(screen.getByLabelText(texts.productGroup), { target: { value: "g1" } });
+    // The category's template offers "weight" at once; left empty, it is not sent.
+    expect(screen.getByLabelText("Weight")).toBeTruthy();
+    fireEvent.change(screen.getByLabelText(texts.productBrand), { target: { value: "b1" } });
     fireEvent.change(within(screen.getByRole("group", { name: /فارسی/ })).getByLabelText(texts.nameLabel), { target: { value: "کالا" } });
     fireEvent.change(screen.getByLabelText(texts.productAddSpec), { target: { value: "color" } });
     fireEvent.change(screen.getByLabelText("Colour"), { target: { value: "red" } });
@@ -154,7 +160,7 @@ describe("ProductEditor", () => {
 
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/en/admin/products/1050"));
     const body = JSON.parse(String((apiCalls()[0][1] as RequestInit).body));
-    expect(body).toMatchObject({ sku: "N-1", price: 120000, compareAtPrice: null, productGroupId: "g1", isPublished: false });
+    expect(body).toMatchObject({ sku: "N-1", price: 120000, compareAtPrice: null, productGroupId: "g1", isPublished: false, brandId: "b1" });
     expect(body.specs).toEqual([{ code: "color", number: null, boolean: null, text: null, optionCode: "red" }]);
   });
 
@@ -162,9 +168,10 @@ describe("ProductEditor", () => {
     respond(409, { status: 409, code: "catalog.sku_taken" });
     const product = {
       number: 1001, sku: "A", price: 10, compareAtPrice: null, stock: 1, isPublished: true, productGroupId: "g1",
-      texts: [{ locale: "fa", name: "کالا", slug: "kala", description: null }], specs: [], images: [],
+      texts: [{ locale: "fa", name: "کالا", slug: "kala", description: null }], specs: [], images: [], brandId: null,
+      variants: { specCodes: [], variants: [] },
     };
-    render(<ProductEditor locale="en" texts={texts} tree={tree} specs={specs} languageNames={names} product={product} />);
+    render(<ProductEditor locale="en" texts={texts} tree={tree} specs={specs} brands={brands} languageNames={names} product={product} />);
 
     fireEvent.click(screen.getByRole("button", { name: texts.save }));
 

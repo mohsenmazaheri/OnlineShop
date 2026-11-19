@@ -23,6 +23,13 @@ public sealed class CatalogTreeService(IApplicationDbContext db, IOptions<StoreO
             .GroupBy(p => p.ProductGroupId)
             .Select(g => new { g.Key, Count = g.Count() })
             .ToDictionaryAsync(g => g.Key, g => g.Count, cancellationToken);
+        var specs = await db.ProductSpecs.AsNoTracking().OrderBy(s => s.SortOrder).Select(s => new { s.Id, s.Code }).ToListAsync(cancellationToken);
+        // Template codes in the specs' order; entries of deleted specs drop out.
+        List<string> Template(IEnumerable<TemplateSpec> entries)
+        {
+            var ids = entries.Select(e => e.SpecId).ToHashSet();
+            return specs.Where(s => ids.Contains(s.Id)).Select(s => s.Code).ToList();
+        }
 
         var nodes = categories
             .OrderBy(c => c.Name, StringComparer.CurrentCulture)
@@ -38,8 +45,10 @@ public sealed class CatalogTreeService(IApplicationDbContext db, IOptions<StoreO
                         s.Groups
                             .OrderBy(g => g.Name, StringComparer.CurrentCulture)
                             .Select(g => new GroupNode(g.Id, LocalizedTexts.Read(Store, g.Name, null, null, g.Translations), counts.GetValueOrDefault(g.Id)))
-                            .ToList()))
-                    .ToList()))
+                            .ToList(),
+                        Template(s.TemplateSpecs)))
+                    .ToList(),
+                Template(c.TemplateSpecs)))
             .ToList();
 
         return new CatalogTree(Store.DefaultLocale, Store.LocaleList, nodes);
@@ -180,6 +189,35 @@ public sealed class CatalogTreeService(IApplicationDbContext db, IOptions<StoreO
         db.ProductGroups.Remove(group);
         await db.SaveChangesAsync(cancellationToken);
         return true;
+    }
+
+    /// <summary>Replaces a category's spec template.</summary>
+    public async Task<Result<IReadOnlyList<string>>> SetCategoryTemplateAsync(Guid id, SaveTemplateRequest request, CancellationToken cancellationToken = default)
+    {
+        var category = await db.Categories.SingleOrDefaultAsync(c => c.Id == id, cancellationToken);
+        return category is null ? NotFound() : await SetTemplateAsync(category.TemplateSpecs, request, cancellationToken);
+    }
+
+    /// <summary>Replaces a sub-category's spec template (added to its category's for its products).</summary>
+    public async Task<Result<IReadOnlyList<string>>> SetSubCategoryTemplateAsync(Guid id, SaveTemplateRequest request, CancellationToken cancellationToken = default)
+    {
+        var sub = await db.SubCategories.SingleOrDefaultAsync(s => s.Id == id, cancellationToken);
+        return sub is null ? NotFound() : await SetTemplateAsync(sub.TemplateSpecs, request, cancellationToken);
+    }
+
+    private async Task<Result<IReadOnlyList<string>>> SetTemplateAsync(ICollection<TemplateSpec> template, SaveTemplateRequest request, CancellationToken cancellationToken)
+    {
+        var codes = request.SpecCodes.Distinct(StringComparer.Ordinal).ToList();
+        var specs = await db.ProductSpecs.Where(s => codes.Contains(s.Code)).OrderBy(s => s.SortOrder).Select(s => new { s.Id, s.Code }).ToListAsync(cancellationToken);
+        if (specs.Count != codes.Count)
+            return AppError.Validation(CatalogErrors.SpecNotFound, "Unknown spec in the template.");
+
+        foreach (var entry in template.Where(t => specs.All(s => s.Id != t.SpecId)).ToList())
+            template.Remove(entry);
+        foreach (var spec in specs.Where(s => template.All(t => t.SpecId != s.Id)))
+            template.Add(new TemplateSpec { SpecId = spec.Id });
+        await db.SaveChangesAsync(cancellationToken);
+        return specs.Select(s => s.Code).ToList();
     }
 
     private CatalogNodeView View(Guid id, string name, string? slug, IEnumerable<CatalogTranslation> translations) =>

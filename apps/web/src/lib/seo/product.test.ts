@@ -25,7 +25,12 @@ const product: ProductDetail = {
     { locale: "en", slug: "orvia-x1" },
     { locale: "de", slug: "orvia-x1-de" },
   ],
+  brand: null,
+  variantAxes: [],
+  variants: [],
 };
+
+const offers = (data: ReturnType<typeof productJsonLd>) => ("offers" in data ? data.offers : undefined);
 
 describe("productAlternates", () => {
   it("lists only translated languages the shop offers, with x-default on the default language", () => {
@@ -54,10 +59,40 @@ describe("productJsonLd", () => {
     const data = productJsonLd(product, `${site}/en/p/1001/orvia-x1`, "EUR", site);
 
     expect(data["@type"]).toBe("Product");
-    expect(data.offers).toMatchObject({ price: "349", priceCurrency: "EUR", availability: "https://schema.org/InStock" });
+    expect(offers(data)).toMatchObject({ price: "349", priceCurrency: "EUR", availability: "https://schema.org/InStock" });
     expect(data.image).toEqual([`${site}/demo/products/phone-x1.svg`]);
     expect(data.brand).toEqual({ "@type": "Brand", name: "Orvia" });
-    expect(productJsonLd({ ...product, inStock: false }, "u", "EUR", site).offers.availability).toBe("https://schema.org/OutOfStock");
+    expect(offers(productJsonLd({ ...product, inStock: false }, "u", "EUR", site))?.availability).toBe("https://schema.org/OutOfStock");
+  });
+
+  it("describes variants as a ProductGroup with converted prices, the brand itself winning over a brand spec", () => {
+    const withVariants: ProductDetail = {
+      ...product,
+      brand: { name: "Orvia Inc.", slug: "orvia", logoUrl: null },
+      variantAxes: [
+        { code: "color", name: "Colour", options: [{ code: "black", value: "Black" }] },
+        { code: "storage", name: "Storage", options: [{ code: "s128", value: "128 GB" }, { code: "s256", value: "256 GB" }] },
+      ],
+      variants: [
+        { sku: "X1-128", price: 349, compareAtPrice: 399, inStock: true, options: [{ axis: "color", option: "black" }, { axis: "storage", option: "s128" }] },
+        { sku: "X1-256", price: 399, compareAtPrice: null, inStock: false, options: [{ axis: "color", option: "black" }, { axis: "storage", option: "s256" }] },
+      ],
+    };
+
+    const data = productJsonLd(withVariants, "u", "USD", site, (p) => p * 2) as Record<string, unknown>;
+
+    expect(data["@type"]).toBe("ProductGroup");
+    expect(data).toMatchObject({ productGroupID: "DEMO-PHN-001", variesBy: ["https://schema.org/color"], brand: { name: "Orvia Inc." } });
+    const [first, second] = data.hasVariant as Record<string, unknown>[];
+    expect(first).toMatchObject({
+      "@type": "Product",
+      name: "Orvia X1 – Black / 128 GB",
+      sku: "X1-128",
+      color: "Black",
+      additionalProperty: [{ "@type": "PropertyValue", name: "Storage", value: "128 GB" }],
+      offers: { price: "698", priceCurrency: "USD", availability: "https://schema.org/InStock" },
+    });
+    expect(second).toMatchObject({ offers: { price: "798", availability: "https://schema.org/OutOfStock" } });
   });
 
   it("is safe to embed in a script tag", () => {

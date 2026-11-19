@@ -108,3 +108,16 @@ export function getAdminProduct(number: number, fetchImpl: typeof fetch = fetch)
 export function getSpecChoices(locale: string, fetchImpl: typeof fetch = fetch): Promise<SpecChoice[] | null> {
   return getForUser<SpecChoice[]>(`/api/v1/admin/products/specs?locale=${encodeURIComponent(locale)}`, fetchImpl);
 }
+
+export type BrandList = components["schemas"]["BrandList"];
+export type SpecList = components["schemas"]["SpecList"];
+
+/** Every brand with its texts in every shop language (admin). */
+export function getBrands(fetchImpl: typeof fetch = fetch): Promise<BrandList | null> {
+  return getForUser<BrandList>("/api/v1/admin/brands", fetchImpl);
+}
+
+/** The spec library: every spec with its texts, options and usage (admin). */
+export function getSpecLibrary(fetchImpl: typeof fetch = fetch): Promise<SpecList | null> {
+  return getForUser<SpecList>("/api/v1/admin/specs", fetchImpl);
+}
