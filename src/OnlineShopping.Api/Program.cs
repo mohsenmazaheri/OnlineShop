@@ -104,6 +104,8 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 
 app.MapStoreEndpoints();
 app.MapProductEndpoints();
+app.MapCurrencyEndpoints();
+app.MapBrandingEndpoints();
 app.MapAccountEndpoints();
 app.MapExternalLoginEndpoints();
 app.MapTwoFactorEndpoints();

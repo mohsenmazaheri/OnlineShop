@@ -28,13 +28,15 @@ public sealed class AppDbContextModelTests : IDisposable
     }
 
     [Fact]
-    public void Every_decimal_property_has_money_precision()
+    public void Every_money_property_has_money_precision()
     {
         using var db = _database.CreateContext();
 
         var decimals = db.Model.GetEntityTypes()
             .SelectMany(t => t.GetProperties())
             .Where(p => (Nullable.GetUnderlyingType(p.ClrType) ?? p.ClrType) == typeof(decimal))
+            // Exchange rates and their rounding steps are not money: they need more scale (see ConfigureCurrencies).
+            .Where(p => p.DeclaringType.ClrType != typeof(OnlineShopping.Domain.Pricing.Currency))
             .ToList();
 
         Assert.NotEmpty(decimals);

@@ -50,7 +50,8 @@
     "mainMenu": "القائمة الرئيسية",
     "bottomMenu": "القائمة السفلية",
     "home": "الرئيسية",
-    "categoriesShort": "الفئات"
+    "categoriesShort": "الفئات",
+    "currency": "العملة"
   },
   "account": {
     "loginTitle": "تسجيل الدخول",
@@ -319,6 +320,63 @@
       "last_admin": "يجب أن يكون للمتجر مدير عام نشط واحد على الأقل.",
       "already_suspended": "هذا الحساب موقوف بالفعل.",
       "not_suspended": "هذا الحساب غير موقوف."
+    },
+    "navCurrencies": "العملات",
+    "currenciesTitle": "العملات",
+    "currenciesIntro": "تُحفظ أسعار المنتجات بـ{base}؛ أما العملات الأخرى فتُعرض فقط بعد التحويل بالأسعار أدناه.",
+    "currencyCode": "الرمز",
+    "currencySymbol": "رمز مخصص",
+    "currencySymbolHint": "فارغ: الرمز المعتاد. للتومان مثلًا «تومان».",
+    "currencyDecimals": "المنازل العشرية",
+    "currencyStep": "التقريب إلى",
+    "currencyRate": "السعر مقابل 1 {base}",
+    "currencyAuto": "تحديث السعر تلقائيًا",
+    "currencyEnabled": "متاحة لاختيار العملاء",
+    "currencyOrder": "الترتيب",
+    "currencyBase": "العملة الأساسية",
+    "currencyUpdated": "آخر سعر: {date}",
+    "currencyNoRate": "لا يوجد سعر بعد، لذا لا تُعرض",
+    "addCurrencyTitle": "إضافة عملة",
+    "addCurrency": "إضافة",
+    "localeDefaultsTitle": "العملة الافتراضية لكل لغة",
+    "localeDefaultsHint": "بعد تغيير اللغة يرى العميل هذه العملة أولًا ويمكنه تغييرها.",
+    "syncTitle": "الأسعار التلقائية",
+    "syncSource": "المصدر: {source}",
+    "syncNow": "تحديث الأسعار الآن",
+    "synced": "تم تحديث أسعار {count} عملات.",
+    "syncOff": "التحديث التلقائي متوقف؛ أدخل الأسعار يدويًا.",
+    "currencyErrors": {
+      "not_found": "لم يتم العثور على هذه العملة.",
+      "code_invalid": "يجب أن يتكون الرمز من ثلاثة أحرف لاتينية (مثل USD).",
+      "exists": "هذه العملة مضافة بالفعل.",
+      "base_locked": "العملة الأساسية مفعّلة دائمًا بسعر 1.",
+      "rate_invalid": "السعر غير صالح.",
+      "decimals_invalid": "يجب أن تكون المنازل العشرية بين 0 و4.",
+      "step_invalid": "يجب أن تكون خطوة التقريب أكبر من صفر.",
+      "symbol_too_long": "يمكن أن يحتوي الرمز على 12 حرفًا على الأكثر.",
+      "locale_invalid": "هذا المتجر لا يقدم هذه اللغة.",
+      "default_disabled": "لا يمكن إيقاف العملة الافتراضية للغة؛ غيّر الافتراضي لتلك اللغة أولًا.",
+      "sync_unavailable": "مصدر الأسعار متوقف أو غير متاح. تم الاحتفاظ بالأسعار الحالية."
+    },
+    "save": "حفظ",
+    "saved": "تم الحفظ.",
+    "navBranding": "المظهر",
+    "brandingTitle": "مظهر المتجر",
+    "brandingIntro": "تُطبَّق التغييرات على المتجر فورًا دون إعادة بناء.",
+    "brandColor": "اللون الرئيسي",
+    "corners": "الزوايا",
+    "cornersSharp": "حادة",
+    "cornersSoft": "ناعمة",
+    "cornersRound": "دائرية",
+    "font": "الخط",
+    "fontVazirmatn": "Vazirmatn (مرفق)",
+    "fontSystem": "خط جهاز الزائر",
+    "homeLayout": "ترتيب الصفحة الرئيسية",
+    "layoutClassic": "كلاسيكي: لافتة، وصول سريع، عروض، فئات، وصل حديثًا",
+    "layoutCatalog": "كتالوج: الفئات أولًا، دون لافتة",
+    "layoutShowcase": "واجهة عرض: لافتة ثم وصل حديثًا",
+    "brandingErrors": {
+      "color_invalid": "يجب أن يكون اللون بالشكل #rrggbb."
     }
   },
   "footer": {
@@ -332,7 +390,12 @@
     "addresses": "العناوين",
     "privacy": "الخصوصية وبياناتي",
     "signIn": "تسجيل الدخول أو إنشاء حساب",
-    "rights": "جميع الحقوق محفوظة."
+    "rights": "جميع الحقوق محفوظة.",
+    "installTitle": "ثبّت تطبيق الويب للمتجر",
+    "installText": "وصول سريع من الشاشة الرئيسية دون متجر تطبيقات.",
+    "installButton": "تثبيت",
+    "installIos": "في Safari اضغط «مشاركة» ثم «إضافة إلى الشاشة الرئيسية».",
+    "installDismiss": "إغلاق"
   },
   "search": {
     "title": "البحث",
@@ -361,6 +424,7 @@
     "no": "لا",
     "breadcrumb": "مسار التنقل",
     "home": "الرئيسية",
-    "sku": "رمز المنتج"
+    "sku": "رمز المنتج",
+    "approximate": "السعر تقريبي؛ يتم الدفع بـ{base}."
   }
 }

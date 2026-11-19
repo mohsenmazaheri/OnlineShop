@@ -50,7 +50,8 @@
     "mainMenu": "Hauptmenü",
     "bottomMenu": "Menü unten",
     "home": "Start",
-    "categoriesShort": "Kategorien"
+    "categoriesShort": "Kategorien",
+    "currency": "Währung"
   },
   "account": {
     "loginTitle": "Anmelden",
@@ -319,6 +320,63 @@
       "last_admin": "Der Shop braucht mindestens einen aktiven Administrator.",
       "already_suspended": "Dieses Konto ist bereits gesperrt.",
       "not_suspended": "Dieses Konto ist nicht gesperrt."
+    },
+    "navCurrencies": "Währungen",
+    "currenciesTitle": "Währungen",
+    "currenciesIntro": "Produktpreise werden in {base} gespeichert; andere Währungen werden nur angezeigt, umgerechnet mit den Kursen unten.",
+    "currencyCode": "Code",
+    "currencySymbol": "Eigenes Symbol",
+    "currencySymbolHint": "Leer: das übliche Symbol. Für Toman z. B. „Toman“.",
+    "currencyDecimals": "Nachkommastellen",
+    "currencyStep": "Runden auf",
+    "currencyRate": "Kurs für 1 {base}",
+    "currencyAuto": "Kurs automatisch aktualisieren",
+    "currencyEnabled": "Für Kunden wählbar",
+    "currencyOrder": "Reihenfolge",
+    "currencyBase": "Basiswährung",
+    "currencyUpdated": "Letzter Kurs: {date}",
+    "currencyNoRate": "Noch kein Kurs, daher nicht angezeigt",
+    "addCurrencyTitle": "Währung hinzufügen",
+    "addCurrency": "Hinzufügen",
+    "localeDefaultsTitle": "Standardwährung jeder Sprache",
+    "localeDefaultsHint": "Nach einem Sprachwechsel sehen Kunden zuerst diese Währung und können sie ändern.",
+    "syncTitle": "Automatische Kurse",
+    "syncSource": "Quelle: {source}",
+    "syncNow": "Kurse jetzt aktualisieren",
+    "synced": "Kurse für {count} Währungen aktualisiert.",
+    "syncOff": "Automatische Aktualisierung ist aus; Kurse bitte von Hand eintragen.",
+    "currencyErrors": {
+      "not_found": "Diese Währung wurde nicht gefunden.",
+      "code_invalid": "Der Code muss aus drei lateinischen Buchstaben bestehen (z. B. USD).",
+      "exists": "Diese Währung ist bereits vorhanden.",
+      "base_locked": "Die Basiswährung ist immer aktiv, mit Kurs 1.",
+      "rate_invalid": "Der Kurs ist ungültig.",
+      "decimals_invalid": "Nachkommastellen müssen zwischen 0 und 4 liegen.",
+      "step_invalid": "Der Rundungsschritt muss größer als null sein.",
+      "symbol_too_long": "Das Symbol darf höchstens 12 Zeichen haben.",
+      "locale_invalid": "Dieser Shop bietet diese Sprache nicht an.",
+      "default_disabled": "Die Standardwährung einer Sprache kann nicht deaktiviert werden; ändern Sie zuerst deren Standard.",
+      "sync_unavailable": "Die Kursquelle ist aus oder nicht erreichbar. Die aktuellen Kurse bleiben erhalten."
+    },
+    "save": "Speichern",
+    "saved": "Gespeichert.",
+    "navBranding": "Aussehen",
+    "brandingTitle": "Aussehen des Shops",
+    "brandingIntro": "Änderungen gelten sofort im Shop; kein neuer Build nötig.",
+    "brandColor": "Hauptfarbe",
+    "corners": "Ecken",
+    "cornersSharp": "Eckig",
+    "cornersSoft": "Weich",
+    "cornersRound": "Rund",
+    "font": "Schrift",
+    "fontVazirmatn": "Vazirmatn (mitgeliefert)",
+    "fontSystem": "Systemschrift des Besuchers",
+    "homeLayout": "Aufbau der Startseite",
+    "layoutClassic": "Klassisch: Banner, Schnellzugriff, Angebote, Kategorien, Neuheiten",
+    "layoutCatalog": "Katalog: zuerst Kategorien, ohne Banner",
+    "layoutShowcase": "Schaufenster: Banner, dann Neuheiten",
+    "brandingErrors": {
+      "color_invalid": "Die Farbe muss die Form #rrggbb haben."
     }
   },
   "footer": {
@@ -332,7 +390,12 @@
     "addresses": "Adressen",
     "privacy": "Datenschutz und meine Daten",
     "signIn": "Anmelden oder registrieren",
-    "rights": "Alle Rechte vorbehalten."
+    "rights": "Alle Rechte vorbehalten.",
+    "installTitle": "Web-App des Shops installieren",
+    "installText": "Schneller Zugriff vom Startbildschirm, ohne App-Store.",
+    "installButton": "Installieren",
+    "installIos": "Tippen Sie in Safari auf „Teilen“ und dann auf „Zum Home-Bildschirm“.",
+    "installDismiss": "Schließen"
   },
   "search": {
     "title": "Suche",
@@ -361,6 +424,7 @@
     "no": "Nein",
     "breadcrumb": "Navigationspfad",
     "home": "Start",
-    "sku": "Artikelnummer"
+    "sku": "Artikelnummer",
+    "approximate": "Ungefährer Preis; Sie bezahlen in {base}."
   }
 }

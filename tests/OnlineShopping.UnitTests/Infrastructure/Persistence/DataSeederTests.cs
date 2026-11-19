@@ -161,7 +161,8 @@ public sealed class DataSeederTests : IDisposable
             NullLogger<DataSeeder>.Instance,
             _database.Clock,
             demoUsers,
-            demoCatalog);
+            demoCatalog,
+            new CurrencySeeder(db, Options.Create(new StoreOptions { Locales = "fa,en", Currency = "IRR", PublicUrl = "http://localhost:3000" })));
 
         await seeder.SeedAsync();
     }

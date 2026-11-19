@@ -1,18 +1,27 @@
+import { convertAmount, type DisplayCurrency } from "@/lib/currency/display";
 import { discountShare, formatMoney, formatPercent } from "@/lib/i18n/format-money";
 
 export type PriceTexts = { oldPrice: string; discount: string };
 
 type Props = {
+  /** Price in the shop's base currency (as the API returns it). */
   price: number;
   compareAtPrice?: number | null;
-  currency: string;
+  /** The currency shown on this request; amounts are converted to it. */
+  money: DisplayCurrency;
   locale: string;
   texts: PriceTexts;
   size?: "md" | "lg";
 };
 
-/** The price, and for a discount the struck-out old price and a "20% off" badge. Server-rendered, no client code. */
-export function Price({ price, compareAtPrice, currency, locale, texts, size = "md" }: Props) {
+/** A base-currency amount as the visitor sees it: converted, rounded and formatted. */
+export function displayMoney(amount: number, money: DisplayCurrency, locale: string): string {
+  return formatMoney(convertAmount(amount, money), money.code, locale, { symbol: money.symbol, decimals: money.decimals });
+}
+
+/** The price, and for a discount the struck-out old price and a percentage badge. Server-rendered, no client code. */
+export function Price({ price, compareAtPrice, money, locale, texts, size = "md" }: Props) {
+  // The discount share comes from the base prices (conversion and rounding must not change it).
   const share = discountShare(price, compareAtPrice);
   return (
     <div className="flex flex-col gap-0.5">
@@ -26,13 +35,11 @@ export function Price({ price, compareAtPrice, currency, locale, texts, size = "
             {formatPercent(share, locale)}
           </span>
           <del className="truncate text-xs whitespace-nowrap text-muted" aria-label={texts.oldPrice}>
-            {formatMoney(compareAtPrice!, currency, locale)}
+            {displayMoney(compareAtPrice!, money, locale)}
           </del>
         </div>
       )}
-      <strong className={size === "lg" ? "text-2xl font-extrabold" : "text-base font-extrabold"}>
-        {formatMoney(price, currency, locale)}
-      </strong>
+      <strong className={size === "lg" ? "text-2xl font-extrabold" : "text-base font-extrabold"}>{displayMoney(price, money, locale)}</strong>
     </div>
   );
 }

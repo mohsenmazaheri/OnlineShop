@@ -7,6 +7,8 @@ using OnlineShopping.Application.Catalog;
 using OnlineShopping.Application.Common;
 using OnlineShopping.Application.Customers;
 using OnlineShopping.Application.Notifications;
+using OnlineShopping.Application.Pricing;
+using OnlineShopping.Application.Settings;
 using OnlineShopping.Application.Staff;
 
 namespace OnlineShopping.Application;
@@ -35,6 +37,9 @@ public static class DependencyInjection
         services.AddScoped<PersonalDataService>();
         services.AddScoped<AddressService>();
         services.AddScoped<StaffService>();
+        services.AddScoped<CurrencyService>();
+        services.AddScoped<BrandingService>();
+        services.TryAddSingleton<IExchangeRateSource, NoExchangeRateSource>();
         services.AddOptions<SecurityOptions>().Bind(configuration.GetSection(SecurityOptions.SectionName));
         services.AddOptions<PhoneCodeOptions>()
             .Bind(configuration.GetSection(PhoneCodeOptions.SectionName))

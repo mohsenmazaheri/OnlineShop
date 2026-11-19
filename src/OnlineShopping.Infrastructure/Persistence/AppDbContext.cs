@@ -9,6 +9,8 @@ using OnlineShopping.Domain.Accounts;
 using OnlineShopping.Domain.Catalog;
 using OnlineShopping.Domain.Common;
 using OnlineShopping.Domain.Customers;
+using OnlineShopping.Domain.Pricing;
+using OnlineShopping.Domain.Settings;
 using OnlineShopping.Domain.Sales;
 using OnlineShopping.Domain.Staff;
 using OnlineShopping.Infrastructure.Identity;
@@ -42,6 +44,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<CustomerAddress> CustomerAddresses => Set<CustomerAddress>();
     public DbSet<StaffInvitation> StaffInvitations => Set<StaffInvitation>();
     public DbSet<StaffAuditEntry> StaffAuditEntries => Set<StaffAuditEntry>();
+    public DbSet<Currency> Currencies => Set<Currency>();
+    public DbSet<LocaleCurrency> LocaleCurrencies => Set<LocaleCurrency>();
+    public DbSet<StoreBranding> StoreBranding => Set<StoreBranding>();
 
     /// <summary>ASP.NET Core Data Protection keys, shared by all app instances (cookies, antiforgery tokens).</summary>
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
@@ -63,6 +68,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         ConfigurePhoneCodes(builder);
         ConfigureAddresses(builder);
         ConfigureStaff(builder);
+        ConfigureCurrencies(builder);
         ApplySoftDeleteQueryFilters(builder);
     }
 
@@ -240,6 +246,33 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 .WithMany()
                 .HasForeignKey(v => v.OptionId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private static void ConfigureCurrencies(ModelBuilder b)
+    {
+        b.Entity<Currency>(e =>
+        {
+            e.Property(x => x.Code).HasMaxLength(3);
+            e.Property(x => x.Symbol).HasMaxLength(12);
+            // Rates span many orders of magnitude (1 IRR = 0.0000005 USD): more scale than the money convention.
+            e.Property(x => x.Rate).HasPrecision(28, 12);
+            e.Property(x => x.RoundingStep).HasPrecision(18, 6);
+            e.HasIndex(x => x.Code).IsUnique().HasFilter(NotDeletedFilter);
+        });
+        b.Entity<StoreBranding>(e =>
+        {
+            e.ToTable("store_branding");
+            e.Property(x => x.PrimaryColor).HasMaxLength(7);
+            e.Property(x => x.Corners).HasConversion<string>().HasMaxLength(16);
+            e.Property(x => x.Font).HasConversion<string>().HasMaxLength(16);
+            e.Property(x => x.HomeLayout).HasConversion<string>().HasMaxLength(16);
+        });
+        b.Entity<LocaleCurrency>(e =>
+        {
+            e.HasKey(x => x.Locale);
+            e.Property(x => x.Locale).HasMaxLength(8);
+            e.Property(x => x.CurrencyCode).HasMaxLength(3);
         });
     }
 

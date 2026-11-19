@@ -50,7 +50,8 @@
     "mainMenu": "Main menu",
     "bottomMenu": "Bottom menu",
     "home": "Home",
-    "categoriesShort": "Categories"
+    "categoriesShort": "Categories",
+    "currency": "Currency"
   },
   "account": {
     "loginTitle": "Sign in",
@@ -319,6 +320,63 @@
       "last_admin": "The shop needs at least one active administrator.",
       "already_suspended": "This account is already suspended.",
       "not_suspended": "This account is not suspended."
+    },
+    "navCurrencies": "Currencies",
+    "currenciesTitle": "Currencies",
+    "currenciesIntro": "Product prices are stored in {base}; other currencies are only shown, converted with the rates below.",
+    "currencyCode": "Code",
+    "currencySymbol": "Custom symbol",
+    "currencySymbolHint": "Empty: the standard symbol. For toman, e.g. “Toman”.",
+    "currencyDecimals": "Decimals",
+    "currencyStep": "Round to",
+    "currencyRate": "Rate for 1 {base}",
+    "currencyAuto": "Update the rate automatically",
+    "currencyEnabled": "Customers can choose it",
+    "currencyOrder": "Order",
+    "currencyBase": "Base currency",
+    "currencyUpdated": "Last rate: {date}",
+    "currencyNoRate": "No rate yet, so not shown",
+    "addCurrencyTitle": "Add a currency",
+    "addCurrency": "Add",
+    "localeDefaultsTitle": "Default currency of each language",
+    "localeDefaultsHint": "After switching language, customers first see this currency and can change it.",
+    "syncTitle": "Automatic rates",
+    "syncSource": "Source: {source}",
+    "syncNow": "Update rates now",
+    "synced": "Rates updated for {count} currencies.",
+    "syncOff": "Automatic updates are off; enter rates by hand.",
+    "currencyErrors": {
+      "not_found": "This currency was not found.",
+      "code_invalid": "The code must be three Latin letters (like USD).",
+      "exists": "This currency has already been added.",
+      "base_locked": "The base currency is always on, at rate 1.",
+      "rate_invalid": "The rate is not valid.",
+      "decimals_invalid": "Decimals must be between 0 and 4.",
+      "step_invalid": "The rounding step must be greater than zero.",
+      "symbol_too_long": "The symbol can have at most 12 characters.",
+      "locale_invalid": "This shop does not offer that language.",
+      "default_disabled": "A language's default currency cannot be switched off; change that language's default first.",
+      "sync_unavailable": "The rate source is off or unreachable. The current rates were kept."
+    },
+    "save": "Save",
+    "saved": "Saved.",
+    "navBranding": "Look",
+    "brandingTitle": "Shop look",
+    "brandingIntro": "Changes apply to the shop right away; no rebuild needed.",
+    "brandColor": "Main colour",
+    "corners": "Corners",
+    "cornersSharp": "Sharp",
+    "cornersSoft": "Soft",
+    "cornersRound": "Round",
+    "font": "Font",
+    "fontVazirmatn": "Vazirmatn (bundled)",
+    "fontSystem": "The visitor's system font",
+    "homeLayout": "Home page layout",
+    "layoutClassic": "Classic: banner, shortcuts, offers, categories, new arrivals",
+    "layoutCatalog": "Catalog: categories first, no banner",
+    "layoutShowcase": "Showcase: banner, then new arrivals",
+    "brandingErrors": {
+      "color_invalid": "The colour must look like #rrggbb."
     }
   },
   "footer": {
@@ -332,7 +390,12 @@
     "addresses": "Addresses",
     "privacy": "Privacy and my data",
     "signIn": "Sign in or sign up",
-    "rights": "All rights reserved."
+    "rights": "All rights reserved.",
+    "installTitle": "Install the shop's web app",
+    "installText": "Quick access from your home screen, no app store needed.",
+    "installButton": "Install",
+    "installIos": "In Safari, tap “Share” and then “Add to Home Screen”.",
+    "installDismiss": "Close"
   },
   "search": {
     "title": "Search",
@@ -361,6 +424,7 @@
     "no": "No",
     "breadcrumb": "Breadcrumb",
     "home": "Home",
-    "sku": "Item number"
+    "sku": "Item number",
+    "approximate": "Approximate price; you pay in {base}."
   }
 }

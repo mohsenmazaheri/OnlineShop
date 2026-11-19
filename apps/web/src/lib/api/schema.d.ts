@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/v1/currencies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The base currency, the currencies a visitor may show prices in (with rates) and each language's starting currency. */
+        get: operations["GetCurrencies"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/store": {
         parameters: {
             query?: never;
@@ -99,6 +116,93 @@ export interface paths {
         /** The product's slug in the requested locale, for redirecting old or wrong product addresses. */
         get: operations["GetProductSlug"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/currencies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** All currencies with rates and settings, the language defaults and the automatic rate source. */
+        get: operations["GetCurrencyAdmin"];
+        put?: never;
+        /** Add a display currency (ISO code or a shop-defined one such as IRT for toman). */
+        post: operations["CreateCurrency"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/currencies/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change a currency's symbol, decimals, rounding, rate, automatic updates or availability. */
+        put: operations["UpdateCurrency"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/currencies/locales/{locale}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Choose the currency a language starts with. */
+        put: operations["SetLocaleCurrency"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/currencies/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Fetch the automatic rates now (also done in the background every few hours). */
+        post: operations["SyncCurrencyRates"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/branding": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The shop's main colour, corner style, font and home page layout. */
+        get: operations["GetBranding"];
+        /** Change the shop's look; applied by the storefront at runtime, no rebuild. */
+        put: operations["SaveBranding"];
         post?: never;
         delete?: never;
         options?: never;
@@ -887,6 +991,12 @@ export interface components {
             sharedKey: string;
             authenticatorUri: string;
         };
+        BrandingView: {
+            primaryColor: string;
+            corners: components["schemas"]["CornerStyle"];
+            font: components["schemas"]["FontChoice"];
+            homeLayout: components["schemas"]["HomeLayout"];
+        };
         CartItemData: {
             productName: string;
             /** Format: int32 */
@@ -924,6 +1034,38 @@ export interface components {
             phone: string;
             code: string;
         };
+        /** @enum {unknown} */
+        CornerStyle: "Sharp" | "Soft" | "Round";
+        CurrencyAdminOverview: {
+            base: string;
+            currencies: components["schemas"]["CurrencyView"][];
+            localeDefaults: components["schemas"]["LocaleCurrencyView"][];
+            rateSource: string;
+        };
+        CurrencySettings: {
+            base: string;
+            currencies: components["schemas"]["PublicCurrency"][];
+            localeDefaults: {
+                [key: string]: string;
+            };
+        };
+        CurrencyView: {
+            code: string;
+            symbol: null | string;
+            /** Format: int32 */
+            decimals: number;
+            /** Format: double */
+            roundingStep: number;
+            /** Format: double */
+            rate: number;
+            autoUpdate: boolean;
+            /** Format: date-time */
+            rateUpdatedUtc: null | string;
+            isEnabled: boolean;
+            /** Format: int32 */
+            sortOrder: number;
+            isBase: boolean;
+        };
         CurrentUser: {
             id: string;
             displayName: null | string;
@@ -947,10 +1089,14 @@ export interface components {
             available: string[];
             linked: string[];
         };
+        /** @enum {unknown} */
+        FontChoice: "Vazirmatn" | "System";
         ForgotPasswordRequest: {
             email: string;
             locale: null | string;
         };
+        /** @enum {unknown} */
+        HomeLayout: "Classic" | "Catalog" | "Showcase";
         HttpValidationProblemDetails: {
             type?: null | string;
             title?: null | string;
@@ -966,6 +1112,10 @@ export interface components {
             identifier: string;
             roles: string[];
             locale: null | string;
+        };
+        LocaleCurrencyView: {
+            locale: string;
+            currencyCode: string;
         };
         LoginRequest: {
             identifier: string;
@@ -1089,6 +1239,22 @@ export interface components {
             value: null | string;
             inSummary: boolean;
         };
+        PublicCurrency: {
+            code: string;
+            symbol: null | string;
+            /** Format: int32 */
+            decimals: number;
+            /** Format: double */
+            roundingStep: number;
+            /** Format: double */
+            rate: number;
+        };
+        RateSyncResult: {
+            /** Format: int32 */
+            updated: number;
+            /** Format: date-time */
+            syncedUtc: null | string;
+        };
         RecoveryCodes: {
             codes: string[];
         };
@@ -1106,9 +1272,32 @@ export interface components {
             token: string;
             newPassword: string;
         };
+        SaveBrandingRequest: {
+            primaryColor: string;
+            corners: components["schemas"]["CornerStyle"];
+            font: components["schemas"]["FontChoice"];
+            homeLayout: components["schemas"]["HomeLayout"];
+        };
+        SaveCurrencyRequest: {
+            code: string;
+            symbol: null | string;
+            /** Format: int32 */
+            decimals: number;
+            /** Format: double */
+            roundingStep: number;
+            /** Format: double */
+            rate: number;
+            autoUpdate: boolean;
+            isEnabled: boolean;
+            /** Format: int32 */
+            sortOrder: number;
+        };
         SendPhoneCodeRequest: {
             phone: string;
             locale: null | string;
+        };
+        SetLocaleCurrencyRequest: {
+            currencyCode: string;
         };
         /** @description Sign-in methods currently available (SMS codes need a configured SMS provider). */
         SignInMethods: {
@@ -1174,6 +1363,7 @@ export interface components {
             signUp: components["schemas"]["SignUpMethods"];
             signIn: components["schemas"]["SignInMethods"];
             checkout: components["schemas"]["CheckoutSettings"];
+            branding: components["schemas"]["BrandingView"];
         };
         SubCategorySummary: {
             /** Format: uuid */
@@ -1209,6 +1399,26 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    GetCurrencies: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CurrencySettings"];
+                };
+            };
+        };
+    };
     GetStoreInfo: {
         parameters: {
             query?: never;
@@ -1370,6 +1580,211 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetCurrencyAdmin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CurrencyAdminOverview"];
+                };
+            };
+        };
+    };
+    CreateCurrency: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCurrencyRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CurrencyView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    UpdateCurrency: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCurrencyRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CurrencyView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    SetLocaleCurrency: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                locale: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetLocaleCurrencyRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocaleCurrencyView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    SyncCurrencyRates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RateSyncResult"];
+                };
+            };
+        };
+    };
+    GetBranding: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandingView"];
+                };
+            };
+        };
+    };
+    SaveBranding: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveBrandingRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandingView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
                 };
             };
         };

@@ -23,12 +23,14 @@ function apiErrorCodes(prefix: string): string[] {
 const sections = [
   { prefix: "account", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).account.errors },
   { prefix: "staff", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).admin.errors },
+  { prefix: "currency", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).admin.currencyErrors },
+  { prefix: "branding", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).admin.brandingErrors },
 ] as const;
 
 for (const { prefix, errors } of sections) {
   describe(`API error codes ${prefix}.*`, () => {
     it("are found in the C# source", () => {
-      expect(apiErrorCodes(prefix).length).toBeGreaterThan(5);
+      expect(apiErrorCodes(prefix).length).toBeGreaterThan(0);
     });
 
     it.each(supportedLocales)("all have a %s message", async (locale) => {

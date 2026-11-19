@@ -16,7 +16,7 @@ namespace OnlineShopping.IntegrationTests;
 
 public sealed class ApiTests(ApiFactory factory) : IClassFixture<ApiFactory>
 {
-    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() } };
 
     [Fact]
     public async Task Startup_applies_migrations_and_seeds_every_role()

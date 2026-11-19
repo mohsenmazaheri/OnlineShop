@@ -3,6 +3,7 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import en from "@/lib/i18n/dictionaries/en.json";
 import type { ProductCard as ProductCardData, ProductDetail } from "@/lib/api/storefront";
+import type { DisplayCurrency } from "@/lib/currency/display";
 
 vi.mock("next/link", () => ({
   default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
@@ -23,6 +24,9 @@ import { ProductView } from "./ProductView";
 import { SpecTable } from "./SpecTable";
 
 afterEach(cleanup);
+
+const eur: DisplayCurrency = { code: "EUR", symbol: null, decimals: 2, roundingStep: 0.01, rate: 1, isBase: true, base: "EUR" };
+const toman: DisplayCurrency = { code: "IRT", symbol: "Toman", decimals: 0, roundingStep: 1000, rate: 100_000, isBase: false, base: "EUR" };
 
 const card = (over: Partial<ProductCardData> = {}): ProductCardData => ({
   number: 1001,
@@ -53,15 +57,23 @@ const detail: ProductDetail = {
 
 describe("Price", () => {
   it("shows the discount and the struck-out old price", () => {
-    render(<Price price={80} compareAtPrice={100} currency="EUR" locale="en" texts={en.product} />);
+    render(<Price price={80} compareAtPrice={100} money={eur} locale="en" texts={en.product} />);
 
     expect(screen.getByLabelText("20% off").textContent).toBe("20%");
     expect(screen.getByLabelText(en.product.oldPrice).textContent).toBe("€100");
     expect(screen.getByText("€80")).toBeTruthy();
   });
 
+  it("converts both prices to the display currency (the discount share stays the same)", () => {
+    render(<Price price={80} compareAtPrice={100} money={toman} locale="en" texts={en.product} />);
+
+    expect(screen.getByText("8,000,000 Toman")).toBeTruthy();
+    expect(screen.getByLabelText(en.product.oldPrice).textContent).toBe("10,000,000 Toman");
+    expect(screen.getByLabelText("20% off")).toBeTruthy();
+  });
+
   it("shows only the price without a discount", () => {
-    render(<Price price={80} currency="EUR" locale="en" texts={en.product} />);
+    render(<Price price={80} money={eur} locale="en" texts={en.product} />);
 
     expect(screen.queryByLabelText(en.product.oldPrice)).toBeNull();
   });
@@ -69,7 +81,7 @@ describe("Price", () => {
 
 describe("ProductCard", () => {
   it("links to the product page and marks products out of stock", () => {
-    render(<ProductCard product={card({ inStock: false })} locale="en" currency="EUR" texts={en.product} />);
+    render(<ProductCard product={card({ inStock: false })} locale="en" money={eur} texts={en.product} />);
 
     const link = screen.getByRole("link");
     expect(link.getAttribute("href")).toBe("/en/p/1001/orvia-x1");
@@ -81,7 +93,7 @@ describe("ProductCard", () => {
 describe("ProductRail", () => {
   it("lists the products under a heading", () => {
     render(
-      <ProductRail id="deals" heading="Special offers" products={[card(), card({ number: 1002, slug: "b" })]} locale="en" currency="EUR" texts={en.product} variant="deals" />,
+      <ProductRail id="deals" heading="Special offers" products={[card(), card({ number: 1002, slug: "b" })]} locale="en" money={eur} texts={en.product} variant="deals" />,
     );
 
     const section = screen.getByRole("region", { name: "Special offers" });
@@ -89,7 +101,7 @@ describe("ProductRail", () => {
   });
 
   it("renders nothing for an empty list", () => {
-    const { container } = render(<ProductRail id="x" heading="X" products={[]} locale="en" currency="EUR" texts={en.product} />);
+    const { container } = render(<ProductRail id="x" heading="X" products={[]} locale="en" money={eur} texts={en.product} />);
 
     expect(container.innerHTML).toBe("");
   });
@@ -108,7 +120,7 @@ describe("SpecTable", () => {
 
 describe("ProductView", () => {
   it("shows the heading, key facts, price box, description and specs", () => {
-    render(<ProductView product={detail} locale="en" currency="EUR" texts={en.product} />);
+    render(<ProductView product={detail} locale="en" money={eur} baseName="euro" texts={en.product} />);
 
     expect(screen.getByRole("heading", { level: 1, name: "Orvia X1" })).toBeTruthy();
     expect(screen.getByRole("navigation", { name: en.product.breadcrumb }).textContent).toContain("Mobile phones");
@@ -119,5 +131,12 @@ describe("ProductView", () => {
     expect(button.disabled).toBe(true);
     expect(screen.getByText("A bright display.")).toBeTruthy();
     expect(screen.getByRole("img", { name: "Orvia X1" })).toBeTruthy();
+    expect(screen.queryByText(/Approximate price/)).toBeNull();
+  });
+
+  it("says a converted price is approximate", () => {
+    render(<ProductView product={detail} locale="en" money={toman} baseName="euro" texts={en.product} />);
+
+    expect(screen.getByText("Approximate price; you pay in euro.")).toBeTruthy();
   });
 });

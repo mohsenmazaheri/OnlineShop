@@ -7,10 +7,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using OnlineShopping.Application.Accounts;
 using OnlineShopping.Application.Common;
 using OnlineShopping.Application.Notifications;
+using OnlineShopping.Application.Pricing;
 using OnlineShopping.Application.Staff;
 using OnlineShopping.Infrastructure.Identity;
 using OnlineShopping.Infrastructure.Notifications;
@@ -18,6 +20,7 @@ using OnlineShopping.Infrastructure.Persistence;
 using OnlineShopping.Infrastructure.Persistence.Interceptors;
 using OnlineShopping.Infrastructure.Persistence.Seeding;
 using OnlineShopping.Infrastructure.Persistence.Seeding.Demo;
+using OnlineShopping.Infrastructure.Pricing;
 
 namespace OnlineShopping.Infrastructure;
 
@@ -68,6 +71,8 @@ public static class DependencyInjection
         services.AddScoped<DemoUserSeeder>();
         services.Configure<DemoCatalogOptions>(configuration.GetSection(DemoCatalogOptions.SectionName));
         services.AddScoped<DemoCatalogSeeder>();
+        services.AddScoped<CurrencySeeder>();
+        AddExchangeRates(services, configuration);
         services.AddScoped<DataSeeder>();
 
         services.AddHealthChecks()
@@ -265,5 +270,23 @@ public static class DependencyInjection
             default:
                 throw new NotSupportedException($"Database provider '{provider}' is not implemented yet.");
         }
+    }
+
+    /// <summary>
+    /// Automatic display rates: the source chosen by ExchangeRates:Provider (read at runtime, so tests and environment
+    /// variables can switch it off) and the background job that refreshes them.
+    /// </summary>
+    private static void AddExchangeRates(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOptions<ExchangeRateOptions>()
+            .Bind(configuration.GetSection(ExchangeRateOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        services.AddHttpClient<CurrencyApiRateSource>(c => c.Timeout = TimeSpan.FromSeconds(20));
+        services.Replace(ServiceDescriptor.Scoped<IExchangeRateSource>(sp =>
+            sp.GetRequiredService<IOptions<ExchangeRateOptions>>().Value.Provider == ExchangeRateProvider.CurrencyApi
+                ? sp.GetRequiredService<CurrencyApiRateSource>()
+                : new NoExchangeRateSource()));
+        services.AddHostedService<ExchangeRateSyncWorker>();
     }
 }

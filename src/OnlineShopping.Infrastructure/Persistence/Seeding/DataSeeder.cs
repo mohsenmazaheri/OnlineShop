@@ -20,7 +20,8 @@ public sealed partial class DataSeeder(
     ILogger<DataSeeder> logger,
     TimeProvider clock,
     DemoUserSeeder demoUsers,
-    DemoCatalogSeeder demoCatalog)
+    DemoCatalogSeeder demoCatalog,
+    CurrencySeeder currencies)
 {
 
     private readonly SeedOptions _options = options.Value;
@@ -32,6 +33,8 @@ public sealed partial class DataSeeder(
 
         await EnsureRolesAsync();
         await EnsureAdminAsync();
+        // The base currency and, on a new shop, the usual display currencies.
+        await currencies.SeedAsync(cancellationToken);
         // Development-only test accounts (guarded inside; a no-op everywhere else).
         await demoUsers.SeedAsync();
         // Sample products for a demo shop (DemoCatalog:Enabled; off by default, fills the catalog once).

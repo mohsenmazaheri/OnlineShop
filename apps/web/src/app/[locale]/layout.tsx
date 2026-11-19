@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { getDictionary, type Dictionary } from "@/lib/i18n/dictionaries";
 import { directionOf, isLocale, supportedLocales, type Locale } from "@/lib/i18n/config";
 import { formatYear } from "@/lib/i18n/format-date";
+import { brandingCss } from "@/lib/branding/style";
 import { indexingAllowed, siteUrl } from "@/lib/seo/config";
 import { fontVariables } from "@/lib/fonts";
 import { loadStore } from "@/lib/store/load";
@@ -45,6 +46,20 @@ async function StoreServiceWorker() {
   return <ServiceWorkerRegistration locales={store.locales} />;
 }
 
+/**
+ * The shop's colours, corners and font as CSS variables (read per request, so one image serves every shop). React
+ * hoists the <style> into <head>; nothing is written while the look is the default.
+ */
+async function StoreBrandingStyle() {
+  const store = await loadStore();
+  const css = brandingCss(store.branding);
+  return css ? (
+    <style href="store-branding" precedence="high">
+      {css}
+    </style>
+  ) : null;
+}
+
 /** Store name, languages and the current year are per request (after loadStore's connection()). */
 async function StoreFooter({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const store = await loadStore();
@@ -75,6 +90,9 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       </head>
       {/* Bottom padding on phones so the fixed tab bar never covers the end of the page. */}
       <body className="flex min-h-full flex-col pb-[calc(3.75rem+env(safe-area-inset-bottom))] md:pb-0">
+        <Suspense fallback={null}>
+          <StoreBrandingStyle />
+        </Suspense>
         <SiteHeader locale={locale} texts={dict.header} />
         {children}
         <Suspense fallback={null}>

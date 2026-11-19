@@ -66,3 +66,17 @@ export function getStaffOverview(fetchImpl: typeof fetch = fetch): Promise<Staff
 export function getStaffAudit(fetchImpl: typeof fetch = fetch): Promise<StaffAuditEntry[] | null> {
   return getForUser<StaffAuditEntry[]>("/api/v1/admin/staff/audit", fetchImpl);
 }
+
+export type CurrencyAdminOverview = components["schemas"]["CurrencyAdminOverview"];
+
+/** Currencies, rates and language defaults (needs the settings.manage permission; null otherwise). */
+export function getCurrencyAdmin(fetchImpl: typeof fetch = fetch): Promise<CurrencyAdminOverview | null> {
+  return getForUser<CurrencyAdminOverview>("/api/v1/admin/currencies", fetchImpl);
+}
+
+export type BrandingAdmin = components["schemas"]["BrandingView"];
+
+/** The shop's look as saved (needs the settings.manage permission; null otherwise). */
+export function getBrandingAdmin(fetchImpl: typeof fetch = fetch): Promise<BrandingAdmin | null> {
+  return getForUser<BrandingAdmin>("/api/v1/admin/branding", fetchImpl);
+}

@@ -1,13 +1,14 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { ApiError, apiGet } from "./client";
+import type { CurrencySettings } from "@/lib/currency/display";
 import type { components } from "./schema";
 
 export type StoreInfo = components["schemas"]["StoreInfoResponse"];
 export type CategorySummary = components["schemas"]["CategorySummary"];
 
 /** Cache tags; the API (or admin panel) revalidates them when the data changes (POST /api/revalidate). */
-export const cacheTags = { store: "store", catalog: "catalog" } as const;
+export const cacheTags = { store: "store", catalog: "catalog", currencies: "currencies" } as const;
 
 export async function getStoreInfo(): Promise<StoreInfo> {
   "use cache";
@@ -50,4 +51,12 @@ export async function getProduct(number: number, locale: string): Promise<Produc
     if (error instanceof ApiError && error.status === 404) return null;
     throw error;
   }
+}
+
+/** Display currencies with their rates; short-lived so the admin's changes and new rates show within minutes. */
+export async function getCurrencySettings(): Promise<CurrencySettings> {
+  "use cache";
+  cacheTag(cacheTags.currencies);
+  cacheLife("minutes");
+  return apiGet<CurrencySettings>("/api/v1/currencies");
 }

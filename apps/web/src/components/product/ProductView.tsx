@@ -3,17 +3,25 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import type { ProductDetail } from "@/lib/api/storefront";
 import { formatSpecValue } from "@/lib/catalog/specs";
+import type { DisplayCurrency } from "@/lib/currency/display";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { Price } from "./Price";
 import { SpecTable } from "./SpecTable";
 
-type Props = { product: ProductDetail; locale: string; currency: string; texts: Dictionary["product"] };
+type Props = {
+  product: ProductDetail;
+  locale: string;
+  money: DisplayCurrency;
+  /** Name of the base currency, for the "approximate price" note when another currency is shown. */
+  baseName: string;
+  texts: Dictionary["product"];
+};
 
 /**
  * The product page body (Digikala-style structure: breadcrumb, image, title with key facts, a price box; then the
  * description and the full specifications). Pure presentation; the page loads the data and writes the metadata.
  */
-export function ProductView({ product, locale, currency, texts }: Props) {
+export function ProductView({ product, locale, money, baseName, texts }: Props) {
   const keyFacts = product.specs.filter((s) => s.inSummary).slice(0, 6);
 
   return (
@@ -66,11 +74,12 @@ export function ProductView({ product, locale, currency, texts }: Props) {
         </div>
 
         <aside aria-label={texts.price} className="flex h-fit flex-col gap-4 rounded-2xl border border-border bg-surface p-4 md:col-span-2 lg:col-span-1">
-          <Price price={product.price} compareAtPrice={product.compareAtPrice} currency={currency} locale={locale} texts={texts} size="lg" />
+          <Price price={product.price} compareAtPrice={product.compareAtPrice} money={money} locale={locale} texts={texts} size="lg" />
           <p className={`flex items-center gap-2 text-sm font-medium ${product.inStock ? "text-success" : "text-danger"}`}>
             <span aria-hidden className="h-2 w-2 rounded-full bg-current" />
             {product.inStock ? texts.inStock : texts.outOfStock}
           </p>
+          {!money.isBase && <p className="text-xs text-muted">{texts.approximate.replace("{base}", baseName)}</p>}
           {/* Checkout arrives in phase 7: the button is shown, honestly disabled. */}
           <Button size="lg" disabled aria-describedby="cart-soon">
             {texts.addToCart}

@@ -4,10 +4,12 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Icon } from "@/components/ui/Icon";
 import { getCurrentUser } from "@/lib/account/session";
 import type { Locale } from "@/lib/i18n/config";
-import { nativeLanguageName } from "@/lib/i18n/display-names";
+import { loadDisplayCurrency } from "@/lib/currency/load";
+import { currencyName, nativeLanguageName } from "@/lib/i18n/display-names";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { loadStore } from "@/lib/store/load";
 import { Brand } from "./Brand";
+import { CurrencySwitcher } from "./CurrencySwitcher";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { SearchForm } from "./SearchForm";
 
@@ -43,6 +45,17 @@ async function StoreLanguages({ locale, label }: { locale: Locale; label: string
   return <LanguageSwitcher current={locale} languages={languages} label={label} />;
 }
 
+/** The currencies the shop offers, named in the reader's language (or by their shop-defined symbol); current one marked. */
+async function StoreCurrencies({ locale, label }: { locale: Locale; label: string }) {
+  const store = await loadStore();
+  const { money, settings } = await loadDisplayCurrency(locale, store.currency);
+  const options = settings.currencies.map((c) => {
+    const name = currencyName(c.code, locale);
+    return { code: c.code, label: name === c.code && c.symbol ? c.symbol : name, short: c.symbol ?? c.code };
+  });
+  return <CurrencySwitcher locale={locale} current={money.code} options={options} label={label} />;
+}
+
 /**
  * Sticky header. Phones: brand and quick buttons, then a full-width search box (cart and account live in the bottom
  * bar). From md up: brand, search, account and cart in one row, then the main menu.
@@ -61,6 +74,9 @@ export function SiteHeader({ locale, texts }: Props) {
             <ThemeToggle texts={texts} />
             <Suspense fallback={<span className="h-10 w-10" />}>
               <StoreLanguages locale={locale} label={texts.language} />
+            </Suspense>
+            <Suspense fallback={<span className="h-10 w-10" />}>
+              <StoreCurrencies locale={locale} label={texts.currency} />
             </Suspense>
             <div className="hidden md:block">
               <Suspense fallback={<span className="block h-11 w-36 animate-pulse rounded-xl bg-border" />}>
