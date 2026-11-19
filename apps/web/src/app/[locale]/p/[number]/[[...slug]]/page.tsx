@@ -37,11 +37,13 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/p/[numbe
   const { locale, store, product } = data;
 
   const { alternates, indexable } = productAlternates(product, locale, store.locales, store.defaultLocale, siteUrl());
-  const description = product.description?.slice(0, 160);
+  // The admin's search texts win; otherwise the name and the start of the description.
+  const title = product.metaTitle || product.name;
+  const description = product.metaDescription || product.description?.slice(0, 160);
   // Social networks don't show SVG previews: use the first raster image.
   const image = product.images.find((i) => !i.url.endsWith(".svg"))?.url;
   return {
-    title: product.name,
+    title,
     description,
     alternates,
     // A language without a translation shows default-language content: not indexed (canonical points to the default).
@@ -50,7 +52,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/p/[numbe
       siteName: store.name,
       locale,
       type: "website",
-      title: product.name,
+      title,
       description,
       url: alternates.canonical as string,
       // Link previews do not render SVG (the demo illustrations); uploaded photos are WebP.

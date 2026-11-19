@@ -12,6 +12,7 @@ using OnlineShopping.Domain.Customers;
 using OnlineShopping.Domain.Pricing;
 using OnlineShopping.Domain.Settings;
 using OnlineShopping.Domain.Sales;
+using OnlineShopping.Domain.Seo;
 using OnlineShopping.Domain.Staff;
 using OnlineShopping.Infrastructure.Identity;
 
@@ -38,6 +39,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<ProductSpecValue> ProductSpecValues => Set<ProductSpecValue>();
     public DbSet<Brand> Brands => Set<Brand>();
     public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
+    public DbSet<SearchSynonym> SearchSynonyms => Set<SearchSynonym>();
+    public DbSet<Redirect> Redirects => Set<Redirect>();
     public DbSet<Cart> Carts => Set<Cart>();
     public DbSet<CartItem> CartItems => Set<CartItem>();
     public DbSet<Order> Orders => Set<Order>();
@@ -65,6 +68,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
         ConfigureIdentityTables(builder);
         ConfigureCatalog(builder);
+        ConfigureSeo(builder);
         ConfigureCart(builder);
         ConfigureOrders(builder);
         ConfigurePhoneCodes(builder);
@@ -231,6 +235,49 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         t.Property(x => x.Locale).HasMaxLength(8);
         t.Property(x => x.Name).HasMaxLength(300);
         t.Property(x => x.Slug).HasMaxLength(200);
+        t.Property(x => x.MetaTitle).HasMaxLength(MetaTitleLength);
+        t.Property(x => x.MetaDescription).HasMaxLength(MetaDescriptionLength);
+        t.Property(x => x.Tags).HasMaxLength(TagsLength);
+    }
+
+    internal const int MetaTitleLength = 200;
+    internal const int MetaDescriptionLength = 400;
+    internal const int TagsLength = 500;
+
+    private static void ConfigureSeo(ModelBuilder b)
+    {
+        b.Entity<Product>(e =>
+        {
+            e.Property(x => x.Gtin).HasMaxLength(14);
+            e.Property(x => x.Mpn).HasMaxLength(70);
+            e.Property(x => x.MetaTitle).HasMaxLength(MetaTitleLength);
+            e.Property(x => x.MetaDescription).HasMaxLength(MetaDescriptionLength);
+            e.Property(x => x.Tags).HasMaxLength(TagsLength);
+            // Barcode scans and feeds look products up by GTIN.
+            e.HasIndex(x => x.Gtin);
+        });
+        b.Entity<ProductVariant>(e =>
+        {
+            e.Property(x => x.Gtin).HasMaxLength(14);
+            e.HasIndex(x => x.Gtin);
+        });
+
+        b.Entity<SearchSynonym>(e =>
+        {
+            e.ToTable("search_synonyms");
+            e.Property(x => x.Locale).HasMaxLength(8);
+            e.Property(x => x.Terms).HasMaxLength(1000);
+            e.HasIndex(x => x.Locale);
+        });
+
+        b.Entity<Redirect>(e =>
+        {
+            e.ToTable("redirects");
+            e.Property(x => x.FromPath).HasMaxLength(500);
+            e.Property(x => x.ToPath).HasMaxLength(2048);
+            e.Property(x => x.Kind).HasConversion<string>().HasMaxLength(16);
+            e.HasIndex(x => x.FromPath).IsUnique().HasFilter(NotDeletedFilter);
+        });
     }
 
     private static void ConfigureTemplate<TOwner>(OwnedNavigationBuilder<TOwner, TemplateSpec> t, string table, string ownerKey)

@@ -35,6 +35,8 @@ public static class CatalogErrors
     public const string VariantOptionsInvalid = "catalog.variant_options_invalid";
     public const string VariantRepeated = "catalog.variant_repeated";
     public const string TooManyVariants = "catalog.too_many_variants";
+    public const string GtinInvalid = "catalog.gtin_invalid";
+    public const string WeightInvalid = "catalog.weight_invalid";
 }
 
 /// <summary>
@@ -65,6 +67,9 @@ public sealed record CatalogNodeView(Guid Id, IReadOnlyList<LocalizedText> Texts
 /// <summary>One spec value of a product; exactly the field of the spec's kind is used, all empty removes the value.</summary>
 public sealed record ProductSpecInput(string Code, decimal? Number, bool? Boolean, string? Text, string? OptionCode);
 
+/// <summary>A product's search-result texts and search words in one language (all optional).</summary>
+public sealed record SeoText(string Locale, string? MetaTitle, string? MetaDescription, string? Tags);
+
 public sealed record SaveProductRequest(
     string Sku,
     decimal Price,
@@ -74,7 +79,11 @@ public sealed record SaveProductRequest(
     Guid ProductGroupId,
     IReadOnlyList<LocalizedText> Texts,
     IReadOnlyList<ProductSpecInput> Specs,
-    Guid? BrandId = null);
+    Guid? BrandId = null,
+    string? Gtin = null,
+    string? Mpn = null,
+    int? WeightGrams = null,
+    IReadOnlyList<SeoText>? Seo = null);
 
 /// <summary>A product row of the admin list. <see cref="MissingLocales"/>: shop languages without a translation.</summary>
 public sealed record ProductListItem(
@@ -102,7 +111,11 @@ public sealed record ProductEditView(
     IReadOnlyList<ProductSpecInput> Specs,
     IReadOnlyList<ProductImageView> Images,
     Guid? BrandId,
-    ProductVariantsView Variants);
+    ProductVariantsView Variants,
+    string? Gtin,
+    string? Mpn,
+    int? WeightGrams,
+    IReadOnlyList<SeoText> Seo);
 
 /// <summary>An image's alternative text in one language (empty: not translated).</summary>
 public sealed record ImageAltText(string Locale, string Alt);
@@ -152,6 +165,14 @@ public sealed class SaveProductRequestValidator : AbstractValidator<SaveProductR
             text.RuleFor(t => t.Name).MaximumLength(300).WithErrorCode(CatalogErrors.NameTooLong);
             text.RuleFor(t => t.Slug).MaximumLength(200).WithErrorCode(CatalogErrors.NameTooLong);
             text.RuleFor(t => t.Description).MaximumLength(10_000).WithErrorCode(CatalogErrors.NameTooLong);
+        });
+        RuleFor(r => r.Mpn).MaximumLength(70).WithErrorCode(CatalogErrors.NameTooLong);
+        RuleFor(r => r.WeightGrams).InclusiveBetween(0, 1_000_000).WithErrorCode(CatalogErrors.WeightInvalid);
+        RuleForEach(r => r.Seo).ChildRules(seo =>
+        {
+            seo.RuleFor(s => s.MetaTitle).MaximumLength(200).WithErrorCode(CatalogErrors.NameTooLong);
+            seo.RuleFor(s => s.MetaDescription).MaximumLength(400).WithErrorCode(CatalogErrors.NameTooLong);
+            seo.RuleFor(s => s.Tags).MaximumLength(500).WithErrorCode(CatalogErrors.NameTooLong);
         });
     }
 }

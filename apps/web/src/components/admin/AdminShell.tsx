@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Card } from "@/components/ui/Surface";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
-export type AdminSection = "home" | "products" | "catalog" | "brands" | "specs" | "staff" | "currencies" | "branding";
+export type AdminSection = "home" | "products" | "catalog" | "brands" | "specs" | "seo" | "staff" | "currencies" | "branding";
 
 type Props = {
   locale: string;
@@ -22,6 +22,7 @@ export function AdminShell({ locale, texts, current, permissions, children }: Pr
     { section: "catalog", href: `/${locale}/admin/catalog`, label: texts.navCatalog, permission: "catalog.manage" },
     { section: "brands", href: `/${locale}/admin/brands`, label: texts.navBrands, permission: "catalog.manage" },
     { section: "specs", href: `/${locale}/admin/specs`, label: texts.navSpecs, permission: "catalog.manage" },
+    { section: "seo", href: `/${locale}/admin/seo`, label: texts.navSeo, permission: "catalog.manage" },
     { section: "staff", href: `/${locale}/admin/staff`, label: texts.navStaff, permission: "staff.manage" },
     { section: "currencies", href: `/${locale}/admin/currencies`, label: texts.navCurrencies, permission: "settings.manage" },
     { section: "branding", href: `/${locale}/admin/branding`, label: texts.navBranding, permission: "settings.manage" },

@@ -8,6 +8,8 @@ import { requirePermission } from "@/lib/admin/access";
 import { languageNames } from "@/lib/admin/language-names";
 import { accountMetadata, routeLocale } from "@/lib/account/page-helpers";
 import { getAdminProduct, getBrands, getCatalogTree, getSpecChoices } from "@/lib/account/session";
+import { siteUrl } from "@/lib/seo/config";
+import { loadStore } from "@/lib/store/load";
 import { getDictionary, type Dictionary } from "@/lib/i18n/dictionaries";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/admin/products/[number]">) {
@@ -25,7 +27,7 @@ async function EditProduct({ params }: { params: Params }) {
   const user = await requirePermission(locale, "catalog.manage", `/${locale}/admin/products/${rawNumber}`);
   const number = /^\d{1,15}$/.test(rawNumber) ? Number(rawNumber) : null;
   if (number === null) notFound();
-  const [product, tree, specs, brands] = await Promise.all([getAdminProduct(number), getCatalogTree(), getSpecChoices(locale), getBrands()]);
+  const [product, tree, specs, brands, store] = await Promise.all([getAdminProduct(number), getCatalogTree(), getSpecChoices(locale), getBrands(), loadStore()]);
   if (!product) notFound();
   const catalog = tree ?? { defaultLocale: locale, locales: [locale], categories: [] };
 
@@ -38,6 +40,8 @@ async function EditProduct({ params }: { params: Params }) {
           tree={catalog}
           specs={specs ?? []}
           brands={brands?.brands ?? []}
+          shopName={store.name}
+          siteUrl={siteUrl()}
           languageNames={languageNames(catalog.locales)}
           product={product}
         />

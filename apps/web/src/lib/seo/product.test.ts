@@ -28,6 +28,11 @@ const product: ProductDetail = {
   brand: null,
   variantAxes: [],
   variants: [],
+  gtin: "4006381333931",
+  mpn: "X1-BLK",
+  weightGrams: 189,
+  metaTitle: null,
+  metaDescription: null,
 };
 
 const offers = (data: ReturnType<typeof productJsonLd>) => ("offers" in data ? data.offers : undefined);
@@ -62,6 +67,7 @@ describe("productJsonLd", () => {
     expect(offers(data)).toMatchObject({ price: "349", priceCurrency: "EUR", availability: "https://schema.org/InStock" });
     expect(data.image).toEqual([`${site}/demo/products/phone-x1.svg`]);
     expect(data.brand).toEqual({ "@type": "Brand", name: "Orvia" });
+    expect(data).toMatchObject({ gtin: "4006381333931", mpn: "X1-BLK", weight: { "@type": "QuantitativeValue", value: 189, unitCode: "GRM" } });
     expect(offers(productJsonLd({ ...product, inStock: false }, "u", "EUR", site))?.availability).toBe("https://schema.org/OutOfStock");
   });
 
@@ -74,8 +80,8 @@ describe("productJsonLd", () => {
         { code: "storage", name: "Storage", options: [{ code: "s128", value: "128 GB" }, { code: "s256", value: "256 GB" }] },
       ],
       variants: [
-        { sku: "X1-128", price: 349, compareAtPrice: 399, inStock: true, options: [{ axis: "color", option: "black" }, { axis: "storage", option: "s128" }] },
-        { sku: "X1-256", price: 399, compareAtPrice: null, inStock: false, options: [{ axis: "color", option: "black" }, { axis: "storage", option: "s256" }] },
+        { sku: "X1-128", gtin: "96385074", price: 349, compareAtPrice: 399, inStock: true, options: [{ axis: "color", option: "black" }, { axis: "storage", option: "s128" }] },
+        { sku: "X1-256", gtin: null, price: 399, compareAtPrice: null, inStock: false, options: [{ axis: "color", option: "black" }, { axis: "storage", option: "s256" }] },
       ],
     };
 
@@ -88,6 +94,8 @@ describe("productJsonLd", () => {
       "@type": "Product",
       name: "Orvia X1 – Black / 128 GB",
       sku: "X1-128",
+      gtin: "96385074",
+      mpn: "X1-BLK",
       color: "Black",
       additionalProperty: [{ "@type": "PropertyValue", name: "Storage", value: "128 GB" }],
       offers: { price: "698", priceCurrency: "USD", availability: "https://schema.org/InStock" },

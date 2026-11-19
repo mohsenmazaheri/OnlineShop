@@ -14,6 +14,7 @@ const axes = [
 ];
 const offer = (sku: string, color: string, size: string, price: number, inStock = true) => ({
   sku,
+  gtin: null,
   price,
   compareAtPrice: null,
   inStock,

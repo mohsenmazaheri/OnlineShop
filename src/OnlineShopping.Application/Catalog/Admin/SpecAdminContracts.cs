@@ -96,7 +96,7 @@ public sealed class SaveSpecRequestValidator : AbstractValidator<SaveSpecRequest
 public sealed record VariantOptionInput(string Spec, string Option);
 
 /// <summary>One variant as the admin edits it; <see cref="Id"/> is empty for a new one.</summary>
-public sealed record VariantInput(Guid? Id, string Sku, decimal? Price, decimal? CompareAtPrice, int Stock, IReadOnlyList<VariantOptionInput> Options);
+public sealed record VariantInput(Guid? Id, string Sku, decimal? Price, decimal? CompareAtPrice, int Stock, IReadOnlyList<VariantOptionInput> Options, string? Gtin = null);
 
 /// <summary>
 /// A product's whole variant set: the option specs it varies by (at most three, for example colour and size) and every
@@ -104,7 +104,7 @@ public sealed record VariantInput(Guid? Id, string Sku, decimal? Price, decimal?
 /// </summary>
 public sealed record SaveVariantsRequest(IReadOnlyList<string> SpecCodes, IReadOnlyList<VariantInput> Variants);
 
-public sealed record VariantView(Guid Id, string Sku, decimal? Price, decimal? CompareAtPrice, int Stock, IReadOnlyList<VariantOptionInput> Options);
+public sealed record VariantView(Guid Id, string Sku, decimal? Price, decimal? CompareAtPrice, int Stock, IReadOnlyList<VariantOptionInput> Options, string? Gtin);
 
 public sealed record ProductVariantsView(IReadOnlyList<string> SpecCodes, IReadOnlyList<VariantView> Variants);
 

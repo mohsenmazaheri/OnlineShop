@@ -208,6 +208,15 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   products and variants, a variant spec never also a product-level value). With variants, `Product.Stock` is their
   sum and the product's price is every variant's default. Storefront: `ProductDetail.VariantAxes`/`Variants`
   (effective prices), `VariantPicker` (server-rendered default = first in stock), JSON-LD `ProductGroup` + `hasVariant`.
+- SEO fields: `Product.Gtin` (`ProductCodes.NormalizeGtin`: digits, GS1 check digit; variants too), `Mpn`,
+  `WeightGrams`, and per language `MetaTitle`/`MetaDescription`/`Tags` (own columns + `CatalogTranslation`; a language
+  without a translated name stores none). The product page uses them for `<title>`/description and JSON-LD.
+- Search words are compared in one spelling: `SearchText.Normalize` (Persian ی/ک, digits, ZWNJ → space, no
+  diacritics, lower case). Synonyms: `SynonymService` (`search_synonyms`, a word in one group per language).
+- Redirects: `RedirectService` (`redirects`; `RedirectPaths` keeps paths decoded, no trailing slash, query kept; never
+  `/`, `/api`, `/_next`; one hop, no loops; CSV import). `proxy.ts` answers them before the locale redirects from a
+  one-minute in-memory table (`createRedirectCache`, `GET /api/v1/redirects`) and counts hits with
+  `event.waitUntil(POST /api/v1/redirects/hits)`. Error codes `seo.*` → `admin.seoErrors`. Admin: `/{locale}/admin/seo`.
 - Catalog admin (`Application/Catalog/Admin`, permission catalog.manage): `CatalogTreeService` (categories →
   sub-categories → groups; only empty nodes can be deleted) and `ProductAdminService` (list/search, editor view,
   create/update/soft delete, spec values checked against the spec kind; a new product gets max(PublicNumber incl.

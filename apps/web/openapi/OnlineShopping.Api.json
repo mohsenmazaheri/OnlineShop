@@ -1934,6 +1934,358 @@
         }
       }
     },
+    "/api/v1/admin/seo/synonyms": {
+      "get": {
+        "tags": [
+          "Admin: SEO"
+        ],
+        "summary": "Every search synonym group, with the shop's languages.",
+        "operationId": "ListSynonyms",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SynonymList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin: SEO"
+        ],
+        "summary": "Add a group of words that mean the same.",
+        "operationId": "CreateSynonym",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveSynonymRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SynonymView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/seo/synonyms/{id}": {
+      "put": {
+        "tags": [
+          "Admin: SEO"
+        ],
+        "summary": "Change a synonym group.",
+        "operationId": "UpdateSynonym",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveSynonymRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SynonymView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin: SEO"
+        ],
+        "summary": "Delete a synonym group.",
+        "operationId": "DeleteSynonym",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/seo/redirects": {
+      "get": {
+        "tags": [
+          "Admin: SEO"
+        ],
+        "summary": "Every redirect with how often it was used.",
+        "operationId": "ListRedirects",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RedirectView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin: SEO"
+        ],
+        "summary": "Add a redirect of an old address.",
+        "operationId": "CreateRedirect",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveRedirectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RedirectView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/seo/redirects/{id}": {
+      "put": {
+        "tags": [
+          "Admin: SEO"
+        ],
+        "summary": "Change a redirect.",
+        "operationId": "UpdateRedirect",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveRedirectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RedirectView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin: SEO"
+        ],
+        "summary": "Delete a redirect.",
+        "operationId": "DeleteRedirect",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/seo/redirects/import": {
+      "post": {
+        "tags": [
+          "Admin: SEO"
+        ],
+        "summary": "Add or update redirects from CSV lines (old,new[,301|302|410]).",
+        "operationId": "ImportRedirects",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportRedirectsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportRedirectsResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/redirects": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "Every redirect rule; the storefront keeps them in memory for a minute.",
+        "operationId": "GetRedirectRules",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RedirectRule"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/redirects/hits": {
+      "post": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "Count a use of a redirect (sent by the storefront).",
+        "operationId": "RecordRedirectHit",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RedirectHitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
     "/api/v1/account/register": {
       "post": {
         "tags": [
@@ -4307,6 +4659,57 @@
           }
         }
       },
+      "ImportLineError": {
+        "required": [
+          "line",
+          "code"
+        ],
+        "type": "object",
+        "properties": {
+          "line": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "code": {
+            "type": "string"
+          }
+        }
+      },
+      "ImportRedirectsRequest": {
+        "required": [
+          "text"
+        ],
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        }
+      },
+      "ImportRedirectsResult": {
+        "required": [
+          "added",
+          "updated",
+          "errors"
+        ],
+        "type": "object",
+        "properties": {
+          "added": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "updated": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImportLineError"
+            }
+          }
+        }
+      },
       "InviteStaffRequest": {
         "required": [
           "identifier",
@@ -4718,7 +5121,12 @@
           "alternates",
           "brand",
           "variantAxes",
-          "variants"
+          "variants",
+          "gtin",
+          "mpn",
+          "weightGrams",
+          "metaTitle",
+          "metaDescription"
         ],
         "type": "object",
         "properties": {
@@ -4804,6 +5212,37 @@
             "items": {
               "$ref": "#/components/schemas/VariantOffer"
             }
+          },
+          "gtin": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "mpn": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "weightGrams": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "metaTitle": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "metaDescription": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -4820,7 +5259,11 @@
           "specs",
           "images",
           "brandId",
-          "variants"
+          "variants",
+          "gtin",
+          "mpn",
+          "weightGrams",
+          "seo"
         ],
         "type": "object",
         "properties": {
@@ -4880,6 +5323,31 @@
           },
           "variants": {
             "$ref": "#/components/schemas/ProductVariantsView"
+          },
+          "gtin": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "mpn": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "weightGrams": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "seo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeoText"
+            }
           }
         }
       },
@@ -5253,6 +5721,86 @@
           }
         }
       },
+      "RedirectHitRequest": {
+        "required": [
+          "fromPath"
+        ],
+        "type": "object",
+        "properties": {
+          "fromPath": {
+            "type": "string"
+          }
+        }
+      },
+      "RedirectKind": {
+        "enum": [
+          "Permanent",
+          "Temporary",
+          "Gone"
+        ]
+      },
+      "RedirectRule": {
+        "required": [
+          "fromPath",
+          "toPath",
+          "kind"
+        ],
+        "type": "object",
+        "properties": {
+          "fromPath": {
+            "type": "string"
+          },
+          "toPath": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "kind": {
+            "$ref": "#/components/schemas/RedirectKind"
+          }
+        }
+      },
+      "RedirectView": {
+        "required": [
+          "id",
+          "fromPath",
+          "toPath",
+          "kind",
+          "hitCount",
+          "lastHitUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fromPath": {
+            "type": "string"
+          },
+          "toPath": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "kind": {
+            "$ref": "#/components/schemas/RedirectKind"
+          },
+          "hitCount": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "lastHitUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
       "RegisterRequest": {
         "required": [
           "email",
@@ -5486,6 +6034,56 @@
               "string"
             ],
             "format": "uuid"
+          },
+          "gtin": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "mpn": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "weightGrams": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "seo": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/SeoText"
+            }
+          }
+        }
+      },
+      "SaveRedirectRequest": {
+        "required": [
+          "fromPath",
+          "toPath",
+          "kind"
+        ],
+        "type": "object",
+        "properties": {
+          "fromPath": {
+            "type": "string"
+          },
+          "toPath": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "kind": {
+            "$ref": "#/components/schemas/RedirectKind"
           }
         }
       },
@@ -5529,6 +6127,24 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SpecOptionInput"
+            }
+          }
+        }
+      },
+      "SaveSynonymRequest": {
+        "required": [
+          "locale",
+          "terms"
+        ],
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string"
+          },
+          "terms": {
+            "type": "array",
+            "items": {
+              "type": "string"
             }
           }
         }
@@ -5579,6 +6195,38 @@
             "type": "string"
           },
           "locale": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "SeoText": {
+        "required": [
+          "locale",
+          "metaTitle",
+          "metaDescription",
+          "tags"
+        ],
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string"
+          },
+          "metaTitle": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "metaDescription": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "tags": {
             "type": [
               "null",
               "string"
@@ -6138,6 +6786,50 @@
           }
         }
       },
+      "SynonymList": {
+        "required": [
+          "locales",
+          "groups"
+        ],
+        "type": "object",
+        "properties": {
+          "locales": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SynonymView"
+            }
+          }
+        }
+      },
+      "SynonymView": {
+        "required": [
+          "id",
+          "locale",
+          "terms"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "terms": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
       "TwoFactorCodeRequest": {
         "required": [
           "code"
@@ -6294,6 +6986,12 @@
             "items": {
               "$ref": "#/components/schemas/VariantOptionInput"
             }
+          },
+          "gtin": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -6303,7 +7001,8 @@
           "price",
           "compareAtPrice",
           "inStock",
-          "options"
+          "options",
+          "gtin"
         ],
         "type": "object",
         "properties": {
@@ -6329,6 +7028,12 @@
             "items": {
               "$ref": "#/components/schemas/VariantChoice"
             }
+          },
+          "gtin": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -6354,7 +7059,8 @@
           "price",
           "compareAtPrice",
           "stock",
-          "options"
+          "options",
+          "gtin"
         ],
         "type": "object",
         "properties": {
@@ -6388,6 +7094,12 @@
             "items": {
               "$ref": "#/components/schemas/VariantOptionInput"
             }
+          },
+          "gtin": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       }
@@ -6405,6 +7117,9 @@
     },
     {
       "name": "Admin: catalog"
+    },
+    {
+      "name": "Admin: SEO"
     },
     {
       "name": "Account"

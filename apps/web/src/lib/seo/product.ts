@@ -65,7 +65,12 @@ export function productJsonLd(product: ProductDetail, pageUrl: string, currency:
     ...(brand ? { brand: { "@type": "Brand", name: brand } } : {}),
   };
 
-  if (product.variants.length === 0) return { ...common, "@type": "Product", sku: product.sku, offers: offer(product.price, product.inStock) };
+  const codes = {
+    ...(product.mpn ? { mpn: product.mpn } : {}),
+    ...(product.weightGrams ? { weight: { "@type": "QuantitativeValue", value: product.weightGrams, unitCode: "GRM" } } : {}),
+  };
+  if (product.variants.length === 0)
+    return { ...common, ...codes, "@type": "Product", sku: product.sku, ...(product.gtin ? { gtin: product.gtin } : {}), offers: offer(product.price, product.inStock) };
 
   const known = product.variantAxes.filter((a) => schemaProperties[a.code]);
   const other = product.variantAxes.filter((a) => !schemaProperties[a.code]);
@@ -80,6 +85,8 @@ export function productJsonLd(product: ProductDetail, pageUrl: string, currency:
       "@type": "Product",
       name: `${product.name} – ${variantLabel(variant, product.variantAxes)}`,
       sku: variant.sku,
+      ...(variant.gtin ? { gtin: variant.gtin } : {}),
+      ...codes,
       image,
       ...Object.fromEntries(known.map((a) => [schemaProperties[a.code], valueOf(a, variant)])),
       ...(other.length > 0

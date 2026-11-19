@@ -151,15 +151,15 @@ describe("variant helpers", () => {
     expect(combinations([])).toEqual([]);
     expect(variantSku("tee-1", [{ spec: "color", option: "beige" }, { spec: "size", option: "m" }])).toBe("TEE-1-BEIGE-M");
 
-    const kept: VariantRow = { id: "v1", sku: "OWN", price: "", compareAtPrice: "", stock: "5", options: [{ spec: "size", option: "m" }, { spec: "color", option: "beige" }] };
+    const kept: VariantRow = { id: "v1", sku: "OWN", gtin: "", price: "", compareAtPrice: "", stock: "5", options: [{ spec: "size", option: "m" }, { spec: "color", option: "beige" }] };
     const rows = buildVariants(axes, [kept], "TEE");
     expect(rows.map((r) => r.sku)).toEqual(["OWN", "TEE-BEIGE-L", "TEE-GRAY-M", "TEE-GRAY-L"]);
     expect(rows[1]).toMatchObject({ id: null, stock: "0" });
   });
 
   it("sends numbers parsed, empty prices as the product's", () => {
-    const request = toVariantsRequest(["size"], [{ id: null, sku: " A ", price: "", compareAtPrice: "۵۰", stock: "۳", options: [{ spec: "size", option: "m" }] }]);
-    expect(request).toEqual({ specCodes: ["size"], variants: [{ id: null, sku: "A", price: null, compareAtPrice: 50, stock: 3, options: [{ spec: "size", option: "m" }] }] });
+    const request = toVariantsRequest(["size"], [{ id: null, sku: " A ", gtin: " 96385074 ", price: "", compareAtPrice: "۵۰", stock: "۳", options: [{ spec: "size", option: "m" }] }]);
+    expect(request).toEqual({ specCodes: ["size"], variants: [{ id: null, sku: "A", gtin: "96385074", price: null, compareAtPrice: 50, stock: 3, options: [{ spec: "size", option: "m" }] }] });
   });
 });
 
@@ -196,7 +196,7 @@ describe("ProductVariantsEditor", () => {
 
   it("shows why a set was refused", async () => {
     respond(400, { status: 400, code: "catalog.variant_repeated" });
-    const view = { specCodes: ["size"], variants: [{ id: "v1", sku: "A", price: null, compareAtPrice: null, stock: 1, options: [{ spec: "size", option: "m" }] }] };
+    const view = { specCodes: ["size"], variants: [{ id: "v1", sku: "A", gtin: null, price: null, compareAtPrice: null, stock: 1, options: [{ spec: "size", option: "m" }] }] };
     render(<ProductVariantsEditor locale="en" number={1001} productSku="TEE" specs={specs} productSpecCodes={[]} view={view} texts={texts} />);
 
     expect((screen.getByLabelText("M") as HTMLInputElement).checked).toBe(true);

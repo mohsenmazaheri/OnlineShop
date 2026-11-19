@@ -60,7 +60,7 @@ public sealed record VariantAxis(string Code, string Name, IReadOnlyList<AxisOpt
 public sealed record VariantChoice(string Axis, string Option);
 
 /// <summary>One buyable variant with its own price (its own or the product's) and stock state.</summary>
-public sealed record VariantOffer(string Sku, decimal Price, decimal? CompareAtPrice, bool InStock, IReadOnlyList<VariantChoice> Options);
+public sealed record VariantOffer(string Sku, decimal Price, decimal? CompareAtPrice, bool InStock, IReadOnlyList<VariantChoice> Options, string? Gtin);
 
 public sealed record ProductDetail(
     long Number,
@@ -79,7 +79,12 @@ public sealed record ProductDetail(
     IReadOnlyList<ProductAlternate> Alternates,
     BrandLink? Brand,
     IReadOnlyList<VariantAxis> VariantAxes,
-    IReadOnlyList<VariantOffer> Variants);
+    IReadOnlyList<VariantOffer> Variants,
+    string? Gtin,
+    string? Mpn,
+    int? WeightGrams,
+    string? MetaTitle,
+    string? MetaDescription);
 
 public interface IProductQueries
 {
@@ -152,6 +157,16 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
                         ?? p.ProductGroup.SubCategory.Name,
                     p.ProductGroup.SubCategory.Slug),
                 BaseSlug = p.Slug,
+                p.Gtin,
+                p.Mpn,
+                p.WeightGrams,
+                // Search texts only from a real translation (or the default language), never mixed with another language.
+                MetaTitle = p.Translations.Any(t => t.Locale == locale)
+                    ? p.Translations.Where(t => t.Locale == locale).Select(t => t.MetaTitle).FirstOrDefault()
+                    : p.MetaTitle,
+                MetaDescription = p.Translations.Any(t => t.Locale == locale)
+                    ? p.Translations.Where(t => t.Locale == locale).Select(t => t.MetaDescription).FirstOrDefault()
+                    : p.MetaDescription,
                 Brand = p.Brand == null ? null : new BrandLink(
                     p.Brand.Translations.Where(t => t.Locale == locale).Select(t => t.Name).FirstOrDefault() ?? p.Brand.Name,
                     p.Brand.Translations.Where(t => t.Locale == locale).Select(t => t.Slug).FirstOrDefault() ?? p.Brand.Slug,
@@ -204,7 +219,7 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
         return new ProductDetail(
             product.PublicNumber, product.Name, product.Slug, product.Description, product.SKU, product.Price,
             product.CompareAtPrice, product.Stock, product.Stock > 0, images, product.Category, product.SubCategory,
-            specs, alternates, product.Brand, axes, variants);
+            specs, alternates, product.Brand, axes, variants, product.Gtin, product.Mpn, product.WeightGrams, product.MetaTitle, product.MetaDescription);
     }
 
     /// <summary>The variants with their effective prices, and the axes with only the options they use.</summary>
@@ -214,7 +229,7 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
         var rows = await db.ProductVariants.AsNoTracking()
             .Where(v => v.ProductId == productId)
             .OrderBy(v => v.SortOrder)
-            .Select(v => new { v.Sku, v.Price, v.CompareAtPrice, v.Stock, Options = v.Options.Select(o => new { o.SpecId, o.OptionId }).ToList() })
+            .Select(v => new { v.Sku, v.Gtin, v.Price, v.CompareAtPrice, v.Stock, Options = v.Options.Select(o => new { o.SpecId, o.OptionId }).ToList() })
             .ToListAsync(cancellationToken);
         if (rows.Count == 0)
             return ([], []);
@@ -246,7 +261,8 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
                 r.Options.Where(o => codes.ContainsKey(o.SpecId) && optionCodes.ContainsKey(o.OptionId))
                     .OrderBy(o => specs.FindIndex(s => s.Id == o.SpecId))
                     .Select(o => new VariantChoice(codes[o.SpecId], optionCodes[o.OptionId]))
-                    .ToList()))
+                    .ToList(),
+                r.Gtin))
             .ToList();
         return (axes, offers);
     }
