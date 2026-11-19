@@ -237,6 +237,18 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   language to the item's own columns and the others to translations (empty name = not translated). Error codes
   `catalog.*` → `admin.catalogErrors`. Web: `/{locale}/admin/catalog`, `/admin/products`, `/admin/products/new|{n}`
   (`LocalizedFields`, `ProductEditor`); saves call `refreshStorefront(locale, ["catalog"])`.
+- Inventory (`Application/Inventory`, inventory.view / inventory.manage): **never write `Product.Stock` or
+  `ProductVariant.Stock` directly** — they are cached totals. `StockLedger` is the only writer: `PostAsync` adds a
+  `StockMovement` line (immutable) and changes the `StockLevel` (key warehouse + `ItemId` = variant id, else product
+  id; `quantity >= 0`) and both totals with atomic `ExecuteUpdate` ("x = x + n" where the result stays ≥ 0), then
+  syncs tracked copies; `SetTotalAsync` turns "the stock is N" (product editor, variants, import) into adjustment
+  lines (increase → default warehouse; decrease → default first). Run several postings in
+  `db.InTransactionAsync(...)` (joins an open transaction). `OpenUntrackedAsync` (startup, after the demo catalog)
+  writes an opening line for stock without lines; unit tests that seed the demo call it too. One active default
+  `Warehouse` always (`WarehouseService`). Automatic references are `auto:*` (`StockReferences`, web
+  `admin.stockReferences`) — not `inventory.*`, which the error-code test treats as error codes (`admin.inventoryErrors`).
+  The acting user comes from `ICurrentUser` (`HttpCurrentUser` in the API, `NoCurrentUser` elsewhere). Web:
+  `/admin/inventory` (stock + `StockMovementForm`), `/admin/inventory/movements`, `/admin/warehouses`.
 - All `DateTime`s are UTC (`timestamptz`); all `decimal`s are `numeric(18,2)`.
 - User references (`Cart.CustomerId`, `Order.CustomerId`) are FKs to `users` without navigation properties
   (domain stays free of Identity). Orders `Restrict`, carts cascade.

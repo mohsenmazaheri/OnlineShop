@@ -2632,6 +2632,354 @@
         }
       }
     },
+    "/api/v1/admin/inventory/warehouses": {
+      "get": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Every warehouse (the default first) with its stock in units and items.",
+        "operationId": "ListWarehouses",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WarehouseView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Add a warehouse.",
+        "operationId": "CreateWarehouse",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveWarehouseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WarehouseView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/stock": {
+      "get": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Stock per item (a product, or each of its variants) and warehouse, 20 products a page.",
+        "operationId": "ListStock",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "onlyOut",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockPage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/movements": {
+      "get": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "The stock ledger, newest first, 50 lines a page.",
+        "operationId": "ListStockMovements",
+        "parameters": [
+          {
+            "name": "sku",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "warehouseId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/StockMovementKind"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MovementPage"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Enter a receipt, an issue or an adjustment; returns the item's stock afterwards.",
+        "operationId": "PostStockMovement",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostMovementRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockRow"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/warehouses/{id}": {
+      "put": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Change a warehouse; make it the default, or deactivate one that holds no stock.",
+        "operationId": "UpdateWarehouse",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveWarehouseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WarehouseView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Delete a warehouse that never had a movement.",
+        "operationId": "DeleteWarehouse",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/transfers": {
+      "post": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Move stock of one item between two warehouses; returns the item's stock afterwards.",
+        "operationId": "TransferStock",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferStockRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockRow"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/account/register": {
       "post": {
         "tags": [
@@ -5200,6 +5548,124 @@
           }
         }
       },
+      "MovementPage": {
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MovementView"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "MovementView": {
+        "required": [
+          "id",
+          "createdUtc",
+          "warehouseId",
+          "warehouse",
+          "productNumber",
+          "name",
+          "variantLabel",
+          "sku",
+          "kind",
+          "quantity",
+          "balanceAfter",
+          "reference",
+          "note",
+          "transferId",
+          "userName"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "warehouseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "warehouse": {
+            "type": "string"
+          },
+          "productNumber": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "variantLabel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sku": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/StockMovementKind"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "balanceAfter": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "reference": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "transferId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "userName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "MyStaffInvitation": {
         "required": [
           "id",
@@ -5407,6 +5873,45 @@
           },
           "isNewAccount": {
             "type": "boolean"
+          }
+        }
+      },
+      "PostMovementRequest": {
+        "required": [
+          "sku",
+          "warehouseId",
+          "kind",
+          "quantity",
+          "reference",
+          "note"
+        ],
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string"
+          },
+          "warehouseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/StockMovementKind"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "reference": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -6714,6 +7219,39 @@
           }
         }
       },
+      "SaveWarehouseRequest": {
+        "required": [
+          "code",
+          "name",
+          "address",
+          "isActive",
+          "isDefault"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        }
+      },
       "SendPhoneCodeRequest": {
         "required": [
           "phone",
@@ -7220,6 +7758,102 @@
           }
         }
       },
+      "StockMovementKind": {
+        "enum": [
+          "Opening",
+          "Receipt",
+          "Issue",
+          "Sale",
+          "Return",
+          "Adjustment",
+          "TransferOut",
+          "TransferIn"
+        ]
+      },
+      "StockPage": {
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize",
+          "warehouses"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StockRow"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "warehouses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WarehouseView"
+            }
+          }
+        }
+      },
+      "StockRow": {
+        "required": [
+          "itemId",
+          "productNumber",
+          "name",
+          "variantLabel",
+          "sku",
+          "isPublished",
+          "total",
+          "levels"
+        ],
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "productNumber": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "variantLabel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sku": {
+            "type": "string"
+          },
+          "isPublished": {
+            "type": "boolean"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "levels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WarehouseQuantity"
+            }
+          }
+        }
+      },
       "StoreInfoResponse": {
         "required": [
           "name",
@@ -7357,6 +7991,46 @@
             "items": {
               "type": "string"
             }
+          }
+        }
+      },
+      "TransferStockRequest": {
+        "required": [
+          "sku",
+          "fromWarehouseId",
+          "toWarehouseId",
+          "quantity",
+          "reference",
+          "note"
+        ],
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string"
+          },
+          "fromWarehouseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "toWarehouseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "reference": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -7647,6 +8321,72 @@
             "type": "string"
           }
         }
+      },
+      "WarehouseQuantity": {
+        "required": [
+          "warehouseId",
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "warehouseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "WarehouseView": {
+        "required": [
+          "id",
+          "code",
+          "name",
+          "address",
+          "isDefault",
+          "isActive",
+          "units",
+          "items",
+          "used"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isDefault": {
+            "type": "boolean"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "units": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "used": {
+            "type": "boolean"
+          }
+        }
       }
     }
   },
@@ -7665,6 +8405,9 @@
     },
     {
       "name": "Admin: SEO"
+    },
+    {
+      "name": "Admin: inventory"
     },
     {
       "name": "Account"

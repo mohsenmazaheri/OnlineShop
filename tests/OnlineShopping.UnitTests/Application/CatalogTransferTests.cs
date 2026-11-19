@@ -105,12 +105,13 @@ public sealed class CatalogTransferTests : DemoCatalogTestBase
         var storeOptions = Options.Create(Store);
         return new ProductImportService(
             db,
-            new ProductAdminService(db, storeOptions),
+            new ProductAdminService(db, storeOptions, TestLedger.For(db, Store)),
             new CatalogTreeService(db, storeOptions),
             new BrandAdminService(db, new InMemoryFileStorage().Media(), storeOptions),
             Files,
             new SaveProductRequestValidator(),
-            storeOptions);
+            storeOptions,
+            TestLedger.For(db, Store));
     }
 
     private static MemoryStream Csv(string text) => new(Encoding.UTF8.GetBytes(text));
@@ -314,6 +315,8 @@ public sealed class CatalogTransferTests : DemoCatalogTestBase
         Assert.Equal(7, (await check.Products.SingleAsync(p => p.SKU == "DEMO-FSH-001")).Stock);
         // The hoodie's stock is its variants' sum again: 60 - 8 + 20.
         Assert.Equal(72, (await check.Products.SingleAsync(p => p.SKU == "DEMO-FSH-003")).Stock);
+        // Both changes are adjustment lines of the ledger: 33 → 7 and 8 → 20.
+        Assert.Equal([-26, 12], (await check.StockMovements.Where(m => m.Reference == OnlineShopping.Application.Inventory.StockReferences.Import).OrderBy(m => m.Quantity).Select(m => m.Quantity).ToListAsync()));
     }
 
     private static string? CatalogErrorsOf<T>(OnlineShopping.Application.Common.Result<T> result) => result.Error?.Code;

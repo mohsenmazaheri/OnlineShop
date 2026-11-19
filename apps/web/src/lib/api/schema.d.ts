@@ -876,6 +876,94 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/inventory/warehouses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every warehouse (the default first) with its stock in units and items. */
+        get: operations["ListWarehouses"];
+        put?: never;
+        /** Add a warehouse. */
+        post: operations["CreateWarehouse"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/stock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stock per item (a product, or each of its variants) and warehouse, 20 products a page. */
+        get: operations["ListStock"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The stock ledger, newest first, 50 lines a page. */
+        get: operations["ListStockMovements"];
+        put?: never;
+        /** Enter a receipt, an issue or an adjustment; returns the item's stock afterwards. */
+        post: operations["PostStockMovement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/warehouses/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change a warehouse; make it the default, or deactivate one that holds no stock. */
+        put: operations["UpdateWarehouse"];
+        post?: never;
+        /** Delete a warehouse that never had a movement. */
+        delete: operations["DeleteWarehouse"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/transfers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Move stock of one item between two warehouses; returns the item's stock afterwards. */
+        post: operations["TransferStock"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/account/register": {
         parameters: {
             query?: never;
@@ -1882,6 +1970,39 @@ export interface components {
             password: string;
             rememberMe: boolean;
         };
+        MovementPage: {
+            items: components["schemas"]["MovementView"][];
+            /** Format: int32 */
+            total: number;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+        };
+        MovementView: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            createdUtc: string;
+            /** Format: uuid */
+            warehouseId: string;
+            warehouse: string;
+            /** Format: int64 */
+            productNumber: number;
+            name: string;
+            variantLabel: null | string;
+            sku: string;
+            kind: components["schemas"]["StockMovementKind"];
+            /** Format: int32 */
+            quantity: number;
+            /** Format: int32 */
+            balanceAfter: number;
+            reference: null | string;
+            note: null | string;
+            /** Format: uuid */
+            transferId: null | string;
+            userName: null | string;
+        };
         MyStaffInvitation: {
             /** Format: uuid */
             id: string;
@@ -1940,6 +2061,16 @@ export interface components {
         PhoneSignInResult: {
             user: components["schemas"]["CurrentUser"];
             isNewAccount: boolean;
+        };
+        PostMovementRequest: {
+            sku: string;
+            /** Format: uuid */
+            warehouseId: string;
+            kind: components["schemas"]["StockMovementKind"];
+            /** Format: int32 */
+            quantity: number;
+            reference: null | string;
+            note: null | string;
         };
         ProblemDetails: {
             type?: null | string;
@@ -2253,6 +2384,13 @@ export interface components {
             specCodes: string[];
             variants: components["schemas"]["VariantInput"][];
         };
+        SaveWarehouseRequest: {
+            code: null | string;
+            name: string;
+            address: null | string;
+            isActive: boolean;
+            isDefault: boolean;
+        };
         SendPhoneCodeRequest: {
             phone: string;
             locale: null | string;
@@ -2367,6 +2505,31 @@ export interface components {
             members: components["schemas"]["StaffMember"][];
             invitations: components["schemas"]["StaffInvitationView"][];
         };
+        /** @enum {unknown} */
+        StockMovementKind: "Opening" | "Receipt" | "Issue" | "Sale" | "Return" | "Adjustment" | "TransferOut" | "TransferIn";
+        StockPage: {
+            items: components["schemas"]["StockRow"][];
+            /** Format: int32 */
+            total: number;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+            warehouses: components["schemas"]["WarehouseView"][];
+        };
+        StockRow: {
+            /** Format: uuid */
+            itemId: string;
+            /** Format: int64 */
+            productNumber: number;
+            name: string;
+            variantLabel: null | string;
+            sku: string;
+            isPublished: boolean;
+            /** Format: int32 */
+            total: number;
+            levels: components["schemas"]["WarehouseQuantity"][];
+        };
         /** @description Store settings the storefront needs; `Currency` is the base currency of all prices (ISO 4217). */
         StoreInfoResponse: {
             name: string;
@@ -2400,6 +2563,17 @@ export interface components {
             id: string;
             locale: string;
             terms: string[];
+        };
+        TransferStockRequest: {
+            sku: string;
+            /** Format: uuid */
+            fromWarehouseId: string;
+            /** Format: uuid */
+            toWarehouseId: string;
+            /** Format: int32 */
+            quantity: number;
+            reference: null | string;
+            note: null | string;
         };
         TwoFactorCodeRequest: {
             code: string;
@@ -2472,6 +2646,26 @@ export interface components {
         VideoTitleText: {
             locale: string;
             title: string;
+        };
+        WarehouseQuantity: {
+            /** Format: uuid */
+            warehouseId: string;
+            /** Format: int32 */
+            quantity: number;
+        };
+        WarehouseView: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            name: string;
+            address: null | string;
+            isDefault: boolean;
+            isActive: boolean;
+            /** Format: int32 */
+            units: number;
+            /** Format: int32 */
+            items: number;
+            used: boolean;
         };
     };
     responses: never;
@@ -4385,6 +4579,235 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ImportReport"];
+                };
+            };
+        };
+    };
+    ListWarehouses: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WarehouseView"][];
+                };
+            };
+        };
+    };
+    CreateWarehouse: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveWarehouseRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WarehouseView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    ListStock: {
+        parameters: {
+            query?: {
+                search?: string;
+                onlyOut?: boolean;
+                page?: number;
+                locale?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockPage"];
+                };
+            };
+        };
+    };
+    ListStockMovements: {
+        parameters: {
+            query?: {
+                sku?: string;
+                warehouseId?: string;
+                kind?: components["schemas"]["StockMovementKind"];
+                page?: number;
+                locale?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovementPage"];
+                };
+            };
+        };
+    };
+    PostStockMovement: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PostMovementRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockRow"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    UpdateWarehouse: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveWarehouseRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WarehouseView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    DeleteWarehouse: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TransferStock: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferStockRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockRow"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
                 };
             };
         };

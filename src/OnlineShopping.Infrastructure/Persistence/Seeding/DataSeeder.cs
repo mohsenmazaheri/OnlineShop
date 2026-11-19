@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OnlineShopping.Infrastructure.Persistence.Seeding.Demo;
 using OnlineShopping.Application.Authorization;
+using OnlineShopping.Application.Inventory;
 using OnlineShopping.Infrastructure.Identity;
 
 namespace OnlineShopping.Infrastructure.Persistence.Seeding;
@@ -21,7 +22,8 @@ public sealed partial class DataSeeder(
     TimeProvider clock,
     DemoUserSeeder demoUsers,
     DemoCatalogSeeder demoCatalog,
-    CurrencySeeder currencies)
+    CurrencySeeder currencies,
+    StockLedger ledger)
 {
 
     private readonly SeedOptions _options = options.Value;
@@ -39,6 +41,9 @@ public sealed partial class DataSeeder(
         await demoUsers.SeedAsync();
         // Sample products for a demo shop (DemoCatalog:Enabled; off by default, fills the catalog once).
         await demoCatalog.SeedAsync(cancellationToken);
+        // The default warehouse, and an opening ledger line for stock from before the ledger (or from the demo catalog).
+        await ledger.DefaultWarehouseIdAsync(cancellationToken);
+        await ledger.OpenUntrackedAsync(cancellationToken);
     }
 
     private async Task EnsureRolesAsync()

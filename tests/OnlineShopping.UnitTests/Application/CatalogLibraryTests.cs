@@ -27,6 +27,8 @@ public abstract class DemoCatalogTestBase : IDisposable
     {
         await using var db = Database.CreateContext();
         await new DemoCatalogSeeder(db, Options.Create(Store), Options.Create(new DemoCatalogOptions { Enabled = true }), NullLogger<DemoCatalogSeeder>.Instance).SeedAsync();
+        // As at startup: the demo stock becomes the ledger's opening lines.
+        await TestLedger.For(db, Store).OpenUntrackedAsync();
     }
 
     protected async Task<long> NumberOfAsync(string sku)
@@ -217,7 +219,7 @@ public sealed class SpecTemplateTests : DemoCatalogTestBase
 
 public sealed class ProductVariantServiceTests : DemoCatalogTestBase
 {
-    private static ProductVariantService Service(AppDbContext db) => new(db);
+    private ProductVariantService Service(AppDbContext db) => new(db, TestLedger.For(db, Store));
 
     /// <summary>The demo bag has its own colour; variants by colour need it gone first.</summary>
     private async Task<long> BagWithoutColourAsync()
@@ -255,7 +257,7 @@ public sealed class ProductVariantServiceTests : DemoCatalogTestBase
         await SeedDemoAsync();
         var number = await NumberOfAsync("DEMO-FSH-003");
         await using var db = Database.CreateContext();
-        var hoodie = (await new ProductAdminService(db, Options.Create(Store)).GetAsync(number)).Value;
+        var hoodie = (await new ProductAdminService(db, Options.Create(Store), TestLedger.For(db, Store)).GetAsync(number)).Value;
         Assert.Equal(8, hoodie.Variants.Variants.Count);
         var keep = hoodie.Variants.Variants[0];
 
@@ -301,7 +303,7 @@ public sealed class ProductVariantServiceTests : DemoCatalogTestBase
         await SeedDemoAsync();
         var number = await NumberOfAsync("DEMO-FSH-003");
         await using var db = Database.CreateContext();
-        var admin = new ProductAdminService(db, Options.Create(Store));
+        var admin = new ProductAdminService(db, Options.Create(Store), TestLedger.For(db, Store));
         var hoodie = (await admin.GetAsync(number)).Value;
         var request = new SaveProductRequest(hoodie.Sku, hoodie.Price, hoodie.CompareAtPrice, 999, true, hoodie.ProductGroupId, hoodie.Texts, hoodie.Specs, hoodie.BrandId);
 

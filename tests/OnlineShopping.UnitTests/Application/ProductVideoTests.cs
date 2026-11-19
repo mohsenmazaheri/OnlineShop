@@ -102,7 +102,7 @@ public sealed class CatalogVideoServiceTests : DemoCatalogTestBase
         Assert.Equal(CatalogErrors.TooManyVideos, (await service.AddAsync(number, Video(), Video().Length)).Error!.Code);
         Assert.Equal(30, first.DurationSeconds);
 
-        var third = (await new ProductAdminService(db, Options.Create(Store)).GetAsync(number)).Value.Videos[2];
+        var third = (await new ProductAdminService(db, Options.Create(Store), TestLedger.For(db, Store)).GetAsync(number)).Value.Videos[2];
         var saved = (await service.SaveAsync(number, new([
             new(second.Id, [new("fa", "معرفی کوله"), new("en", "Backpack tour")]),
             new(first.Id, []),

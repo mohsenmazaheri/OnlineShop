@@ -20,6 +20,8 @@ builder.Host.UseSerilog((context, logger) => logger
 
 var isOpenApiGeneration = IsOpenApiGeneration();
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<OnlineShopping.Application.Common.ICurrentUser, OnlineShopping.Api.Security.HttpCurrentUser>();
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration, persistDataProtectionKeys: !isOpenApiGeneration);
 
@@ -110,6 +112,7 @@ app.MapCatalogAdminEndpoints();
 app.MapCatalogLibraryEndpoints();
 app.MapSeoEndpoints();
 app.MapCatalogTransferEndpoints();
+app.MapInventoryEndpoints();
 app.MapMediaEndpoints();
 app.MapAccountEndpoints();
 app.MapExternalLoginEndpoints();

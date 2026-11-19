@@ -134,3 +134,32 @@ export function getSynonyms(fetchImpl: typeof fetch = fetch): Promise<SynonymLis
 export function getRedirects(fetchImpl: typeof fetch = fetch): Promise<RedirectView[] | null> {
   return getForUser<RedirectView[]>("/api/v1/admin/seo/redirects", fetchImpl);
 }
+
+export type WarehouseView = components["schemas"]["WarehouseView"];
+export type StockPage = components["schemas"]["StockPage"];
+export type MovementPage = components["schemas"]["MovementPage"];
+
+/** The shop's warehouses, the default first (inventory.view). */
+export function getWarehouses(fetchImpl: typeof fetch = fetch): Promise<WarehouseView[] | null> {
+  return getForUser<WarehouseView[]>("/api/v1/admin/inventory/warehouses", fetchImpl);
+}
+
+/** One page of stock per item and warehouse (inventory.view). */
+export function getStock(query: { search?: string; onlyOut?: boolean; page?: number; locale: string }, fetchImpl: typeof fetch = fetch): Promise<StockPage | null> {
+  const params = new URLSearchParams({ locale: query.locale, page: String(query.page ?? 1) });
+  if (query.search) params.set("search", query.search);
+  if (query.onlyOut) params.set("onlyOut", "true");
+  return getForUser<StockPage>(`/api/v1/admin/inventory/stock?${params.toString()}`, fetchImpl);
+}
+
+/** One page of the stock ledger, newest first (inventory.view). */
+export function getMovements(
+  query: { sku?: string; warehouseId?: string; kind?: string; page?: number; locale: string },
+  fetchImpl: typeof fetch = fetch,
+): Promise<MovementPage | null> {
+  const params = new URLSearchParams({ locale: query.locale, page: String(query.page ?? 1) });
+  if (query.sku) params.set("sku", query.sku);
+  if (query.warehouseId) params.set("warehouseId", query.warehouseId);
+  if (query.kind) params.set("kind", query.kind);
+  return getForUser<MovementPage>(`/api/v1/admin/inventory/movements?${params.toString()}`, fetchImpl);
+}

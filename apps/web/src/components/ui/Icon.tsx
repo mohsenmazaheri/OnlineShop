@@ -142,6 +142,25 @@ const paths = {
       <path d="M15.5 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c2 .7 3.5 2.4 3.5 5.2" />
     </>
   ),
+  warehouse: (
+    <>
+      <path d="M3 9.5L12 4l9 5.5V20H3z" />
+      <path d="M7 20v-7h10v7M7 16.5h10" />
+    </>
+  ),
+  stock: (
+    <>
+      <rect x="3.5" y="13" width="7" height="7" rx="1" />
+      <rect x="13.5" y="13" width="7" height="7" rx="1" />
+      <rect x="8.5" y="4" width="7" height="7" rx="1" />
+    </>
+  ),
+  history: (
+    <>
+      <path d="M3.5 12a8.5 8.5 0 1 0 2.5-6" />
+      <path d="M3.5 4v4h4M12 7.5V12l3 2" />
+    </>
+  ),
 } as const;
 
 export type IconName = keyof typeof paths;

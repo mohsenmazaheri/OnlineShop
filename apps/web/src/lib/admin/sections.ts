@@ -1,7 +1,7 @@
 import type { IconName } from "@/components/ui/Icon";
 
-export type AdminSection = "home" | "products" | "import" | "catalog" | "brands" | "specs" | "seo" | "staff" | "currencies" | "branding";
-export type AdminGroup = "catalog" | "store" | "team";
+export type AdminSection = "home" | "products" | "import" | "catalog" | "brands" | "specs" | "seo" | "staff" | "currencies" | "branding" | "inventory" | "movements" | "warehouses";
+export type AdminGroup = "catalog" | "inventory" | "store" | "team";
 
 type SectionDefinition = {
   section: Exclude<AdminSection, "home">;
@@ -22,12 +22,15 @@ export const adminSections: readonly SectionDefinition[] = [
   { section: "specs", path: "/specs", label: "navSpecs", icon: "list", group: "catalog", permission: "catalog.manage" },
   { section: "import", path: "/import", label: "navImport", icon: "upload", group: "catalog", permission: "catalog.manage" },
   { section: "seo", path: "/seo", label: "navSeo", icon: "search", group: "catalog", permission: "catalog.manage" },
+  { section: "inventory", path: "/inventory", label: "navInventory", icon: "stock", group: "inventory", permission: "inventory.view" },
+  { section: "movements", path: "/inventory/movements", label: "navMovements", icon: "history", group: "inventory", permission: "inventory.view" },
+  { section: "warehouses", path: "/warehouses", label: "navWarehouses", icon: "warehouse", group: "inventory", permission: "inventory.view" },
   { section: "branding", path: "/branding", label: "navBranding", icon: "palette", group: "store", permission: "settings.manage" },
   { section: "currencies", path: "/currencies", label: "navCurrencies", icon: "coin", group: "store", permission: "settings.manage" },
   { section: "staff", path: "/staff", label: "navStaff", icon: "users", group: "team", permission: "staff.manage" },
 ];
 
-export const adminGroups: readonly AdminGroup[] = ["catalog", "store", "team"];
+export const adminGroups: readonly AdminGroup[] = ["catalog", "inventory", "store", "team"];
 
 /** The sections this user may open. */
 export function visibleSections(permissions: readonly string[]): SectionDefinition[] {

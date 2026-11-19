@@ -213,7 +213,7 @@ public sealed class ProductSeoFieldsTests : DemoCatalogTestBase
         await SeedDemoAsync();
         var number = await NumberOfAsync("DEMO-FSH-002");
         await using var db = Database.CreateContext();
-        var admin = new ProductAdminService(db, Options.Create(Store));
+        var admin = new ProductAdminService(db, Options.Create(Store), TestLedger.For(db, Store));
         var bag = (await admin.GetAsync(number)).Value;
         var request = new SaveProductRequest(bag.Sku, bag.Price, bag.CompareAtPrice, bag.Stock, true, bag.ProductGroupId, bag.Texts, bag.Specs, bag.BrandId,
             Gtin: "۴۰۰۶۳۸۱۳۳۳۹۳۱", Mpn: " RB-25 ", WeightGrams: 720,
@@ -238,8 +238,8 @@ public sealed class ProductSeoFieldsTests : DemoCatalogTestBase
         await SeedDemoAsync();
         var number = await NumberOfAsync("DEMO-FSH-003");
         await using var db = Database.CreateContext();
-        var service = new ProductVariantService(db);
-        var hoodie = (await new ProductAdminService(db, Options.Create(Store)).GetAsync(number)).Value;
+        var service = new ProductVariantService(db, TestLedger.For(db, Store));
+        var hoodie = (await new ProductAdminService(db, Options.Create(Store), TestLedger.For(db, Store)).GetAsync(number)).Value;
         VariantInput Input(VariantView v, string? gtin) => new(v.Id, v.Sku, v.Price, v.CompareAtPrice, v.Stock, v.Options, gtin);
 
         var saved = (await service.SaveAsync(number, new(hoodie.Variants.SpecCodes, [Input(hoodie.Variants.Variants[0], "96385074")]))).Value;
