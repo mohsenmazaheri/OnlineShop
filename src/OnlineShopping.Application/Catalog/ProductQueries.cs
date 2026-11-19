@@ -62,6 +62,9 @@ public sealed record VariantChoice(string Axis, string Option);
 /// <summary>One buyable variant with its own price (its own or the product's) and stock state.</summary>
 public sealed record VariantOffer(string Sku, decimal Price, decimal? CompareAtPrice, bool InStock, IReadOnlyList<VariantChoice> Options, string? Gtin);
 
+/// <summary>A product video with its title in the requested language (null: use the product name).</summary>
+public sealed record ProductVideoInfo(string Url, string? PosterUrl, string? Title, double? DurationSeconds, DateTime UploadedUtc);
+
 public sealed record ProductDetail(
     long Number,
     string Name,
@@ -84,7 +87,8 @@ public sealed record ProductDetail(
     string? Mpn,
     int? WeightGrams,
     string? MetaTitle,
-    string? MetaDescription);
+    string? MetaDescription,
+    IReadOnlyList<ProductVideoInfo> Videos);
 
 public interface IProductQueries
 {
@@ -202,6 +206,13 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
                 v.Spec.ShowInSummary))
             .ToListAsync(cancellationToken);
 
+        var videos = await db.ProductVideos.AsNoTracking()
+            .Where(v => v.ProductId == product.Id)
+            .OrderBy(v => v.SortOrder)
+            .Select(v => new ProductVideoInfo(
+                v.Url, v.PosterUrl, v.TitleTranslations.Where(t => t.Locale == locale).Select(t => t.Title).FirstOrDefault() ?? v.Title, v.DurationSeconds, v.CreatedUtc))
+            .ToListAsync(cancellationToken);
+
         var (axes, variants) = await VariantsAsync(product.Id, product.Price, product.CompareAtPrice, locale, cancellationToken);
 
         var translated = await db.Products.AsNoTracking()
@@ -219,7 +230,7 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
         return new ProductDetail(
             product.PublicNumber, product.Name, product.Slug, product.Description, product.SKU, product.Price,
             product.CompareAtPrice, product.Stock, product.Stock > 0, images, product.Category, product.SubCategory,
-            specs, alternates, product.Brand, axes, variants, product.Gtin, product.Mpn, product.WeightGrams, product.MetaTitle, product.MetaDescription);
+            specs, alternates, product.Brand, axes, variants, product.Gtin, product.Mpn, product.WeightGrams, product.MetaTitle, product.MetaDescription, videos);
     }
 
     /// <summary>The variants with their effective prices, and the axes with only the options they use.</summary>

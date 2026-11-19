@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Options;
 using OnlineShopping.Application.Catalog.Admin;
 using OnlineShopping.Application.Common;
+using OnlineShopping.Application.Inventory;
 using OnlineShopping.Domain.Catalog;
 
 namespace OnlineShopping.Application.Catalog.Transfer;
@@ -22,7 +23,8 @@ public sealed class ProductImportService(
     BrandAdminService brands,
     TableFiles files,
     IValidator<SaveProductRequest> validator,
-    IOptions<StoreOptions> store)
+    IOptions<StoreOptions> store,
+    StockLedger ledger)
 {
     public const int MaxRows = 5000;
     public const long MaxBytes = 10 * 1024 * 1024;
@@ -110,12 +112,14 @@ public sealed class ProductImportService(
         if (problems.Count > 0)
             return new ImportReport(false, 0, 0, table.Rows.Count, problems);
 
-        var all = await db.Products.Include(p => p.Variants).ToListAsync(cancellationToken);
-        var productsBySku = all.ToDictionary(p => p.SKU, StringComparer.Ordinal);
-        var variantsBySku = all.SelectMany(p => p.Variants.Select(v => (Product: p, Variant: v))).ToDictionary(x => x.Variant.Sku, StringComparer.Ordinal);
+        var productsBySku = await db.Products.AsNoTracking()
+            .Select(p => new { p.Id, p.SKU, HasVariants = p.Variants.Any() })
+            .ToDictionaryAsync(p => p.SKU, StringComparer.Ordinal, cancellationToken);
+        var variantsBySku = await db.ProductVariants.AsNoTracking()
+            .Select(v => new { v.Id, v.ProductId, v.Sku })
+            .ToDictionaryAsync(v => v.Sku, StringComparer.Ordinal, cancellationToken);
         var seen = new HashSet<string>(StringComparer.Ordinal);
-        var touched = new HashSet<Product>();
-        var updated = 0;
+        var changes = new List<(StockItem Item, int Stock)>();
 
         for (var i = 0; i < table.Rows.Count && problems.Count < MaxProblems; i++)
         {
@@ -129,34 +133,39 @@ public sealed class ProductImportService(
             else if (!ok || value is not { } stock || stock < 0 || stock > 1_000_000_000 || stock != decimal.Truncate(stock))
                 problems.Add(new(row.Number, ProductColumns.Stock, TransferErrors.NumberInvalid));
             else if (variantsBySku.TryGetValue(sku, out var variant))
-            {
-                variant.Variant.Stock = (int)stock;
-                touched.Add(variant.Product);
-                updated++;
-            }
+                changes.Add((new StockItem(variant.ProductId, variant.Id), (int)stock));
             else if (productsBySku.TryGetValue(sku, out var product))
             {
-                if (product.Variants.Count > 0)
-                {
+                if (product.HasVariants)
                     problems.Add(new(row.Number, ProductColumns.Sku, TransferErrors.StockOnVariants));
-                    continue;
-                }
-                product.Stock = (int)stock;
-                updated++;
+                else
+                    changes.Add((new StockItem(product.Id, null), (int)stock));
             }
             else
             {
                 problems.Add(new(row.Number, ProductColumns.Sku, TransferErrors.SkuNotFound));
             }
         }
-        foreach (var product in touched)
-            product.Stock = product.Variants.Sum(v => v.Stock);
 
+        // Each changed number becomes an adjustment line in the ledger, all of them together.
         var applied = !dryRun && problems.Count == 0;
         if (applied)
-            await db.SaveChangesAsync(cancellationToken);
+        {
+            var saved = await db.InTransactionAsync(async () =>
+            {
+                foreach (var (item, stock) in changes)
+                {
+                    var set = await ledger.SetTotalAsync(item, stock, StockReferences.Import, cancellationToken);
+                    if (!set.IsSuccess)
+                        return set.Error!;
+                }
+                return Result.Success(true);
+            }, cancellationToken);
+            if (!saved.IsSuccess)
+                return saved.Error!;
+        }
         db.ChangeTracker.Clear();
-        return new ImportReport(applied, 0, updated, table.Rows.Count, applied ? [] : problems);
+        return new ImportReport(applied, 0, changes.Count, table.Rows.Count, applied ? [] : problems);
     }
 
     private async Task<Result<TableData>> ReadAsync(Stream upload, long length, CancellationToken cancellationToken)
@@ -318,7 +327,7 @@ public sealed class ProductImportService(
         var request = draft.ToRequest();
         if (validator.Validate(request) is { IsValid: false } invalid)
             return Fail(null, invalid.Errors[0].ErrorCode);
-        var saved = number is { } target ? await products.UpdateAsync(target, request, cancellationToken) : await products.CreateAsync(request, cancellationToken);
+        var saved = number is { } target ? await products.UpdateAsync(target, request, StockReferences.Import, cancellationToken) : await products.CreateAsync(request, StockReferences.Import, cancellationToken);
         if (!saved.IsSuccess)
             return Fail(null, saved.Error!.Code);
 

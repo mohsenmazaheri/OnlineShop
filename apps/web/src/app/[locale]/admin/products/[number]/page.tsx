@@ -4,6 +4,7 @@ import { AdminCard, AdminShell } from "@/components/admin/AdminShell";
 import { ProductEditor } from "@/components/admin/ProductEditor";
 import { ProductImagesEditor } from "@/components/admin/ProductImagesEditor";
 import { ProductVariantsEditor } from "@/components/admin/ProductVariantsEditor";
+import { ProductVideosEditor } from "@/components/admin/ProductVideosEditor";
 import { requirePermission } from "@/lib/admin/access";
 import { languageNames } from "@/lib/admin/language-names";
 import { accountMetadata, routeLocale } from "@/lib/account/page-helpers";
@@ -59,6 +60,9 @@ async function EditProduct({ params }: { params: Params }) {
       </AdminCard>
       <AdminCard title={texts.imagesTitle} id="product-images">
         <ProductImagesEditor locale={locale} number={product.number} images={product.images} languageNames={languageNames(catalog.locales)} texts={texts} />
+      </AdminCard>
+      <AdminCard title={texts.videosTitle} id="product-videos">
+        <ProductVideosEditor locale={locale} number={product.number} videos={product.videos} languageNames={languageNames(catalog.locales)} texts={texts} />
       </AdminCard>
     </AdminShell>
   );

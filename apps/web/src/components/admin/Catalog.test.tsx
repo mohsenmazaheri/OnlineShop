@@ -178,7 +178,7 @@ describe("ProductEditor", () => {
       number: 1001, sku: "A", price: 10, compareAtPrice: null, stock: 1, isPublished: true, productGroupId: "g1",
       texts: [{ locale: "fa", name: "کالا", slug: "kala", description: null }], specs: [], images: [], brandId: null,
       variants: { specCodes: [], variants: [] },
-      gtin: null, mpn: null, weightGrams: null, seo: [],
+      gtin: null, mpn: null, weightGrams: null, seo: [], videos: [],
     };
     render(<ProductEditor locale="en" texts={texts} tree={tree} specs={specs} brands={brands} languageNames={names} product={product} shopName="Shop" siteUrl="https://shop.test" />);
 

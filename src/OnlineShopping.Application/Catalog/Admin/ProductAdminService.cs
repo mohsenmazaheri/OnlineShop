@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnlineShopping.Application.Common;
+using OnlineShopping.Application.Inventory;
 using OnlineShopping.Domain.Catalog;
 
 namespace OnlineShopping.Application.Catalog.Admin;
@@ -8,9 +9,10 @@ namespace OnlineShopping.Application.Catalog.Admin;
 /// <summary>
 /// Products for the admin: list with search, the edit form, create/update/delete. Texts follow the default-language
 /// rule of <see cref="LocalizedTexts"/>; spec values are replaced by the submitted set (empty value = removed); a new
-/// product gets the next public number, which is never reused (a deleted product keeps its number).
+/// product gets the next public number, which is never reused (a deleted product keeps its number). The stock of a
+/// product without variants goes through the <see cref="StockLedger"/>: a changed number becomes an adjustment line.
 /// </summary>
-public sealed class ProductAdminService(IApplicationDbContext db, IOptions<StoreOptions> store)
+public sealed class ProductAdminService(IApplicationDbContext db, IOptions<StoreOptions> store, StockLedger ledger)
 {
     public const int PageSize = 20;
     private const long FirstPublicNumber = 1001;
@@ -73,6 +75,7 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
             .Include(p => p.SpecValues).ThenInclude(v => v.Option)
             .Include(p => p.Images)
             .Include(p => p.Variants)
+            .Include(p => p.Videos)
             .SingleOrDefaultAsync(p => p.PublicNumber == number, cancellationToken);
         return product is null ? NotFound() : await ViewAsync(product, cancellationToken);
     }
@@ -101,7 +104,11 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
             .ToList();
     }
 
-    public async Task<Result<ProductEditView>> CreateAsync(SaveProductRequest request, CancellationToken cancellationToken = default)
+    public Task<Result<ProductEditView>> CreateAsync(SaveProductRequest request, CancellationToken cancellationToken = default) =>
+        CreateAsync(request, StockReferences.ProductEditor, cancellationToken);
+
+    /// <summary>Create, naming the source of the stock line (the editor, an import).</summary>
+    internal async Task<Result<ProductEditView>> CreateAsync(SaveProductRequest request, string stockReference, CancellationToken cancellationToken)
     {
         var product = new Product { Name = "" };
         var applied = await ApplyAsync(product, request, cancellationToken);
@@ -111,18 +118,39 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
         // The next number after every product ever created (deleted ones included): numbers are never reused.
         var last = await db.Products.IgnoreQueryFilters().MaxAsync(p => (long?)p.PublicNumber, cancellationToken) ?? 0;
         product.PublicNumber = Math.Max(FirstPublicNumber, last + 1);
-        db.Products.Add(product);
-        await db.SaveChangesAsync(cancellationToken);
+        return await db.InTransactionAsync(async () =>
+        {
+            db.Products.Add(product);
+            await db.SaveChangesAsync(cancellationToken);
+            return await SaveStockAsync(product, request.Stock, stockReference, cancellationToken);
+        }, cancellationToken);
+    }
+
+    public Task<Result<ProductEditView>> UpdateAsync(long number, SaveProductRequest request, CancellationToken cancellationToken = default) =>
+        UpdateAsync(number, request, StockReferences.ProductEditor, cancellationToken);
+
+    /// <summary>The stock of a product without variants, then the editor view.</summary>
+    private async Task<Result<ProductEditView>> SaveStockAsync(Product product, int stock, string reference, CancellationToken cancellationToken)
+    {
+        // With variants, the stock is theirs (set in the variant editor).
+        if (!product.Variants.Any(v => !v.IsDeleted))
+        {
+            var stocked = await ledger.SetTotalAsync(new StockItem(product.Id, null), stock, reference, cancellationToken);
+            if (!stocked.IsSuccess)
+                return stocked.Error!;
+        }
         return await ViewAsync(product, cancellationToken);
     }
 
-    public async Task<Result<ProductEditView>> UpdateAsync(long number, SaveProductRequest request, CancellationToken cancellationToken = default)
+    /// <summary>Update, naming the source of the stock line (the editor, an import).</summary>
+    internal async Task<Result<ProductEditView>> UpdateAsync(long number, SaveProductRequest request, string stockReference, CancellationToken cancellationToken)
     {
         var product = await db.Products
             .Include(p => p.SpecValues).ThenInclude(v => v.Spec)
             .Include(p => p.SpecValues).ThenInclude(v => v.Option)
             .Include(p => p.Images)
             .Include(p => p.Variants)
+            .Include(p => p.Videos)
             .SingleOrDefaultAsync(p => p.PublicNumber == number, cancellationToken);
         if (product is null)
             return NotFound();
@@ -130,8 +158,11 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
         var applied = await ApplyAsync(product, request, cancellationToken);
         if (!applied.IsSuccess)
             return applied.Error!;
-        await db.SaveChangesAsync(cancellationToken);
-        return await ViewAsync(product, cancellationToken);
+        return await db.InTransactionAsync(async () =>
+        {
+            await db.SaveChangesAsync(cancellationToken);
+            return await SaveStockAsync(product, request.Stock, stockReference, cancellationToken);
+        }, cancellationToken);
     }
 
     /// <summary>Soft delete: the product leaves the shop, its number stays taken, and orders keep their snapshot.</summary>
@@ -180,9 +211,6 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
         product.SKU = sku;
         product.Price = request.Price;
         product.CompareAtPrice = request.CompareAtPrice;
-        // With variants, the stock is theirs (kept as their sum by the variant service).
-        if (!product.Variants.Any(v => !v.IsDeleted))
-            product.Stock = request.Stock;
         product.BrandId = request.BrandId;
         product.IsPublished = request.IsPublished;
         product.ProductGroupId = request.ProductGroupId;
@@ -304,7 +332,8 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
         p.Gtin,
         p.Mpn,
         p.WeightGrams,
-        ReadSeo(p));
+        ReadSeo(p),
+        p.Videos.Where(v => !v.IsDeleted).OrderBy(v => v.SortOrder).Select(v => CatalogVideoService.ToView(v, Store)).ToList());
 
     private static AppError NotFound() => AppError.NotFound(CatalogErrors.NotFound, "No such product.");
 }

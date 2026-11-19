@@ -7,7 +7,7 @@ vi.mock("next/image", () => ({
   default: ({ src, alt }: { src: string; alt: string }) => <img src={src} alt={alt} />,
 }));
 
-import { ProductGallery } from "./ProductGallery";
+import { ProductGallery, posterFor } from "./ProductGallery";
 
 afterEach(cleanup);
 
@@ -32,6 +32,26 @@ describe("ProductGallery", () => {
     // No alternative text: the product name stands in.
     expect(screen.getByRole("img", { name: "Phone" }).getAttribute("src")).toBe(`/api/v1/media/${key(2)}/1200.webp`);
     expect(screen.getByRole("button", { name: "Phone 2" }).getAttribute("aria-current")).toBe("true");
+  });
+
+  it("adds videos after the images, with a poster from the main image and loading only when played", () => {
+    render(
+      <ProductGallery
+        name="Phone"
+        label="Product images"
+        videoLabel="Video"
+        images={[{ url: `/api/v1/media/${key(1)}/1200.webp`, alt: "Front" }]}
+        videos={[{ url: `/api/v1/media/${key(3)}/video.mp4`, posterUrl: null, title: null }]}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Phone – Video" }));
+    const video = document.querySelector("video")!;
+    expect(video.getAttribute("src")).toBe(`/api/v1/media/${key(3)}/video.mp4`);
+    expect(video.getAttribute("poster")).toBe(`/api/v1/media/${key(1)}/1200.webp`);
+    expect(video.getAttribute("preload")).toBe("none");
+    expect(video.hasAttribute("autoplay")).toBe(false);
+    expect(posterFor({ url: "v", posterUrl: `/api/v1/media/${key(4)}/1200.webp`, title: null }, [], 300)).toBe(`/api/v1/media/${key(4)}/300.webp`);
   });
 
   it("has no thumbnails for a single image and a placeholder for none", () => {

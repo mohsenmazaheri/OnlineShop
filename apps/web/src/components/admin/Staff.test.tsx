@@ -45,7 +45,12 @@ describe("AdminShell", () => {
     expect(screen.queryByRole("link", { name: texts.navStaff })).toBeNull();
 
     rerender(<AdminShell locale="en" texts={texts} current="staff" permissions={["staff.manage"]}>x</AdminShell>);
-    expect(screen.getByRole("link", { name: texts.navStaff }).getAttribute("aria-current")).toBe("page");
+    // Two menus (a scrolling bar on phones, a side menu on large screens); CSS shows one.
+    const staffLinks = screen.getAllByRole("link", { name: texts.navStaff });
+    expect(staffLinks).toHaveLength(2);
+    expect(staffLinks.every((l) => l.getAttribute("aria-current") === "page")).toBe(true);
+    expect(screen.queryByRole("link", { name: texts.navProducts })).toBeNull();
+    expect(screen.getByText(texts.groups.team)).toBeTruthy();
     expect(screen.getByRole("link", { name: texts.backToShop }).getAttribute("href")).toBe("/en");
   });
 });

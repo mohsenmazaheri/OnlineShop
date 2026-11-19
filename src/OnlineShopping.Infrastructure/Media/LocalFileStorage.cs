@@ -28,6 +28,14 @@ public sealed class LocalFileStorage(IOptions<StorageOptions> options, IHostEnvi
         await File.WriteAllBytesAsync(full, content, cancellationToken);
     }
 
+    public async Task SaveAsync(string path, Stream content, CancellationToken cancellationToken = default)
+    {
+        var full = Resolve(path);
+        Directory.CreateDirectory(Path.GetDirectoryName(full)!);
+        await using var file = new FileStream(full, FileMode.Create, FileAccess.Write, FileShare.None, 64 * 1024, useAsync: true);
+        await content.CopyToAsync(file, cancellationToken);
+    }
+
     public Task<Stream?> OpenReadAsync(string path, CancellationToken cancellationToken = default)
     {
         var full = Resolve(path);

@@ -118,6 +118,34 @@ public static class CatalogAdminEndpoints
             .WithSummary("Replace a product's variants (colour, size…): the specs they vary by and every variant.")
             .Produces<ProductVariantsView>();
 
+        products.MapPost("/{number:long}/videos", async (long number, IFormFile file, CatalogVideoService videos, CancellationToken ct) =>
+            {
+                await using var stream = file.OpenReadStream();
+                return (await videos.AddAsync(number, stream, file.Length, ct)).ToHttpResult();
+            })
+            .DisableAntiforgery()
+            .WithMetadata(new RequestSizeLimitAttribute(MediaEndpoints.MaxVideoRequestBytes))
+            .WithName("AddProductVideo")
+            .WithSummary("Upload a product video (MP4, at most 50 MB; checked, stored as uploaded).")
+            .Produces<ProductVideoView>();
+        products.MapPut("/{number:long}/videos", async (long number, SaveProductVideosRequest request, CatalogVideoService videos, CancellationToken ct) =>
+                (await videos.SaveAsync(number, request, ct)).ToHttpResult())
+            .WithName("SaveProductVideos").WithSummary("Reorder a product's videos and save their titles.");
+        products.MapDelete("/{number:long}/videos/{id:guid}", async (long number, Guid id, CatalogVideoService videos, CancellationToken ct) =>
+                (await videos.DeleteAsync(number, id, ct)).ToHttpResult())
+            .WithName("DeleteProductVideo").WithSummary("Remove a product video and its stored files.");
+        products.MapPost("/{number:long}/videos/{id:guid}/poster", async (long number, Guid id, IFormFile file, CatalogVideoService videos, CancellationToken ct) =>
+            {
+                await using var stream = file.OpenReadStream();
+                return (await videos.SetPosterAsync(number, id, stream, file.Length, ct)).ToHttpResult();
+            })
+            .DisableAntiforgery()
+            .WithMetadata(new RequestSizeLimitAttribute(MediaEndpoints.MaxRequestBytes))
+            .WithName("SetProductVideoPoster").WithSummary("Upload the still image shown before a video plays.");
+        products.MapDelete("/{number:long}/videos/{id:guid}/poster", async (long number, Guid id, CatalogVideoService videos, CancellationToken ct) =>
+                (await videos.RemovePosterAsync(number, id, ct)).ToHttpResult())
+            .WithName("RemoveProductVideoPoster").WithSummary("Remove a video's poster (the product image is shown instead).");
+
         tree.MapDelete("/categories/{id:guid}/image", async (Guid id, CatalogImageService images, CancellationToken ct) =>
                 (await images.RemoveCategoryImageAsync(id, ct)).ToHttpResult())
             .WithName("RemoveCategoryImage")

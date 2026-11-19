@@ -28,6 +28,7 @@ const sections = [
   { prefix: "media", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).admin.mediaErrors },
   { prefix: "import", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).admin.importErrors },
   { prefix: "seo", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).admin.seoErrors },
+  { prefix: "inventory", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).admin.inventoryErrors },
   { prefix: "branding", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).admin.brandingErrors },
 ] as const;
 

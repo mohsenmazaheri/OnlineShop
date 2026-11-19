@@ -45,7 +45,7 @@ export function ProductView({ product, locale, money, baseName, texts }: Props) 
       </nav>
 
       <div className="grid gap-6 md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:grid-cols-[minmax(0,5fr)_minmax(0,5fr)_minmax(0,3fr)]">
-        <ProductGallery images={product.images} name={product.name} label={texts.images} />
+        <ProductGallery images={product.images} videos={product.videos} name={product.name} label={texts.images} videoLabel={texts.video} />
 
         <div className="flex flex-col gap-4">
           <h1 className="text-xl leading-snug font-extrabold md:text-2xl">{product.name}</h1>

@@ -63,3 +63,27 @@ export async function uploadFile<T>(path: `/api/v1/${string}`, file: File, fetch
   if (!response.ok) return { ok: false, problem: parseProblem(response.status, json) };
   return { ok: true, data: json as T };
 }
+
+/**
+ * Like {@link uploadFile}, with upload progress (0–1) for large files such as videos. Uses XMLHttpRequest, because
+ * fetch cannot report upload progress.
+ */
+export function uploadFileWithProgress<T>(path: `/api/v1/${string}`, file: File, onProgress: (share: number) => void): Promise<ApiResult<T>> {
+  return new Promise((resolve) => {
+    const body = new FormData();
+    body.append("file", file);
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", path);
+    xhr.withCredentials = true;
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) onProgress(event.loaded / event.total);
+    };
+    xhr.onerror = () => resolve({ ok: false, problem: { status: 0, code: "network", fieldErrors: {} } });
+    xhr.onload = () => {
+      const json: unknown = xhr.responseText ? safeJson(xhr.responseText) : null;
+      resolve(xhr.status >= 200 && xhr.status < 300 ? { ok: true, data: json as T } : { ok: false, problem: parseProblem(xhr.status, json) });
+    };
+    xhr.send(body);
+  });
+}

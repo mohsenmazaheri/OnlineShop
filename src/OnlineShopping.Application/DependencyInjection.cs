@@ -33,6 +33,7 @@ public static class DependencyInjection
         services.AddScoped<CatalogTreeService>();
         services.AddScoped<ProductAdminService>();
         services.AddScoped<CatalogImageService>();
+        services.AddScoped<CatalogVideoService>();
         services.AddScoped<BrandAdminService>();
         services.AddScoped<SpecAdminService>();
         services.AddScoped<ProductVariantService>();
@@ -43,6 +44,10 @@ public static class DependencyInjection
         services.AddScoped<Catalog.Transfer.ProductExportService>();
         services.AddScoped<Catalog.Transfer.ProductImportService>();
         services.AddScoped<MediaService>();
+        services.TryAddScoped<ICurrentUser, NoCurrentUser>();
+        services.AddScoped<Inventory.StockLedger>();
+        services.AddScoped<Inventory.WarehouseService>();
+        services.AddScoped<Inventory.InventoryService>();
         services.AddOptions<MediaOptions>().Bind(configuration.GetSection(MediaOptions.SectionName));
         services.AddScoped<LoginIdentifierParser>();
         services.AddScoped<AccountService>();

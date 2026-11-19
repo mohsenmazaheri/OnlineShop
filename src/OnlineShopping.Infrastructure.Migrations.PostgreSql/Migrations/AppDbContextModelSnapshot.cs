@@ -800,6 +800,66 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.ToTable("product_variants", (string)null);
                 });
 
+            modelBuilder.Entity("OnlineShopping.Domain.Catalog.ProductVideo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<double?>("DurationSeconds")
+                        .HasColumnType("double precision")
+                        .HasColumnName("duration_seconds");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<string>("PosterUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)")
+                        .HasColumnName("poster_url");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("size_bytes");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)")
+                        .HasColumnName("url");
+
+                    b.HasKey("Id")
+                        .HasName("pk_product_videos");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_product_videos_product_id");
+
+                    b.ToTable("product_videos", (string)null);
+                });
+
             modelBuilder.Entity("OnlineShopping.Domain.Catalog.SpecOption", b =>
                 {
                     b.Property<Guid>("Id")
@@ -983,6 +1043,203 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasDatabaseName("ix_customer_addresses_customer_id");
 
                     b.ToTable("customer_addresses", (string)null);
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Inventory.StockLevel", b =>
+                {
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("warehouse_id");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("item_id");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<Guid?>("VariantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("variant_id");
+
+                    b.HasKey("WarehouseId", "ItemId")
+                        .HasName("pk_stock_levels");
+
+                    b.HasIndex("ItemId")
+                        .HasDatabaseName("ix_stock_levels_item_id");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_stock_levels_product_id");
+
+                    b.HasIndex("VariantId")
+                        .HasDatabaseName("ix_stock_levels_variant_id");
+
+                    b.ToTable("stock_levels", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_StockLevels_Quantity", "quantity >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Inventory.StockMovement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("BalanceAfter")
+                        .HasColumnType("integer")
+                        .HasColumnName("balance_after");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("item_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("kind");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("note");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<string>("Reference")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("reference");
+
+                    b.Property<Guid?>("TransferId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("transfer_id");
+
+                    b.Property<string>("UserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)")
+                        .HasColumnName("user_id");
+
+                    b.Property<Guid?>("VariantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("variant_id");
+
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("warehouse_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_stock_movements");
+
+                    b.HasIndex("CreatedUtc")
+                        .HasDatabaseName("ix_stock_movements_created_utc");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_stock_movements_product_id");
+
+                    b.HasIndex("TransferId")
+                        .HasDatabaseName("ix_stock_movements_transfer_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_stock_movements_user_id");
+
+                    b.HasIndex("VariantId")
+                        .HasDatabaseName("ix_stock_movements_variant_id");
+
+                    b.HasIndex("ItemId", "CreatedUtc")
+                        .HasDatabaseName("ix_stock_movements_item_id_created_utc");
+
+                    b.HasIndex("WarehouseId", "CreatedUtc")
+                        .HasDatabaseName("ix_stock_movements_warehouse_id_created_utc");
+
+                    b.ToTable("stock_movements", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_StockMovements_Kind", "kind IN ('Opening', 'Receipt', 'Issue', 'Sale', 'Return', 'Adjustment', 'TransferOut', 'TransferIn')");
+                        });
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Inventory.Warehouse", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("address");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_default");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.HasKey("Id")
+                        .HasName("pk_warehouses");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_warehouses_code")
+                        .HasFilter("is_deleted = false");
+
+                    b.ToTable("warehouses", (string)null);
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Pricing.Currency", b =>
@@ -2179,6 +2436,47 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("OnlineShopping.Domain.Catalog.ProductVideo", b =>
+                {
+                    b.HasOne("OnlineShopping.Domain.Catalog.Product", "Product")
+                        .WithMany("Videos")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_product_videos_products_product_id");
+
+                    b.OwnsMany("OnlineShopping.Domain.Catalog.VideoTitleTranslation", "TitleTranslations", b1 =>
+                        {
+                            b1.Property<Guid>("ProductVideoId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("product_video_id");
+
+                            b1.Property<string>("Locale")
+                                .HasMaxLength(8)
+                                .HasColumnType("character varying(8)")
+                                .HasColumnName("locale");
+
+                            b1.Property<string>("Title")
+                                .IsRequired()
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("title");
+
+                            b1.HasKey("ProductVideoId", "Locale")
+                                .HasName("pk_product_video_title_translations");
+
+                            b1.ToTable("product_video_title_translations", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("ProductVideoId")
+                                .HasConstraintName("fk_product_video_title_translations_product_videos_product_vid");
+                        });
+
+                    b.Navigation("Product");
+
+                    b.Navigation("TitleTranslations");
+                });
+
             modelBuilder.Entity("OnlineShopping.Domain.Catalog.SpecOption", b =>
                 {
                     b.HasOne("OnlineShopping.Domain.Catalog.ProductSpec", "Spec")
@@ -2327,6 +2625,58 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasConstraintName("fk_customer_addresses_users_customer_id");
                 });
 
+            modelBuilder.Entity("OnlineShopping.Domain.Inventory.StockLevel", b =>
+                {
+                    b.HasOne("OnlineShopping.Domain.Catalog.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_stock_levels_products_product_id");
+
+                    b.HasOne("OnlineShopping.Domain.Catalog.ProductVariant", null)
+                        .WithMany()
+                        .HasForeignKey("VariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_stock_levels_product_variants_variant_id");
+
+                    b.HasOne("OnlineShopping.Domain.Inventory.Warehouse", null)
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_stock_levels_warehouses_warehouse_id");
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Inventory.StockMovement", b =>
+                {
+                    b.HasOne("OnlineShopping.Domain.Catalog.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_stock_movements_products_product_id");
+
+                    b.HasOne("OnlineShopping.Infrastructure.Identity.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_stock_movements_users_user_id");
+
+                    b.HasOne("OnlineShopping.Domain.Catalog.ProductVariant", null)
+                        .WithMany()
+                        .HasForeignKey("VariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_stock_movements_product_variants_variant_id");
+
+                    b.HasOne("OnlineShopping.Domain.Inventory.Warehouse", null)
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_stock_movements_warehouses_warehouse_id");
+                });
+
             modelBuilder.Entity("OnlineShopping.Domain.Sales.Cart", b =>
                 {
                     b.HasOne("OnlineShopping.Infrastructure.Identity.AppUser", null)
@@ -2409,6 +2759,8 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.Navigation("SpecValues");
 
                     b.Navigation("Variants");
+
+                    b.Navigation("Videos");
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Catalog.ProductGroup", b =>

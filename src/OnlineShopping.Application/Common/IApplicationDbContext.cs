@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using OnlineShopping.Domain.Accounts;
 using OnlineShopping.Domain.Catalog;
 using OnlineShopping.Domain.Customers;
+using OnlineShopping.Domain.Inventory;
 using OnlineShopping.Domain.Pricing;
 using OnlineShopping.Domain.Settings;
 using OnlineShopping.Domain.Sales;
@@ -30,6 +31,7 @@ public interface IApplicationDbContext
     DbSet<ProductVariant> ProductVariants { get; }
     DbSet<SearchSynonym> SearchSynonyms { get; }
     DbSet<Redirect> Redirects { get; }
+    DbSet<ProductVideo> ProductVideos { get; }
     DbSet<Cart> Carts { get; }
     DbSet<CartItem> CartItems { get; }
     DbSet<Order> Orders { get; }
@@ -41,6 +43,9 @@ public interface IApplicationDbContext
     DbSet<Currency> Currencies { get; }
     DbSet<LocaleCurrency> LocaleCurrencies { get; }
     DbSet<StoreBranding> StoreBranding { get; }
+    DbSet<Warehouse> Warehouses { get; }
+    DbSet<StockMovement> StockMovements { get; }
+    DbSet<StockLevel> StockLevels { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OnlineShopping.Application.Common;
+using OnlineShopping.Application.Inventory;
 using OnlineShopping.Domain.Catalog;
 
 namespace OnlineShopping.Application.Catalog.Admin;
@@ -8,9 +9,9 @@ namespace OnlineShopping.Application.Catalog.Admin;
 /// A product's variants (colour, size): the whole set is saved at once. Rules: the product varies by up to three
 /// option specs, each variant has exactly one option of each, no combination appears twice, every SKU is unique among
 /// products and variants, and an "old price" must be above the variant's price. The product's stock becomes the sum
-/// of its variants' stock.
+/// of its variants' stock; every stock change is a line of the <see cref="StockLedger"/>.
 /// </summary>
-public sealed class ProductVariantService(IApplicationDbContext db)
+public sealed class ProductVariantService(IApplicationDbContext db, StockLedger ledger)
 {
     public async Task<Result<ProductVariantsView>> SaveAsync(long number, SaveVariantsRequest request, CancellationToken cancellationToken = default)
     {
@@ -83,9 +84,11 @@ public sealed class ProductVariantService(IApplicationDbContext db)
             .ToList();
 
         // Variants left out are soft-deleted (a later order keeps pointing at them).
-        foreach (var gone in product.Variants.Where(v => !claimed.Contains(v.Id)).ToList())
+        var removed = product.Variants.Where(v => !claimed.Contains(v.Id) && !v.IsDeleted).ToList();
+        foreach (var gone in removed)
             db.ProductVariants.Remove(gone);
 
+        var stocks = new List<(ProductVariant Variant, int Stock)>();
         for (var i = 0; i < resolved.Count; i++)
         {
             var (input, sku, options) = resolved[i];
@@ -100,7 +103,7 @@ public sealed class ProductVariantService(IApplicationDbContext db)
             variant.Gtin = ProductCodes.NormalizeGtin(input.Gtin);
             variant.Price = input.Price;
             variant.CompareAtPrice = input.CompareAtPrice;
-            variant.Stock = input.Stock;
+            stocks.Add((variant, input.Stock));
             variant.SortOrder = i;
             // Owned rows keyed by spec: change them in place rather than replacing them with equal keys.
             foreach (var stale in variant.Options.Where(o => options.All(n => n.SpecId != o.SpecId)).ToList())
@@ -114,10 +117,23 @@ public sealed class ProductVariantService(IApplicationDbContext db)
             }
         }
 
-        if (resolved.Count > 0)
-            product.Stock = resolved.Sum(r => r.Input.Stock);
-        await db.SaveChangesAsync(cancellationToken);
-        return await ViewAsync(db, product.Variants.Where(v => !v.IsDeleted), cancellationToken);
+        return await db.InTransactionAsync<ProductVariantsView>(async () =>
+        {
+            await db.SaveChangesAsync(cancellationToken);
+            // Stock through the ledger: a removed variant's stock is written off, the product's own stock (from before
+            // it had variants) too, and each variant gets its number as an adjustment.
+            (StockItem Item, int Stock)[] own = resolved.Count > 0 ? [(new StockItem(product.Id, null), 0)] : [];
+            var changes = removed.Select(v => (Item: new StockItem(product.Id, v.Id), Stock: 0))
+                .Concat(own)
+                .Concat(stocks.Select(s => (Item: new StockItem(product.Id, s.Variant.Id), s.Stock)));
+            foreach (var (item, stock) in changes)
+            {
+                var set = await ledger.SetTotalAsync(item, stock, StockReferences.Variants, cancellationToken);
+                if (!set.IsSuccess)
+                    return set.Error!;
+            }
+            return await ViewAsync(db, product.Variants.Where(v => !v.IsDeleted), cancellationToken);
+        }, cancellationToken);
     }
 
     /// <summary>The variants as the admin edits them, with spec and option codes.</summary>

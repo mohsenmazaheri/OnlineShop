@@ -162,7 +162,8 @@ public sealed class DataSeederTests : IDisposable
             _database.Clock,
             demoUsers,
             demoCatalog,
-            new CurrencySeeder(db, Options.Create(new StoreOptions { Locales = "fa,en", Currency = "IRR", PublicUrl = "http://localhost:3000" })));
+            new CurrencySeeder(db, Options.Create(new StoreOptions { Locales = "fa,en", Currency = "IRR", PublicUrl = "http://localhost:3000" })),
+            TestLedger.For(db, new StoreOptions { Locales = "fa", PublicUrl = "http://localhost:3000" }));
 
         await seeder.SeedAsync();
     }

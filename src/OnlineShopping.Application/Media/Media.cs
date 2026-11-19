@@ -11,6 +11,8 @@ public static class MediaErrors
     public const string InvalidImage = "media.invalid_image";
     public const string TooManyPixels = "media.too_many_pixels";
     public const string NotFound = "media.not_found";
+    public const string InvalidVideo = "media.invalid_video";
+    public const string VideoTooLarge = "media.video_too_large";
 }
 
 /// <summary>Section <c>Media</c>: upload limits.</summary>
@@ -23,6 +25,9 @@ public sealed class MediaOptions
 
     /// <summary>Largest accepted width × height before decoding, against "decompression bombs" (40 megapixels).</summary>
     public long MaxPixels { get; set; } = 40_000_000;
+
+    /// <summary>Largest accepted video (50 MB by default; the web proxy and nginx accept a little more).</summary>
+    public long MaxVideoBytes { get; set; } = 50 * 1024 * 1024;
 }
 
 /// <summary>Image formats accepted for upload, recognised by their first bytes (never by name or claimed type).</summary>
@@ -63,6 +68,9 @@ public sealed record ProcessedImage(int Width, int Height, IReadOnlyList<ImageVa
 /// <summary>A stored image: its key and the public address of its largest size.</summary>
 public sealed record StoredImage(string Key, string Url, int Width, int Height);
 
+/// <summary>A stored video: its key, public address, size in bytes and duration (when the file states it).</summary>
+public sealed record StoredVideo(string Key, string Url, long SizeBytes, double? DurationSeconds);
+
 /// <summary>Decodes an image and re-encodes it as WebP in each size (stripping metadata); errors carry media.* codes.</summary>
 public interface IImageProcessor
 {
@@ -73,6 +81,9 @@ public interface IImageProcessor
 public interface IFileStorage
 {
     Task SaveAsync(string path, byte[] content, CancellationToken cancellationToken = default);
+
+    /// <summary>Writes a large file (a video) without holding it in memory.</summary>
+    Task SaveAsync(string path, Stream content, CancellationToken cancellationToken = default);
 
     /// <summary>The file, or null when it does not exist.</summary>
     Task<Stream?> OpenReadAsync(string path, CancellationToken cancellationToken = default);
@@ -91,6 +102,14 @@ public static partial class MediaUrls
 
     public static string For(string key, int size) => $"{Prefix}{key}/{size}.webp";
 
+    /// <summary>A product video is stored as it was uploaded (MP4, checked, not re-encoded).</summary>
+    public const string VideoFile = "video.mp4";
+
+    public static string Video(string key) => $"{Prefix}{key}/{VideoFile}";
+
+    /// <summary>The content type a stored file is served with.</summary>
+    public static string ContentTypeOf(string file) => file == VideoFile ? "video/mp4" : "image/webp";
+
     /// <summary>The storage key of a media address, or null for any other address (demo SVGs, external URLs).</summary>
     public static string? KeyOf(string? url)
     {
@@ -100,9 +119,10 @@ public static partial class MediaUrls
 
     /// <summary>A valid request path inside the store: "{guid}/{size}.webp" (nothing else is ever opened).</summary>
     public static bool IsValidFile(string key, string file) =>
-        Guid.TryParseExact(key, "N", out _) && FileName().IsMatch(file) && Sizes.Contains(int.Parse(file[..^5], System.Globalization.CultureInfo.InvariantCulture));
+        Guid.TryParseExact(key, "N", out _)
+        && (file == VideoFile || (FileName().IsMatch(file) && Sizes.Contains(int.Parse(file[..^5], System.Globalization.CultureInfo.InvariantCulture))));
 
-    [GeneratedRegex(@"^/api/v1/media/([0-9a-f]{32})/\d+\.webp$")]
+    [GeneratedRegex(@"^/api/v1/media/([0-9a-f]{32})/(\d+\.webp|video\.mp4)$")]
     private static partial Regex MediaUrl();
 
     [GeneratedRegex(@"^\d{3,4}\.webp$")]

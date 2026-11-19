@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
   // Self-contained server bundle for the Docker image (node server.js).
   output: "standalone",
   poweredByHeader: false,
+  experimental: {
+    // proxy.ts buffers request bodies (default 10 MB) before forwarding them to the API: room for a 50 MB product
+    // video and its multipart envelope (nginx allows the same, see deploy/nginx.conf).
+    proxyClientMaxBodySize: "52mb",
+  },
   turbopack: {
     rules: {
       "*.css": {

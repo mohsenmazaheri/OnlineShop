@@ -132,7 +132,7 @@ public sealed class ProductAdminServiceTests : IDisposable
 
     public void Dispose() => _database.Dispose();
 
-    private ProductAdminService Service(AppDbContext db) => new(db, Options.Create(_store));
+    private ProductAdminService Service(AppDbContext db) => new(db, Options.Create(_store), TestLedger.For(db, _store));
 
     private async Task SeedDemoAsync()
     {

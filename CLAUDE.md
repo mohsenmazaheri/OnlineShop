@@ -217,6 +217,11 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   `/`, `/api`, `/_next`; one hop, no loops; CSV import). `proxy.ts` answers them before the locale redirects from a
   one-minute in-memory table (`createRedirectCache`, `GET /api/v1/redirects`) and counts hits with
   `event.waitUntil(POST /api/v1/redirects/hits)`. Error codes `seo.*` → `admin.seoErrors`. Admin: `/{locale}/admin/seo`.
+- Product videos: `CatalogVideoService` (≤3 per product, poster image, titles per language) on
+  `MediaService.SaveVideoAsync`: streamed to `IFileStorage` as `{key}/video.mp4`, then checked by `Mp4Inspector`
+  (ftyp brand, moov, duration from mvhd) and deleted when refused; never re-encoded. `GET /api/v1/media/{key}/video.mp4`
+  serves it with Range (206). Uploads above 10 MB need `experimental.proxyClientMaxBodySize` (next.config, 52mb)
+  and nginx `client_max_body_size`; endpoints set `RequestSizeLimitAttribute(MediaEndpoints.MaxVideoRequestBytes)`.
 - Bulk transfer (`Application/Catalog/Transfer`): `ITableFile` formats (`CsvTableFile` in Application,
   `XlsxTableFile` in Infrastructure via MiniExcel; `TableFiles.Detect` picks Excel by the ZIP signature).
   `ProductExportService` writes the columns of `ProductColumns` (per-language `name:fa`…, `spec:{code}`); use flat
@@ -232,6 +237,18 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   language to the item's own columns and the others to translations (empty name = not translated). Error codes
   `catalog.*` → `admin.catalogErrors`. Web: `/{locale}/admin/catalog`, `/admin/products`, `/admin/products/new|{n}`
   (`LocalizedFields`, `ProductEditor`); saves call `refreshStorefront(locale, ["catalog"])`.
+- Inventory (`Application/Inventory`, inventory.view / inventory.manage): **never write `Product.Stock` or
+  `ProductVariant.Stock` directly** — they are cached totals. `StockLedger` is the only writer: `PostAsync` adds a
+  `StockMovement` line (immutable) and changes the `StockLevel` (key warehouse + `ItemId` = variant id, else product
+  id; `quantity >= 0`) and both totals with atomic `ExecuteUpdate` ("x = x + n" where the result stays ≥ 0), then
+  syncs tracked copies; `SetTotalAsync` turns "the stock is N" (product editor, variants, import) into adjustment
+  lines (increase → default warehouse; decrease → default first). Run several postings in
+  `db.InTransactionAsync(...)` (joins an open transaction). `OpenUntrackedAsync` (startup, after the demo catalog)
+  writes an opening line for stock without lines; unit tests that seed the demo call it too. One active default
+  `Warehouse` always (`WarehouseService`). Automatic references are `auto:*` (`StockReferences`, web
+  `admin.stockReferences`) — not `inventory.*`, which the error-code test treats as error codes (`admin.inventoryErrors`).
+  The acting user comes from `ICurrentUser` (`HttpCurrentUser` in the API, `NoCurrentUser` elsewhere). Web:
+  `/admin/inventory` (stock + `StockMovementForm`), `/admin/inventory/movements`, `/admin/warehouses`.
 - All `DateTime`s are UTC (`timestamptz`); all `decimal`s are `numeric(18,2)`.
 - User references (`Cart.CustomerId`, `Order.CustomerId`) are FKs to `users` without navigation properties
   (domain stays free of Identity). Orders `Restrict`, carts cascade.
@@ -315,6 +332,9 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   never act on your own account, always keep one active Admin, write a `StaffAuditEntry` for every change. A role
   change keeps the session (claims refresh at the one-minute security-stamp check); suspension renews the stamp
   and locks the account out (`AppUser.SuspendedUtc` + Identity lockout), so every sign-in path is blocked.
+- Admin sections are listed once in `src/lib/admin/sections.ts` (path, label, icon, group, permission): `AdminShell`
+  (side menu from lg, scrolling bar below), the admin start page tiles (`admin.sectionHints`) and the staff-only
+  `AdminMenu` in `SiteHeader` all read it — add a new section there, with its texts in every dictionary.
 - Admin panel (web): pages under `src/app/[locale]/admin/`, framed by `AdminShell`; each page calls
   `requirePermission()` / `requireStaff()` (`src/lib/admin/access.ts`) inside its `<Suspense>`: signed out → sign-in,
   no permission → `notFound()`. `proxy.ts` also sends signed-out visitors of `/{locale}/admin` to sign-in.

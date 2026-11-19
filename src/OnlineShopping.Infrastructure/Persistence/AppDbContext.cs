@@ -9,6 +9,7 @@ using OnlineShopping.Domain.Accounts;
 using OnlineShopping.Domain.Catalog;
 using OnlineShopping.Domain.Common;
 using OnlineShopping.Domain.Customers;
+using OnlineShopping.Domain.Inventory;
 using OnlineShopping.Domain.Pricing;
 using OnlineShopping.Domain.Settings;
 using OnlineShopping.Domain.Sales;
@@ -28,6 +29,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     internal const string NotDeletedFilter = "is_deleted = false";
 
     internal const string OrderStatusCheckConstraintName = "CK_Orders_Status";
+    internal const string StockMovementKindCheckConstraintName = "CK_StockMovements_Kind";
 
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<SubCategory> SubCategories => Set<SubCategory>();
@@ -41,6 +43,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
     public DbSet<SearchSynonym> SearchSynonyms => Set<SearchSynonym>();
     public DbSet<Redirect> Redirects => Set<Redirect>();
+    public DbSet<ProductVideo> ProductVideos => Set<ProductVideo>();
     public DbSet<Cart> Carts => Set<Cart>();
     public DbSet<CartItem> CartItems => Set<CartItem>();
     public DbSet<Order> Orders => Set<Order>();
@@ -52,6 +55,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Currency> Currencies => Set<Currency>();
     public DbSet<LocaleCurrency> LocaleCurrencies => Set<LocaleCurrency>();
     public DbSet<StoreBranding> StoreBranding => Set<StoreBranding>();
+    public DbSet<Warehouse> Warehouses => Set<Warehouse>();
+    public DbSet<StockMovement> StockMovements => Set<StockMovement>();
+    public DbSet<StockLevel> StockLevels => Set<StockLevel>();
 
     /// <summary>ASP.NET Core Data Protection keys, shared by all app instances (cookies, antiforgery tokens).</summary>
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
@@ -75,8 +81,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         ConfigureAddresses(builder);
         ConfigureStaff(builder);
         ConfigureCurrencies(builder);
+        ConfigureInventory(builder);
         ApplySoftDeleteQueryFilters(builder);
     }
+
+    /// <summary>The SQL check that keeps the Kind column in sync with every <see cref="StockMovementKind"/> value.</summary>
+    internal static string BuildStockMovementKindCheckSql() =>
+        $"kind IN ({string.Join(", ", Enum.GetNames<StockMovementKind>().Select(n => $"'{n}'"))})";
 
     /// <summary>The SQL check that keeps the Status column in sync with every <see cref="OrderStatus"/> value.</summary>
     internal static string BuildOrderStatusCheckSql() =>
@@ -260,6 +271,27 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             e.Property(x => x.Gtin).HasMaxLength(14);
             e.HasIndex(x => x.Gtin);
+        });
+
+        b.Entity<ProductVideo>(e =>
+        {
+            e.ToTable("product_videos");
+            e.Property(x => x.Url).HasMaxLength(2048);
+            e.Property(x => x.PosterUrl).HasMaxLength(2048);
+            e.Property(x => x.Title).HasMaxLength(200);
+            e.HasIndex(x => x.ProductId);
+            e.HasOne(v => v.Product)
+                .WithMany(p => p.Videos)
+                .HasForeignKey(v => v.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.OwnsMany(x => x.TitleTranslations, t =>
+            {
+                t.ToTable("product_video_title_translations");
+                t.WithOwner().HasForeignKey("ProductVideoId");
+                t.HasKey("ProductVideoId", nameof(VideoTitleTranslation.Locale));
+                t.Property(x => x.Locale).HasMaxLength(8);
+                t.Property(x => x.Title).HasMaxLength(200);
+            });
         });
 
         b.Entity<SearchSynonym>(e =>
@@ -473,6 +505,49 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.Property(a => a.Details).HasMaxLength(300);
             e.Property(a => a.Action).HasConversion<string>().HasMaxLength(32);
             e.HasIndex(a => a.CreatedUtc);
+        });
+    }
+
+    private static void ConfigureInventory(ModelBuilder b)
+    {
+        b.Entity<Warehouse>(e =>
+        {
+            e.ToTable("warehouses");
+            e.Property(w => w.Code).HasMaxLength(64);
+            e.Property(w => w.Name).HasMaxLength(100);
+            e.Property(w => w.Address).HasMaxLength(300);
+            e.HasIndex(w => w.Code).IsUnique().HasFilter(NotDeletedFilter);
+        });
+
+        b.Entity<StockMovement>(e =>
+        {
+            e.ToTable("stock_movements", tb => tb.HasCheckConstraint(StockMovementKindCheckConstraintName,
+                BuildStockMovementKindCheckSql()));
+            e.Property(m => m.Kind).HasConversion<string>().HasMaxLength(16);
+            e.Property(m => m.Reference).HasMaxLength(100);
+            e.Property(m => m.Note).HasMaxLength(500);
+            e.Property(m => m.UserId).HasMaxLength(450);
+            // The ledger of one item, of one warehouse, and the latest lines overall.
+            e.HasIndex(m => new { m.ItemId, m.CreatedUtc });
+            e.HasIndex(m => new { m.WarehouseId, m.CreatedUtc });
+            e.HasIndex(m => m.CreatedUtc);
+            e.HasIndex(m => m.TransferId);
+            e.HasOne<Warehouse>().WithMany().HasForeignKey(m => m.WarehouseId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<Product>().WithMany().HasForeignKey(m => m.ProductId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<ProductVariant>().WithMany().HasForeignKey(m => m.VariantId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<AppUser>().WithMany().HasForeignKey(m => m.UserId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        b.Entity<StockLevel>(e =>
+        {
+            e.ToTable("stock_levels", tb => tb.HasCheckConstraint("CK_StockLevels_Quantity", "quantity >= 0"));
+            // Keyed by the item (variant id, else product id): a nullable variant column could not be part of a key.
+            e.HasKey(l => new { l.WarehouseId, l.ItemId });
+            e.HasIndex(l => l.ItemId);
+            e.HasIndex(l => l.ProductId);
+            e.HasOne<Warehouse>().WithMany().HasForeignKey(l => l.WarehouseId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<Product>().WithMany().HasForeignKey(l => l.ProductId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<ProductVariant>().WithMany().HasForeignKey(l => l.VariantId).OnDelete(DeleteBehavior.Restrict);
         });
     }
 
