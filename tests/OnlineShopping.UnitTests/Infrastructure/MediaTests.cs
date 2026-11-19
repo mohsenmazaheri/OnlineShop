@@ -129,8 +129,16 @@ public sealed class LocalFileStorageTests : IDisposable
     [Theory]
     [InlineData("../outside.txt")]
     [InlineData("a/../../outside.txt")]
-    [InlineData("C:/Windows/win.ini")]
     public void Never_leaves_the_storage_folder(string path) => Assert.Throws<ArgumentException>(() => _storage.Resolve(path));
+
+    [Fact]
+    public void Refuses_an_absolute_path_on_this_operating_system()
+    {
+        // "C:/…" is only absolute on Windows (on Linux it is a folder named "C:"), so build one for the current OS.
+        var outside = Path.Combine(Path.GetPathRoot(Path.GetTempPath())!, "outside.txt");
+
+        Assert.Throws<ArgumentException>(() => _storage.Resolve(outside));
+    }
 }
 
 public sealed class MediaServiceTests
