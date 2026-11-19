@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OnlineShopping.Application.Accounts;
 using OnlineShopping.Application.Catalog;
+using OnlineShopping.Application.Catalog.Admin;
 using OnlineShopping.Application.Common;
 using OnlineShopping.Application.Customers;
 using OnlineShopping.Application.Notifications;
@@ -28,6 +29,8 @@ public static class DependencyInjection
 
         services.AddScoped<ICategoryQueries, CategoryQueries>();
         services.AddScoped<IProductQueries, ProductQueries>();
+        services.AddScoped<CatalogTreeService>();
+        services.AddScoped<ProductAdminService>();
         services.AddScoped<LoginIdentifierParser>();
         services.AddScoped<AccountService>();
         services.AddScoped<PhoneCodeService>();

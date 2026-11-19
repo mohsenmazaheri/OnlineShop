@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Card } from "@/components/ui/Surface";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
-export type AdminSection = "home" | "staff" | "currencies" | "branding";
+export type AdminSection = "home" | "products" | "catalog" | "staff" | "currencies" | "branding";
 
 type Props = {
   locale: string;
@@ -18,6 +18,8 @@ type Props = {
 export function AdminShell({ locale, texts, current, permissions, children }: Props) {
   const items: { section: AdminSection; href: string; label: string; permission?: string }[] = [
     { section: "home", href: `/${locale}/admin`, label: texts.navHome },
+    { section: "products", href: `/${locale}/admin/products`, label: texts.navProducts, permission: "catalog.manage" },
+    { section: "catalog", href: `/${locale}/admin/catalog`, label: texts.navCatalog, permission: "catalog.manage" },
     { section: "staff", href: `/${locale}/admin/staff`, label: texts.navStaff, permission: "staff.manage" },
     { section: "currencies", href: `/${locale}/admin/currencies`, label: texts.navCurrencies, permission: "settings.manage" },
     { section: "branding", href: `/${locale}/admin/branding`, label: texts.navBranding, permission: "settings.manage" },
