@@ -36,7 +36,7 @@ async function AccountLink({ locale, texts }: Props) {
 
 async function StoreBrand({ locale }: { locale: Locale }) {
   const store = await loadStore();
-  return <Brand locale={locale} name={store.name} />;
+  return <Brand locale={locale} name={store.name} logoUrl={store.branding.logoUrl} />;
 }
 
 async function StoreLanguages({ locale, label }: { locale: Locale; label: string }) {

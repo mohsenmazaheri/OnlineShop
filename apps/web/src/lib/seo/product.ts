@@ -49,7 +49,7 @@ export function productJsonLd(product: ProductDetail, pageUrl: string, currency:
     ...(product.description ? { description: product.description } : {}),
     sku: product.sku,
     url: pageUrl,
-    image: product.images.map((i) => absoluteUrl(siteUrl, i)),
+    image: product.images.map((i) => absoluteUrl(siteUrl, i.url)),
     ...(brand ? { brand: { "@type": "Brand", name: brand } } : {}),
     offers: {
       "@type": "Offer",

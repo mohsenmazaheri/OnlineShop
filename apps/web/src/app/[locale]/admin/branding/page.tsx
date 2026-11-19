@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import { AdminCard, AdminShell } from "@/components/admin/AdminShell";
 import { BrandingForm } from "@/components/admin/BrandingForm";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
+import type { ErrorTexts } from "@/lib/account/problems";
 import { requirePermission } from "@/lib/admin/access";
 import { accountMetadata, routeLocale } from "@/lib/account/page-helpers";
 import { getBrandingAdmin } from "@/lib/account/session";
@@ -23,6 +25,30 @@ async function Branding({ locale, texts }: { locale: Locale; texts: Dictionary["
       <p className="text-sm text-muted">{texts.brandingIntro}</p>
       <AdminCard title={texts.brandingTitle} id="branding-form">
         <BrandingForm locale={locale} texts={texts} branding={branding} />
+      </AdminCard>
+      <AdminCard title={texts.brandingImagesTitle} id="branding-images">
+        <div className="grid gap-6 md:grid-cols-2">
+          <ImageUploadField
+            locale={locale}
+            label={texts.logo}
+            currentUrl={branding.logoUrl}
+            uploadPath="/api/v1/admin/branding/Logo"
+            removePath="/api/v1/admin/branding/Logo"
+            texts={texts}
+            errorTexts={{ ...texts.errors, ...texts.mediaErrors } as ErrorTexts}
+            refresh={["store"]}
+          />
+          <ImageUploadField
+            locale={locale}
+            label={texts.heroImage}
+            currentUrl={branding.heroImageUrl}
+            uploadPath="/api/v1/admin/branding/Hero"
+            removePath="/api/v1/admin/branding/Hero"
+            texts={texts}
+            errorTexts={{ ...texts.errors, ...texts.mediaErrors } as ErrorTexts}
+            refresh={["store"]}
+          />
+        </div>
       </AdminCard>
     </AdminShell>
   );

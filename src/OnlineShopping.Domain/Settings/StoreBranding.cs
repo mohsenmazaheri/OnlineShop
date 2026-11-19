@@ -43,4 +43,10 @@ public sealed class StoreBranding : BaseEntity
     public FontChoice Font { get; set; } = FontChoice.Vazirmatn;
 
     public HomeLayout HomeLayout { get; set; } = HomeLayout.Classic;
+
+    /// <summary>Uploaded logo (a media address); without one the header shows the shop name's first letter.</summary>
+    public string? LogoUrl { get; set; }
+
+    /// <summary>Uploaded image for the home page banner; without one the banner shows a drawn pattern.</summary>
+    public string? HeroImageUrl { get; set; }
 }

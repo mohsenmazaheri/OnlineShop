@@ -44,7 +44,7 @@ const detail: ProductDetail = {
   description: "A bright display.",
   sku: "DEMO-PHN-001",
   stock: 4,
-  images: ["/demo/products/phone-x1.svg"],
+  images: [{ url: "/demo/products/phone-x1.svg", alt: null }],
   category: { name: "Electronics", slug: "electronics" },
   subCategory: { name: "Mobile phones", slug: "mobile-phones" },
   specs: [

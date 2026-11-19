@@ -454,9 +454,18 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Alt")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("alt");
+
                     b.Property<DateTime>("CreatedUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_utc");
+
+                    b.Property<int?>("Height")
+                        .HasColumnType("integer")
+                        .HasColumnName("height");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
@@ -479,6 +488,10 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasMaxLength(2048)
                         .HasColumnType("character varying(2048)")
                         .HasColumnName("url");
+
+                    b.Property<int?>("Width")
+                        .HasColumnType("integer")
+                        .HasColumnName("width");
 
                     b.HasKey("Id")
                         .HasName("pk_product_images");
@@ -1126,6 +1139,11 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasColumnType("character varying(16)")
                         .HasColumnName("font");
 
+                    b.Property<string>("HeroImageUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)")
+                        .HasColumnName("hero_image_url");
+
                     b.Property<string>("HomeLayout")
                         .IsRequired()
                         .HasMaxLength(16)
@@ -1135,6 +1153,11 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
+
+                    b.Property<string>("LogoUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)")
+                        .HasColumnName("logo_url");
 
                     b.Property<DateTime?>("ModifiedUtc")
                         .HasColumnType("timestamp with time zone")
@@ -1600,6 +1623,35 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_product_images_products_product_id");
+
+                    b.OwnsMany("OnlineShopping.Domain.Catalog.ImageAltTranslation", "AltTranslations", b1 =>
+                        {
+                            b1.Property<Guid>("ProductImageId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("product_image_id");
+
+                            b1.Property<string>("Locale")
+                                .HasMaxLength(8)
+                                .HasColumnType("character varying(8)")
+                                .HasColumnName("locale");
+
+                            b1.Property<string>("Alt")
+                                .IsRequired()
+                                .HasMaxLength(300)
+                                .HasColumnType("character varying(300)")
+                                .HasColumnName("alt");
+
+                            b1.HasKey("ProductImageId", "Locale")
+                                .HasName("pk_product_image_alt_translations");
+
+                            b1.ToTable("product_image_alt_translations", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("ProductImageId")
+                                .HasConstraintName("fk_product_image_alt_translations_product_images_product_image");
+                        });
+
+                    b.Navigation("AltTranslations");
 
                     b.Navigation("Product");
                 });

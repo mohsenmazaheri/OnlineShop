@@ -14,7 +14,7 @@ const product: ProductDetail = {
   compareAtPrice: 399,
   stock: 3,
   inStock: true,
-  images: ["/demo/products/phone-x1.svg"],
+  images: [{ url: "/demo/products/phone-x1.svg", alt: null }],
   category: { name: "Electronics", slug: "electronics" },
   subCategory: { name: "Phones", slug: "phones" },
   specs: [

@@ -147,6 +147,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         b.Entity<ProductImage>(e =>
         {
             e.Property(x => x.Url).HasMaxLength(2048);
+            e.Property(x => x.Alt).HasMaxLength(300);
+            e.OwnsMany(x => x.AltTranslations, t =>
+            {
+                t.ToTable("product_image_alt_translations");
+                t.WithOwner().HasForeignKey("ProductImageId");
+                t.HasKey("ProductImageId", nameof(ImageAltTranslation.Locale));
+                t.Property(x => x.Locale).HasMaxLength(8);
+                t.Property(x => x.Alt).HasMaxLength(300);
+            });
             e.HasOne(i => i.Product)
                 .WithMany(p => p.Images)
                 .HasForeignKey(i => i.ProductId)
@@ -267,6 +276,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.Property(x => x.Corners).HasConversion<string>().HasMaxLength(16);
             e.Property(x => x.Font).HasConversion<string>().HasMaxLength(16);
             e.Property(x => x.HomeLayout).HasConversion<string>().HasMaxLength(16);
+            e.Property(x => x.LogoUrl).HasMaxLength(2048);
+            e.Property(x => x.HeroImageUrl).HasMaxLength(2048);
         });
         b.Entity<LocaleCurrency>(e =>
         {

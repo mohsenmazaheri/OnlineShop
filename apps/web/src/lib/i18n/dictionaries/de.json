@@ -438,7 +438,31 @@
       "stock_invalid": "Der Bestand ist ungültig.",
       "group_required": "Wählen Sie eine Produktgruppe.",
       "spec_not_found": "Dieses Merkmal gibt es nicht.",
-      "spec_value_invalid": "Der Wert passt nicht zum Merkmal."
+      "spec_value_invalid": "Der Wert passt nicht zum Merkmal.",
+      "too_many_images": "Ein Produkt kann höchstens 12 Bilder haben.",
+      "images_mismatch": "Die Bilderliste ist veraltet; laden Sie die Seite neu."
+    },
+    "imagesTitle": "Bilder",
+    "imageUpload": "Bilder hinzufügen",
+    "imageUploading": "Wird hochgeladen…",
+    "imageHint": "JPEG, PNG, WebP oder GIF bis 10 MB; gespeichert als WebP in drei Größen.",
+    "imageNone": "Kein Bild",
+    "imageMain": "Hauptbild",
+    "imageAlt": "Alternativtext (für Screenreader und Bildersuche)",
+    "imageMoveUp": "Nach oben",
+    "imageMoveDown": "Nach unten",
+    "imagesSave": "Reihenfolge und Texte speichern",
+    "categoryImage": "Kategoriebild",
+    "brandingImagesTitle": "Logo und Banner",
+    "logo": "Logo",
+    "heroImage": "Bannerbild der Startseite",
+    "mediaErrors": {
+      "empty": "Die Datei ist leer.",
+      "too_large": "Die Datei ist zu groß.",
+      "type_not_allowed": "Nur JPEG-, PNG-, WebP- oder GIF-Bilder werden angenommen.",
+      "invalid_image": "Die Bilddatei ist beschädigt.",
+      "too_many_pixels": "Das Bild hat zu viele Pixel.",
+      "not_found": "Bild nicht gefunden."
     }
   },
   "footer": {
@@ -487,6 +511,7 @@
     "breadcrumb": "Navigationspfad",
     "home": "Start",
     "sku": "Artikelnummer",
-    "approximate": "Ungefährer Preis; Sie bezahlen in {base}."
+    "approximate": "Ungefährer Preis; Sie bezahlen in {base}.",
+    "images": "Produktbilder"
   }
 }

@@ -13,12 +13,13 @@ type Props = {
   texts: Dictionary["footer"];
   /** The current year, formatted by the caller (Persian calendar and digits for fa). */
   year: string;
+  logoUrl?: string | null;
 };
 
 const linkClass = "flex min-h-9 items-center text-inverse-foreground hover:text-white";
 
 /** The dark band at the bottom of every page: about the shop, the main links, languages and the copyright line. */
-export function SiteFooter({ locale, storeName, locales, description, texts, year }: Props) {
+export function SiteFooter({ locale, storeName, locales, description, texts, year, logoUrl }: Props) {
   const shopping = [
     { href: `/${locale}#categories`, label: texts.categories },
     { href: `/${locale}/search`, label: texts.search },
@@ -35,7 +36,7 @@ export function SiteFooter({ locale, storeName, locales, description, texts, yea
       <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 pt-10 pb-6 md:px-6">
         <div className="flex flex-wrap gap-x-8 gap-y-8 md:gap-x-12">
           <div className="flex min-w-64 flex-[2] flex-col gap-3">
-            <Brand locale={locale} name={storeName} inverse />
+            <Brand locale={locale} name={storeName} inverse logoUrl={logoUrl} />
             <p className="max-w-sm">{description}</p>
             <div className="max-w-sm">
               <InstallPrompt texts={texts} />

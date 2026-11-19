@@ -20,6 +20,8 @@ RUN dotnet publish src/OnlineShopping.Api/OnlineShopping.Api.csproj -c Release -
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 COPY --from=build /app .
+# Uploaded images live here (a volume in docker-compose); owned by the app user so it can write.
+RUN mkdir -p /app/App_Data/media && chown -R $APP_UID /app/App_Data
 
 # Runs as the image's built-in non-root user; listens on 8080 inside the container network only.
 USER $APP_UID

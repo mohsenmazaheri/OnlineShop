@@ -21,6 +21,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/media/{key}/{file}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** An uploaded image in one of its sizes (/api/v1/media/{key}/{1200|600|300}.webp). */
+        get: operations["GetMedia"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/store": {
         parameters: {
             query?: never;
@@ -210,6 +227,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/branding/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload the logo (kind Logo) or the home banner image (kind Hero); replaces the previous one. */
+        post: operations["SetBrandingImage"];
+        /** Remove the logo or the home banner image. */
+        delete: operations["RemoveBrandingImage"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/catalog": {
         parameters: {
             query?: never;
@@ -332,6 +367,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/catalog/categories/{id}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload a category's tile image (replaces the previous one). */
+        post: operations["SetCategoryImage"];
+        /** Remove a category's tile image. */
+        delete: operations["RemoveCategoryImage"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/products": {
         parameters: {
             query?: never;
@@ -381,6 +434,41 @@ export interface paths {
         post?: never;
         /** Remove a product from the shop (its number is never reused). */
         delete: operations["DeleteProduct"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{number}/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Reorder a product's images (the first is the main one) and save their alternative texts. */
+        put: operations["SaveProductImages"];
+        /** Upload a product image (JPEG, PNG, WebP or GIF; checked, re-encoded to WebP in three sizes). */
+        post: operations["AddProductImage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{number}/images/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a product image and its stored files. */
+        delete: operations["DeleteProductImage"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1167,11 +1255,15 @@ export interface components {
             sharedKey: string;
             authenticatorUri: string;
         };
+        /** @enum {unknown} */
+        BrandingImage: "Logo" | "Hero";
         BrandingView: {
             primaryColor: string;
             corners: components["schemas"]["CornerStyle"];
             font: components["schemas"]["FontChoice"];
             homeLayout: components["schemas"]["HomeLayout"];
+            logoUrl: null | string;
+            heroImageUrl: null | string;
         };
         CartItemData: {
             productName: string;
@@ -1308,6 +1400,12 @@ export interface components {
                 [key: string]: string[];
             };
         };
+        /** Format: binary */
+        IFormFile: string;
+        ImageAltText: {
+            locale: string;
+            alt: string;
+        };
         InviteStaffRequest: {
             identifier: string;
             roles: string[];
@@ -1421,7 +1519,7 @@ export interface components {
             /** Format: int32 */
             stock: number;
             inStock: boolean;
-            images: string[];
+            images: components["schemas"]["ProductImageInfo"][];
             category: components["schemas"]["CategoryLink"];
             subCategory: components["schemas"]["CategoryLink"];
             specs: components["schemas"]["ProductSpecLine"][];
@@ -1442,7 +1540,26 @@ export interface components {
             productGroupId: string;
             texts: components["schemas"]["LocalizedText"][];
             specs: components["schemas"]["ProductSpecInput"][];
-            images: string[];
+            images: components["schemas"]["ProductImageView"][];
+        };
+        ProductImageInfo: {
+            url: string;
+            alt: null | string;
+        };
+        ProductImageInput: {
+            /** Format: uuid */
+            id: string;
+            alts: components["schemas"]["ImageAltText"][];
+        };
+        ProductImageView: {
+            /** Format: uuid */
+            id: string;
+            url: string;
+            /** Format: int32 */
+            width: null | number;
+            /** Format: int32 */
+            height: null | number;
+            alts: components["schemas"]["ImageAltText"][];
         };
         /** @enum {unknown} */
         ProductList: "Discounted" | "Newest";
@@ -1548,6 +1665,9 @@ export interface components {
             isEnabled: boolean;
             /** Format: int32 */
             sortOrder: number;
+        };
+        SaveProductImagesRequest: {
+            images: components["schemas"]["ProductImageInput"][];
         };
         SaveProductRequest: {
             sku: string;
@@ -1705,6 +1825,34 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["CurrencySettings"];
                 };
+            };
+        };
+    };
+    GetMedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+                file: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -2078,6 +2226,56 @@ export interface operations {
             };
         };
     };
+    SetBrandingImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: components["schemas"]["BrandingImage"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    file: components["schemas"]["IFormFile"];
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandingView"];
+                };
+            };
+        };
+    };
+    RemoveBrandingImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: components["schemas"]["BrandingImage"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrandingView"];
+                };
+            };
+        };
+    };
     GetCatalogTree: {
         parameters: {
             query?: never;
@@ -2366,6 +2564,52 @@ export interface operations {
             };
         };
     };
+    SetCategoryImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    file: components["schemas"]["IFormFile"];
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RemoveCategoryImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     ListAdminProducts: {
         parameters: {
             query?: {
@@ -2509,6 +2753,79 @@ export interface operations {
             header?: never;
             path: {
                 number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SaveProductImages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveProductImagesRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AddProductImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    file: components["schemas"]["IFormFile"];
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductImageView"];
+                };
+            };
+        };
+    };
+    DeleteProductImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+                id: string;
             };
             cookie?: never;
         };

@@ -438,7 +438,31 @@
       "stock_invalid": "المخزون غير صالح.",
       "group_required": "اختر مجموعة منتجات.",
       "spec_not_found": "هذه المواصفة غير موجودة.",
-      "spec_value_invalid": "القيمة لا تناسب نوع المواصفة."
+      "spec_value_invalid": "القيمة لا تناسب نوع المواصفة.",
+      "too_many_images": "يمكن أن يحتوي المنتج على 12 صورة كحد أقصى.",
+      "images_mismatch": "قائمة الصور قديمة؛ أعد تحميل الصفحة."
+    },
+    "imagesTitle": "الصور",
+    "imageUpload": "إضافة صور",
+    "imageUploading": "جارٍ الرفع…",
+    "imageHint": "JPEG أو PNG أو WebP أو GIF حتى 10 ميغابايت؛ تُحفظ بصيغة WebP بثلاثة أحجام.",
+    "imageNone": "لا صورة",
+    "imageMain": "الصورة الرئيسية",
+    "imageAlt": "النص البديل (لقارئات الشاشة والبحث عن الصور)",
+    "imageMoveUp": "أعلى",
+    "imageMoveDown": "أسفل",
+    "imagesSave": "حفظ الترتيب والنصوص",
+    "categoryImage": "صورة الفئة",
+    "brandingImagesTitle": "الشعار واللافتة",
+    "logo": "الشعار",
+    "heroImage": "صورة لافتة الصفحة الرئيسية",
+    "mediaErrors": {
+      "empty": "الملف فارغ.",
+      "too_large": "حجم الملف أكبر من المسموح.",
+      "type_not_allowed": "تُقبل صور JPEG أو PNG أو WebP أو GIF فقط.",
+      "invalid_image": "ملف الصورة تالف.",
+      "too_many_pixels": "أبعاد الصورة كبيرة جدًا.",
+      "not_found": "لم يتم العثور على الصورة."
     }
   },
   "footer": {
@@ -487,6 +511,7 @@
     "breadcrumb": "مسار التنقل",
     "home": "الرئيسية",
     "sku": "رمز المنتج",
-    "approximate": "السعر تقريبي؛ يتم الدفع بـ{base}."
+    "approximate": "السعر تقريبي؛ يتم الدفع بـ{base}.",
+    "images": "صور المنتج"
   }
 }

@@ -1,4 +1,5 @@
 import { isLocale, supportedLocales, type Locale } from "@/lib/i18n/config";
+import { isMediaUrl } from "@/lib/media/image";
 
 /** External sign-in providers this web build has buttons for (slugs from the API). */
 export const externalProviders = ["google", "facebook", "microsoft"] as const;
@@ -28,9 +29,12 @@ export type Branding = {
   corners: "Sharp" | "Soft" | "Round";
   font: "Vazirmatn" | "System";
   homeLayout: "Classic" | "Catalog" | "Showcase";
+  /** Uploaded logo and home banner image (media addresses only), or null. */
+  logoUrl: string | null;
+  heroImageUrl: string | null;
 };
 
-export const defaultBranding: Branding = { primaryColor: "#0f766e", corners: "Soft", font: "Vazirmatn", homeLayout: "Classic" };
+export const defaultBranding: Branding = { primaryColor: "#0f766e", corners: "Soft", font: "Vazirmatn", homeLayout: "Classic", logoUrl: null, heroImageUrl: null };
 
 /** Validates API branding: anything unknown falls back to the default (the colour ends up in CSS, so it must be #rrggbb). */
 export function toBranding(value: Partial<Record<keyof Branding, unknown>> | null | undefined): Branding {
@@ -40,6 +44,9 @@ export function toBranding(value: Partial<Record<keyof Branding, unknown>> | nul
     corners: pick(value?.corners, ["Sharp", "Soft", "Round"] as const, defaultBranding.corners),
     font: pick(value?.font, ["Vazirmatn", "System"] as const, defaultBranding.font),
     homeLayout: pick(value?.homeLayout, ["Classic", "Catalog", "Showcase"] as const, defaultBranding.homeLayout),
+    // Only the API's own media addresses: nothing else is ever put into an <img>.
+    logoUrl: isMediaUrl(value?.logoUrl as string) ? (value!.logoUrl as string) : null,
+    heroImageUrl: isMediaUrl(value?.heroImageUrl as string) ? (value!.heroImageUrl as string) : null,
   };
 }
 

@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import type { ProductDetail } from "@/lib/api/storefront";
@@ -6,6 +5,7 @@ import { formatSpecValue } from "@/lib/catalog/specs";
 import type { DisplayCurrency } from "@/lib/currency/display";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { Price } from "./Price";
+import { ProductGallery } from "./ProductGallery";
 import { SpecTable } from "./SpecTable";
 
 type Props = {
@@ -41,12 +41,7 @@ export function ProductView({ product, locale, money, baseName, texts }: Props) 
       </nav>
 
       <div className="grid gap-6 md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:grid-cols-[minmax(0,5fr)_minmax(0,5fr)_minmax(0,3fr)]">
-        <div className="overflow-hidden rounded-[calc(var(--radius)*1.75)] border border-border bg-surface">
-          {product.images[0] && (
-            // The main image is the page's largest element: loaded first, fixed aspect ratio (no layout shift).
-            <Image src={product.images[0]} alt={product.name} width={600} height={600} unoptimized priority className="aspect-square h-auto w-full object-cover" />
-          )}
-        </div>
+        <ProductGallery images={product.images} name={product.name} label={texts.images} />
 
         <div className="flex flex-col gap-4">
           <h1 className="text-xl leading-snug font-extrabold md:text-2xl">{product.name}</h1>

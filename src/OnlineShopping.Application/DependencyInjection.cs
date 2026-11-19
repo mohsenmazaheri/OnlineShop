@@ -7,6 +7,7 @@ using OnlineShopping.Application.Catalog;
 using OnlineShopping.Application.Catalog.Admin;
 using OnlineShopping.Application.Common;
 using OnlineShopping.Application.Customers;
+using OnlineShopping.Application.Media;
 using OnlineShopping.Application.Notifications;
 using OnlineShopping.Application.Pricing;
 using OnlineShopping.Application.Settings;
@@ -31,6 +32,9 @@ public static class DependencyInjection
         services.AddScoped<IProductQueries, ProductQueries>();
         services.AddScoped<CatalogTreeService>();
         services.AddScoped<ProductAdminService>();
+        services.AddScoped<CatalogImageService>();
+        services.AddScoped<MediaService>();
+        services.AddOptions<MediaOptions>().Bind(configuration.GetSection(MediaOptions.SectionName));
         services.AddScoped<LoginIdentifierParser>();
         services.AddScoped<AccountService>();
         services.AddScoped<PhoneCodeService>();

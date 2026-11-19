@@ -20,7 +20,7 @@ describe("web app manifest", () => {
   });
 
   it("uses the shop's main colour", () => {
-    const branding = { primaryColor: "#1d4ed8", corners: "Soft", font: "Vazirmatn", homeLayout: "Classic" } as const;
+    const branding = { primaryColor: "#1d4ed8", corners: "Soft", font: "Vazirmatn", homeLayout: "Classic", logoUrl: null, heroImageUrl: null } as const;
 
     expect(buildManifest({ name: "S", defaultLocale: "en", branding }).theme_color).toBe("#1d4ed8");
     expect(buildManifest({ name: "S", defaultLocale: "en" }).theme_color).toBe("#0f766e");

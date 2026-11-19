@@ -45,6 +45,9 @@ public sealed record ProductSpecLine(
 /// <summary>The product's slug in one language (only languages it is really translated into, plus the default).</summary>
 public sealed record ProductAlternate(string Locale, string Slug);
 
+/// <summary>A product image with its alternative text in the requested language (null: use the product name).</summary>
+public sealed record ProductImageInfo(string Url, string? Alt);
+
 public sealed record ProductDetail(
     long Number,
     string Name,
@@ -55,7 +58,7 @@ public sealed record ProductDetail(
     decimal? CompareAtPrice,
     int Stock,
     bool InStock,
-    IReadOnlyList<string> Images,
+    IReadOnlyList<ProductImageInfo> Images,
     CategoryLink Category,
     CategoryLink SubCategory,
     IReadOnlyList<ProductSpecLine> Specs,
@@ -143,7 +146,7 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
         var images = await db.ProductImages.AsNoTracking()
             .Where(i => i.ProductId == product.Id)
             .OrderBy(i => i.SortOrder)
-            .Select(i => i.Url)
+            .Select(i => new ProductImageInfo(i.Url, i.AltTranslations.Where(t => t.Locale == locale).Select(t => t.Alt).FirstOrDefault() ?? i.Alt))
             .ToListAsync(cancellationToken);
 
         var specs = await db.ProductSpecValues.AsNoTracking()

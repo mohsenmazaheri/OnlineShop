@@ -26,6 +26,41 @@
         }
       }
     },
+    "/api/v1/media/{key}/{file}": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "An uploaded image in one of its sizes (/api/v1/media/{key}/{1200|600|300}.webp).",
+        "operationId": "GetMedia",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "file",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/v1/store": {
       "get": {
         "tags": [
@@ -528,6 +563,84 @@
         }
       }
     },
+    "/api/v1/admin/branding/{kind}": {
+      "post": {
+        "tags": [
+          "Admin: branding"
+        ],
+        "summary": "Upload the logo (kind Logo) or the home banner image (kind Hero); replaces the previous one.",
+        "operationId": "SetBrandingImage",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/BrandingImage"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandingView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin: branding"
+        ],
+        "summary": "Remove the logo or the home banner image.",
+        "operationId": "RemoveBrandingImage",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/BrandingImage"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandingView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/catalog": {
       "get": {
         "tags": [
@@ -919,6 +1032,72 @@
         }
       }
     },
+    "/api/v1/admin/catalog/categories/{id}/image": {
+      "post": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Upload a category's tile image (replaces the previous one).",
+        "operationId": "SetCategoryImage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Remove a category's tile image.",
+        "operationId": "RemoveCategoryImage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/v1/admin/products": {
       "get": {
         "tags": [
@@ -1139,6 +1318,123 @@
             "schema": {
               "type": "integer",
               "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/products/{number}/images": {
+      "post": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Upload a product image (JPEG, PNG, WebP or GIF; checked, re-encoded to WebP in three sizes).",
+        "operationId": "AddProductImage",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductImageView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Reorder a product's images (the first is the main one) and save their alternative texts.",
+        "operationId": "SaveProductImages",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveProductImagesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/products/{number}/images/{id}": {
+      "delete": {
+        "tags": [
+          "Admin: catalog"
+        ],
+        "summary": "Remove a product image and its stored files.",
+        "operationId": "DeleteProductImage",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
@@ -2814,12 +3110,20 @@
           }
         }
       },
+      "BrandingImage": {
+        "enum": [
+          "Logo",
+          "Hero"
+        ]
+      },
       "BrandingView": {
         "required": [
           "primaryColor",
           "corners",
           "font",
-          "homeLayout"
+          "homeLayout",
+          "logoUrl",
+          "heroImageUrl"
         ],
         "type": "object",
         "properties": {
@@ -2834,6 +3138,18 @@
           },
           "homeLayout": {
             "$ref": "#/components/schemas/HomeLayout"
+          },
+          "logoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "heroImageUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -3383,6 +3699,25 @@
           }
         }
       },
+      "IFormFile": {
+        "type": "string",
+        "format": "binary"
+      },
+      "ImageAltText": {
+        "required": [
+          "locale",
+          "alt"
+        ],
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string"
+          },
+          "alt": {
+            "type": "string"
+          }
+        }
+      },
       "InviteStaffRequest": {
         "required": [
           "identifier",
@@ -3820,7 +4155,7 @@
           "images": {
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/ProductImageInfo"
             }
           },
           "category": {
@@ -3902,7 +4237,83 @@
           "images": {
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/ProductImageView"
+            }
+          }
+        }
+      },
+      "ProductImageInfo": {
+        "required": [
+          "url",
+          "alt"
+        ],
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "alt": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ProductImageInput": {
+        "required": [
+          "id",
+          "alts"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "alts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImageAltText"
+            }
+          }
+        }
+      },
+      "ProductImageView": {
+        "required": [
+          "id",
+          "url",
+          "width",
+          "height",
+          "alts"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "url": {
+            "type": "string"
+          },
+          "width": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "height": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "alts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImageAltText"
             }
           }
         }
@@ -4311,6 +4722,20 @@
           "sortOrder": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "SaveProductImagesRequest": {
+        "required": [
+          "images"
+        ],
+        "type": "object",
+        "properties": {
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductImageInput"
+            }
           }
         }
       },
