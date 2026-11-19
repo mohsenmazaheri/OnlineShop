@@ -186,6 +186,13 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   defaults on a new shop. `ExchangeRateSyncWorker` refreshes `AutoUpdate` rates through `IExchangeRateSource`
   (`CurrencyApiRateSource`, fawazahmed0/exchange-api with fallback URL; `None` in tests).
 - Branding: one `StoreBranding` row (`BrandingService`), returned in `GET /store`; the colour is validated as #rrggbb.
+- Catalog admin (`Application/Catalog/Admin`, permission catalog.manage): `CatalogTreeService` (categories →
+  sub-categories → groups; only empty nodes can be deleted) and `ProductAdminService` (list/search, editor view,
+  create/update/soft delete, spec values checked against the spec kind; a new product gets max(PublicNumber incl.
+  deleted)+1, never reused). Texts travel as `LocalizedText` per shop language; `LocalizedTexts` maps the default
+  language to the item's own columns and the others to translations (empty name = not translated). Error codes
+  `catalog.*` → `admin.catalogErrors`. Web: `/{locale}/admin/catalog`, `/admin/products`, `/admin/products/new|{n}`
+  (`LocalizedFields`, `ProductEditor`); saves call `refreshStorefront(locale, ["catalog"])`.
 - All `DateTime`s are UTC (`timestamptz`); all `decimal`s are `numeric(18,2)`.
 - User references (`Cart.CustomerId`, `Order.CustomerId`) are FKs to `users` without navigation properties
   (domain stays free of Identity). Orders `Restrict`, carts cascade.

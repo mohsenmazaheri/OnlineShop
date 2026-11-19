@@ -210,6 +210,182 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Categories, sub-categories and product groups with their texts in every shop language. */
+        get: operations["GetCatalogTree"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a category. */
+        post: operations["CreateCategory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/categories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Rename a category. */
+        put: operations["UpdateCategory"];
+        post?: never;
+        /** Delete an empty category. */
+        delete: operations["DeleteCategory"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/categories/{id}/subcategories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a sub-category. */
+        post: operations["CreateSubCategory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/subcategories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Rename a sub-category. */
+        put: operations["UpdateSubCategory"];
+        post?: never;
+        /** Delete an empty sub-category. */
+        delete: operations["DeleteSubCategory"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/subcategories/{id}/groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a product group. */
+        post: operations["CreateProductGroup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/groups/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Rename a product group. */
+        put: operations["UpdateProductGroup"];
+        post?: never;
+        /** Delete a product group without products. */
+        delete: operations["DeleteProductGroup"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Products (published or not), newest first, with search by name, SKU or number and a group filter. */
+        get: operations["ListAdminProducts"];
+        put?: never;
+        /** Add a product (it gets the next public number). */
+        post: operations["CreateProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/specs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The specs a product can have, with their options, for the product editor. */
+        get: operations["GetProductSpecChoices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{number}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A product for editing (every language, spec values, images). */
+        get: operations["GetAdminProduct"];
+        /** Change a product. */
+        put: operations["UpdateProduct"];
+        post?: never;
+        /** Remove a product from the shop (its number is never reused). */
+        delete: operations["DeleteProduct"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/account/register": {
         parameters: {
             query?: never;
@@ -1002,9 +1178,26 @@ export interface components {
             /** Format: int32 */
             quantity: number;
         };
+        CatalogNodeView: {
+            /** Format: uuid */
+            id: string;
+            texts: components["schemas"]["LocalizedText"][];
+        };
+        CatalogTree: {
+            defaultLocale: string;
+            locales: string[];
+            categories: components["schemas"]["CategoryNode"][];
+        };
         CategoryLink: {
             name: string;
             slug: string;
+        };
+        CategoryNode: {
+            /** Format: uuid */
+            id: string;
+            imageUrl: null | string;
+            texts: components["schemas"]["LocalizedText"][];
+            subCategories: components["schemas"]["SubCategoryNode"][];
         };
         CategorySummary: {
             /** Format: uuid */
@@ -1095,6 +1288,13 @@ export interface components {
             email: string;
             locale: null | string;
         };
+        GroupNode: {
+            /** Format: uuid */
+            id: string;
+            texts: components["schemas"]["LocalizedText"][];
+            /** Format: int32 */
+            productCount: number;
+        };
         /** @enum {unknown} */
         HomeLayout: "Classic" | "Catalog" | "Showcase";
         HttpValidationProblemDetails: {
@@ -1116,6 +1316,12 @@ export interface components {
         LocaleCurrencyView: {
             locale: string;
             currencyCode: string;
+        };
+        LocalizedText: {
+            locale: string;
+            name: string;
+            slug: null | string;
+            description: null | string;
         };
         LoginRequest: {
             identifier: string;
@@ -1221,11 +1427,59 @@ export interface components {
             specs: components["schemas"]["ProductSpecLine"][];
             alternates: components["schemas"]["ProductAlternate"][];
         };
+        ProductEditView: {
+            /** Format: int64 */
+            number: number;
+            sku: string;
+            /** Format: double */
+            price: number;
+            /** Format: double */
+            compareAtPrice: null | number;
+            /** Format: int32 */
+            stock: number;
+            isPublished: boolean;
+            /** Format: uuid */
+            productGroupId: string;
+            texts: components["schemas"]["LocalizedText"][];
+            specs: components["schemas"]["ProductSpecInput"][];
+            images: string[];
+        };
         /** @enum {unknown} */
         ProductList: "Discounted" | "Newest";
+        ProductListItem: {
+            /** Format: int64 */
+            number: number;
+            name: string;
+            sku: string;
+            /** Format: double */
+            price: number;
+            /** Format: int32 */
+            stock: number;
+            isPublished: boolean;
+            groupPath: string;
+            imageUrl: null | string;
+            missingLocales: string[];
+        };
+        ProductPage: {
+            items: components["schemas"]["ProductListItem"][];
+            /** Format: int32 */
+            total: number;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+        };
         /** @description The product's slug in the requested language (the storefront redirects any other slug to it). */
         ProductSlugResponse: {
             slug: string;
+        };
+        ProductSpecInput: {
+            code: string;
+            /** Format: double */
+            number: null | number;
+            boolean: null | boolean;
+            text: null | string;
+            optionCode: null | string;
         };
         ProductSpecLine: {
             code: string;
@@ -1278,6 +1532,9 @@ export interface components {
             font: components["schemas"]["FontChoice"];
             homeLayout: components["schemas"]["HomeLayout"];
         };
+        SaveCatalogNodeRequest: {
+            texts: components["schemas"]["LocalizedText"][];
+        };
         SaveCurrencyRequest: {
             code: string;
             symbol: null | string;
@@ -1291,6 +1548,20 @@ export interface components {
             isEnabled: boolean;
             /** Format: int32 */
             sortOrder: number;
+        };
+        SaveProductRequest: {
+            sku: string;
+            /** Format: double */
+            price: number;
+            /** Format: double */
+            compareAtPrice: null | number;
+            /** Format: int32 */
+            stock: number;
+            isPublished: boolean;
+            /** Format: uuid */
+            productGroupId: string;
+            texts: components["schemas"]["LocalizedText"][];
+            specs: components["schemas"]["ProductSpecInput"][];
         };
         SendPhoneCodeRequest: {
             phone: string;
@@ -1310,8 +1581,20 @@ export interface components {
             email: boolean;
             phone: boolean;
         };
+        SpecChoice: {
+            code: string;
+            name: string;
+            groupName: null | string;
+            kind: string;
+            unit: null | string;
+            options: components["schemas"]["SpecOptionChoice"][];
+        };
         /** @enum {unknown} */
         SpecKind: "Text" | "Number" | "Boolean" | "Option";
+        SpecOptionChoice: {
+            code: string;
+            value: string;
+        };
         /** @enum {unknown} */
         StaffAuditAction: "Invited" | "InvitationRevoked" | "InvitationAccepted" | "RolesChanged" | "Suspended" | "Reactivated" | "RemovedFromStaff";
         StaffAuditView: {
@@ -1364,6 +1647,12 @@ export interface components {
             signIn: components["schemas"]["SignInMethods"];
             checkout: components["schemas"]["CheckoutSettings"];
             branding: components["schemas"]["BrandingView"];
+        };
+        SubCategoryNode: {
+            /** Format: uuid */
+            id: string;
+            texts: components["schemas"]["LocalizedText"][];
+            groups: components["schemas"]["GroupNode"][];
         };
         SubCategorySummary: {
             /** Format: uuid */
@@ -1786,6 +2075,451 @@ export interface operations {
                 content: {
                     "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
                 };
+            };
+        };
+    };
+    GetCatalogTree: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogTree"];
+                };
+            };
+        };
+    };
+    CreateCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCatalogNodeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogNodeView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    UpdateCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCatalogNodeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogNodeView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    DeleteCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CreateSubCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCatalogNodeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogNodeView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    UpdateSubCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCatalogNodeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogNodeView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    DeleteSubCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CreateProductGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCatalogNodeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogNodeView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    UpdateProductGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCatalogNodeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogNodeView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    DeleteProductGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ListAdminProducts: {
+        parameters: {
+            query?: {
+                search?: string;
+                groupId?: string;
+                page?: number;
+                locale?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductPage"];
+                };
+            };
+        };
+    };
+    CreateProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveProductRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductEditView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    GetProductSpecChoices: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpecChoice"][];
+                };
+            };
+        };
+    };
+    GetAdminProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductEditView"];
+                };
+            };
+        };
+    };
+    UpdateProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveProductRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductEditView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    DeleteProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

@@ -80,3 +80,31 @@ export type BrandingAdmin = components["schemas"]["BrandingView"];
 export function getBrandingAdmin(fetchImpl: typeof fetch = fetch): Promise<BrandingAdmin | null> {
   return getForUser<BrandingAdmin>("/api/v1/admin/branding", fetchImpl);
 }
+
+export type CatalogTree = components["schemas"]["CatalogTree"];
+export type ProductPage = components["schemas"]["ProductPage"];
+export type ProductEditView = components["schemas"]["ProductEditView"];
+export type SpecChoice = components["schemas"]["SpecChoice"];
+
+/** The category tree with texts in every shop language (needs catalog.manage; null otherwise). */
+export function getCatalogTree(fetchImpl: typeof fetch = fetch): Promise<CatalogTree | null> {
+  return getForUser<CatalogTree>("/api/v1/admin/catalog", fetchImpl);
+}
+
+/** One page of the admin product list. */
+export function getAdminProducts(query: { search?: string; groupId?: string; page?: number; locale: string }, fetchImpl: typeof fetch = fetch): Promise<ProductPage | null> {
+  const params = new URLSearchParams({ locale: query.locale, page: String(query.page ?? 1) });
+  if (query.search) params.set("search", query.search);
+  if (query.groupId) params.set("groupId", query.groupId);
+  return getForUser<ProductPage>(`/api/v1/admin/products?${params.toString()}`, fetchImpl);
+}
+
+/** A product for the editor, or null (unknown number or no permission). */
+export function getAdminProduct(number: number, fetchImpl: typeof fetch = fetch): Promise<ProductEditView | null> {
+  return getForUser<ProductEditView>(`/api/v1/admin/products/${number}`, fetchImpl);
+}
+
+/** The specs the product editor offers, named in the admin's language. */
+export function getSpecChoices(locale: string, fetchImpl: typeof fetch = fetch): Promise<SpecChoice[] | null> {
+  return getForUser<SpecChoice[]>(`/api/v1/admin/products/specs?locale=${encodeURIComponent(locale)}`, fetchImpl);
+}
