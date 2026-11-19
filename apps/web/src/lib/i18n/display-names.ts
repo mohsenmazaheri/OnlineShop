@@ -13,10 +13,15 @@ export function regionName(countryCode: string, inLocale: string): string {
   return displayName(inLocale, "region", countryCode);
 }
 
-function displayName(inLocale: string, type: "language" | "region", code: string): string {
+function displayName(inLocale: string, type: "language" | "region" | "currency", code: string): string {
   try {
     return new Intl.DisplayNames([inLocale], { type, fallback: "code" }).of(code) ?? code;
   } catch {
     return code;
   }
+}
+
+/** A currency's name in the reader's language: currencyName("IRR", "fa") → "ریال ایران". Unknown codes stay codes. */
+export function currencyName(code: string, inLocale: string): string {
+  return displayName(inLocale, "currency", code);
 }

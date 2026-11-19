@@ -3,6 +3,7 @@ import type { Locale } from "@/lib/i18n/config";
 import { nativeLanguageName } from "@/lib/i18n/display-names";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { Brand } from "./Brand";
+import { InstallPrompt } from "./InstallPrompt";
 
 type Props = {
   locale: Locale;
@@ -36,6 +37,9 @@ export function SiteFooter({ locale, storeName, locales, description, texts, yea
           <div className="flex min-w-64 flex-[2] flex-col gap-3">
             <Brand locale={locale} name={storeName} inverse />
             <p className="max-w-sm">{description}</p>
+            <div className="max-w-sm">
+              <InstallPrompt texts={texts} />
+            </div>
           </div>
           <FooterLinks title={texts.shopping} links={shopping} />
           <FooterLinks title={texts.account} links={account} />

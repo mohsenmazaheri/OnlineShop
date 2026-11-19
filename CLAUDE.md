@@ -29,7 +29,8 @@ Recorded decisions (details in the roadmap):
 - **Iran deployment:** hosted in Iran, SMS OTP + email login, external logins off. **No runtime dependency on external
   services in any deployment** — self-host fonts, icons, scripts and images (no CDNs, no Google Fonts, no
   `next/font/google`). The only exception: marketing tags (GTM/GA4, Meta Pixel, Matomo) that the admin opts into,
-  loaded only after cookie consent; the site must work fully without them.
+  loaded only after cookie consent; the site must work fully without them. Second exception: the optional background
+  update of display exchange rates (`ExchangeRates:Provider`), never called while rendering; last rates are kept.
 - **SEO & marketing design: [docs/SEO-MARKETING.md](docs/SEO-MARKETING.md).** URLs `/{locale}/p/{number}/{slug}`
   (every locale prefixed, stable numeric product number, slug mismatch → 301), hreflang only for translated locales,
   JSON-LD, sitemaps, redirects, blog, product feeds (Google, Meta, Torob, Emalls), UTM attribution on orders.
@@ -179,7 +180,12 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   with one typed column per kind. Text values read the same in every language (brand, "A5"); translatable words are
   options. Products have a stable `PublicNumber` (unique, never reused) and a `Slug` per language for
   `/{locale}/p/{number}/{slug}`. `Slugs.From()` builds slugs in any script.
-- `Store:Currency` (ISO 4217, default IRR) is the base currency prices are stored in.
+- `Store:Currency` (ISO 4217, default IRR) is the base currency prices are stored in. Display currencies (`Currency`,
+  `LocaleCurrency`; `CurrencyService`): rate = units per 1 base unit (numeric(28,12)), rounding step, decimals,
+  optional symbol (IRT = toman); the base is fixed at rate 1. `CurrencySeeder` adds IRR/USD/EUR/AMD/AED and the language
+  defaults on a new shop. `ExchangeRateSyncWorker` refreshes `AutoUpdate` rates through `IExchangeRateSource`
+  (`CurrencyApiRateSource`, fawazahmed0/exchange-api with fallback URL; `None` in tests).
+- Branding: one `StoreBranding` row (`BrandingService`), returned in `GET /store`; the colour is validated as #rrggbb.
 - All `DateTime`s are UTC (`timestamptz`); all `decimal`s are `numeric(18,2)`.
 - User references (`Cart.CustomerId`, `Order.CustomerId`) are FKs to `users` without navigation properties
   (domain stays free of Identity). Orders `Restrict`, carts cascade.
@@ -300,6 +306,12 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   longer change its status. The page writes canonical + hreflang only for translated languages (`productAlternates`;
   untranslated → noindex, canonical on the default language) and Product JSON-LD from the same response as the
   visible price (`productJsonLd`). Money: `formatMoney` (Intl; amount first in fa/ar; currency from `Store:Currency`).
+- Display currency: `loadDisplayCurrency(locale)` (cookie `os_currency` = "{locale}:{CODE}", else the language's
+  default, else the base) inside Suspense; components take a `DisplayCurrency` and convert with `convertAmount` /
+  `displayMoney` — never store or send converted prices. The choice is set by `GET /{locale}/currency?code=&returnTo=`
+  (a plain link, `safeReturnPath`). Branding: `brandingCss()` → a hoisted `<style>` in the layout; home sections follow
+  `homeLayouts[branding.homeLayout]`. Admin saves call `refreshStorefront(locale, tags)` →
+  `POST /{locale}/admin/refresh` (Origin + permission checked) to expire the `store`/`currencies` caches at once.
 - A page with no per-request content of its own renders `<Suspense><RequestTimeMarker /></Suspense>`: the layout's
   metadata reads the store per request, and without a marker Next.js reports "uncached data in generateMetadata()".
   Every API read must come after `await connection()` (or `loadStore()`), or `npm run build` fails without an API.

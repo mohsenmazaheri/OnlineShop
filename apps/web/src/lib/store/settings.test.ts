@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fallbackStore, toStoreSettings } from "./settings";
+import { defaultBranding, fallbackStore, toStoreSettings } from "./settings";
 
 describe("store settings from the API", () => {
   it("keeps valid API settings", () => {
@@ -21,6 +21,7 @@ describe("store settings from the API", () => {
       signUp: { email: true, phone: true },
       signIn: { password: true, phoneCode: true, external: ["google"] },
       checkout: { guest: true, shippingCountries: ["IR"] },
+      branding: defaultBranding,
     });
   });
 

@@ -14,8 +14,15 @@ describe("formatMoney", () => {
     expect(formatMoney(150_100, "AMD", "hy")).toMatch(/^150\s100\s֏$/);
   });
 
-  it("never throws on an invalid currency or locale", () => {
-    expect(formatMoney(5, "not money", "en")).toBe("5 not money");
+  it("shows a shop-defined symbol after the amount, in any language", () => {
+    expect(formatMoney(34_900_000, "IRT", "fa", { symbol: "تومان" })).toBe("۳۴٬۹۰۰٬۰۰۰ تومان");
+    expect(formatMoney(12.5, "IRT", "en", { symbol: "Toman", decimals: 1 })).toBe("12.5 Toman");
+  });
+
+  it("writes an unknown code like a symbol and never throws", () => {
+    expect(formatMoney(5, "IRT", "en")).toBe("IRT 5");
+    expect(formatMoney(5, "IRT", "fa")).toBe("۵ IRT");
+    expect(formatMoney(5, "not money", "en")).toBe("not money 5");
   });
 });
 

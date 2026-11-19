@@ -4,6 +4,7 @@ using OnlineShopping.Application.Accounts;
 using OnlineShopping.Application.Catalog;
 using OnlineShopping.Application.Common;
 using OnlineShopping.Application.Notifications;
+using OnlineShopping.Application.Settings;
 
 namespace OnlineShopping.Api.Endpoints;
 
@@ -18,7 +19,7 @@ public sealed record CheckoutSettings(bool Guest, IReadOnlyList<string> Shipping
 
 /// <summary>Store settings the storefront needs; <c>Currency</c> is the base currency of all prices (ISO 4217).</summary>
 public sealed record StoreInfoResponse(string Name, string DefaultLocale, IReadOnlyList<string> Locales, string Currency, SignUpMethods SignUp, SignInMethods SignIn,
-    CheckoutSettings Checkout);
+    CheckoutSettings Checkout, BrandingView Branding);
 
 /// <summary>Public, read-only storefront endpoints (no authentication).</summary>
 public static class StoreEndpoints
@@ -27,13 +28,13 @@ public static class StoreEndpoints
     {
         var group = app.MapGroup("/api/v1").WithTags("Storefront");
 
-        group.MapGet("/store", (IOptions<StoreOptions> options, IOptions<AuthOptions> auth, ISmsCapability sms, IExternalLoginProviders external) =>
+        group.MapGet("/store", async (IOptions<StoreOptions> options, IOptions<AuthOptions> auth, ISmsCapability sms, IExternalLoginProviders external, BrandingService branding, CancellationToken ct) =>
             {
                 var store = options.Value;
                 var signUp = new SignUpMethods(auth.Value.EmailSignUp, auth.Value.PhoneSignUp && sms.IsEnabled);
                 var signIn = new SignInMethods(Password: true, PhoneCode: sms.IsEnabled, External: external.Enabled);
                 var checkout = new CheckoutSettings(store.GuestCheckout, store.ShippingCountryList);
-                return TypedResults.Ok(new StoreInfoResponse(store.Name, store.DefaultLocale, store.LocaleList, store.Currency, signUp, signIn, checkout));
+                return TypedResults.Ok(new StoreInfoResponse(store.Name, store.DefaultLocale, store.LocaleList, store.Currency, signUp, signIn, checkout, await branding.GetAsync(ct)));
             })
             .WithName("GetStoreInfo")
             .WithSummary("Store name, the locales it offers, the available sign-up/sign-in methods and checkout settings.");

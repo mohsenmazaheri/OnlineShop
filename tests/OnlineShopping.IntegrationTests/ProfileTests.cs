@@ -12,7 +12,7 @@ namespace OnlineShopping.IntegrationTests;
 public sealed class ProfileTests(ApiFactory factory) : IClassFixture<ApiFactory>
 {
     private const string Password = "correct horse 42";
-    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() } };
 
     private static AddressInput Address(string city = "Tehran", bool isDefault = false) =>
         new("Home", "Ali Rezaei", "09121234567", "IR", "Tehran", city, "Valiasr St, No. 10", null, "1234567890", isDefault);

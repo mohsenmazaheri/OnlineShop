@@ -18,4 +18,11 @@ describe("web app manifest", () => {
   it("keeps the short name short", () => {
     expect(buildManifest({ name: "A Very Long Store Name", defaultLocale: "en" }).short_name).toHaveLength(12);
   });
+
+  it("uses the shop's main colour", () => {
+    const branding = { primaryColor: "#1d4ed8", corners: "Soft", font: "Vazirmatn", homeLayout: "Classic" } as const;
+
+    expect(buildManifest({ name: "S", defaultLocale: "en", branding }).theme_color).toBe("#1d4ed8");
+    expect(buildManifest({ name: "S", defaultLocale: "en" }).theme_color).toBe("#0f766e");
+  });
 });

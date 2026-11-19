@@ -59,7 +59,7 @@ public sealed class PhoneAccountTests(PhoneAccountTests.SmsFactory factory) : IC
         }
     }
 
-    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() } };
 
     /// <summary>A random valid Iranian mobile number: (local form, E.164).</summary>
     private static (string Local, string E164) NewPhone()

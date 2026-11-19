@@ -19,13 +19,36 @@ export type StoreSettings = {
   signIn: { password: boolean; phoneCode: boolean; external: string[] };
   /** Guest checkout, and the countries addresses may be in (ISO codes, upper case). */
   checkout: { guest: boolean; shippingCountries: string[] };
+  /** The shop's look, applied at runtime (see lib/branding/style.ts). */
+  branding: Branding;
 };
+
+export type Branding = {
+  primaryColor: string;
+  corners: "Sharp" | "Soft" | "Round";
+  font: "Vazirmatn" | "System";
+  homeLayout: "Classic" | "Catalog" | "Showcase";
+};
+
+export const defaultBranding: Branding = { primaryColor: "#0f766e", corners: "Soft", font: "Vazirmatn", homeLayout: "Classic" };
+
+/** Validates API branding: anything unknown falls back to the default (the colour ends up in CSS, so it must be #rrggbb). */
+export function toBranding(value: Partial<Record<keyof Branding, unknown>> | null | undefined): Branding {
+  const pick = <T extends string>(v: unknown, allowed: readonly T[], fallback: T): T => (allowed.includes(v as T) ? (v as T) : fallback);
+  return {
+    primaryColor: typeof value?.primaryColor === "string" && /^#[0-9a-f]{6}$/i.test(value.primaryColor) ? value.primaryColor.toLowerCase() : defaultBranding.primaryColor,
+    corners: pick(value?.corners, ["Sharp", "Soft", "Round"] as const, defaultBranding.corners),
+    font: pick(value?.font, ["Vazirmatn", "System"] as const, defaultBranding.font),
+    homeLayout: pick(value?.homeLayout, ["Classic", "Catalog", "Showcase"] as const, defaultBranding.homeLayout),
+  };
+}
 
 export type StoreInfoLike = {
   name?: string | null;
   defaultLocale?: string | null;
   locales?: readonly string[] | null;
   currency?: string | null;
+  branding?: Partial<Record<keyof Branding, unknown>> | null;
   signUp?: { email?: boolean | null; phone?: boolean | null } | null;
   signIn?: { password?: boolean | null; phoneCode?: boolean | null; external?: readonly string[] | null } | null;
   checkout?: { guest?: boolean | null; shippingCountries?: readonly string[] | null } | null;
@@ -40,6 +63,7 @@ export const fallbackStore: StoreSettings = {
   signUp: { email: true, phone: false },
   signIn: { password: true, phoneCode: false, external: [] },
   checkout: { guest: true, shippingCountries: [] },
+  branding: defaultBranding,
 };
 
 /** Validates API data: drops locales this web build cannot render and keeps the default among the locales. */
@@ -61,8 +85,8 @@ export function toStoreSettings(info: StoreInfoLike | null | undefined): StoreSe
   };
 
   const locales = [...new Set((info.locales ?? []).filter(isLocale))];
-  if (locales.length === 0) return { ...fallbackStore, name, currency, signUp, signIn, checkout };
+  if (locales.length === 0) return { ...fallbackStore, name, currency, signUp, signIn, checkout, branding: toBranding(info.branding) };
 
   const defaultLocale = isLocale(info.defaultLocale) && locales.includes(info.defaultLocale) ? info.defaultLocale : locales[0];
-  return { name, defaultLocale, locales, currency, signUp, signIn, checkout };
+  return { name, defaultLocale, locales, currency, signUp, signIn, checkout, branding: toBranding(info.branding) };
 }

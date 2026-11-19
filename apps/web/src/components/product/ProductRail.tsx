@@ -1,5 +1,6 @@
 import type { ProductCard as ProductCardData } from "@/lib/api/storefront";
 import { Icon } from "@/components/ui/Icon";
+import type { DisplayCurrency } from "@/lib/currency/display";
 import { ProductCard, type ProductCardTexts } from "./ProductCard";
 
 type Props = {
@@ -7,14 +8,14 @@ type Props = {
   heading: string;
   products: ProductCardData[];
   locale: string;
-  currency: string;
+  money: DisplayCurrency;
   texts: ProductCardTexts;
   /** "deals": a coloured band with a sideways-scrolling row; "grid": cards in a grid. */
   variant?: "deals" | "grid";
 };
 
 /** A titled row of product cards for the home page. Renders nothing for an empty list. */
-export function ProductRail({ id, heading, products, locale, currency, texts, variant = "grid" }: Props) {
+export function ProductRail({ id, heading, products, locale, money, texts, variant = "grid" }: Props) {
   if (products.length === 0) return null;
   const headingId = `${id}-heading`;
 
@@ -35,7 +36,7 @@ export function ProductRail({ id, heading, products, locale, currency, texts, va
         <ul className="flex snap-x gap-2 overflow-x-auto pb-1 md:gap-3">
           {products.map((product, i) => (
             <li key={product.number} className="w-40 shrink-0 snap-start md:w-48">
-              <ProductCard product={product} locale={locale} currency={currency} texts={texts} priority={i < 2} />
+              <ProductCard product={product} locale={locale} money={money} texts={texts} priority={i < 2} />
             </li>
           ))}
         </ul>
@@ -51,7 +52,7 @@ export function ProductRail({ id, heading, products, locale, currency, texts, va
       <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:gap-3 lg:grid-cols-4 xl:grid-cols-6">
         {products.map((product) => (
           <li key={product.number}>
-            <ProductCard product={product} locale={locale} currency={currency} texts={texts} />
+            <ProductCard product={product} locale={locale} money={money} texts={texts} />
           </li>
         ))}
       </ul>

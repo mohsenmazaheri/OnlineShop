@@ -50,7 +50,8 @@
     "mainMenu": "منوی اصلی",
     "bottomMenu": "منوی پایین",
     "home": "خانه",
-    "categoriesShort": "دسته‌بندی"
+    "categoriesShort": "دسته‌بندی",
+    "currency": "واحد پول"
   },
   "account": {
     "loginTitle": "ورود به حساب",
@@ -319,6 +320,63 @@
       "last_admin": "فروشگاه باید حداقل یک مدیر کل فعال داشته باشد.",
       "already_suspended": "این حساب از قبل معلق است.",
       "not_suspended": "این حساب معلق نیست."
+    },
+    "navCurrencies": "واحدهای پول",
+    "currenciesTitle": "واحدهای پول",
+    "currenciesIntro": "قیمت کالاها به {base} ذخیره می‌شود؛ واحدهای دیگر فقط برای نمایش، با نرخ زیر تبدیل می‌شوند.",
+    "currencyCode": "کد",
+    "currencySymbol": "نماد دلخواه",
+    "currencySymbolHint": "خالی: نماد استاندارد. برای تومان مثلاً «تومان».",
+    "currencyDecimals": "رقم اعشار",
+    "currencyStep": "گرد کردن به",
+    "currencyRate": "نرخ برای ۱ {base}",
+    "currencyAuto": "به‌روزرسانی خودکار نرخ",
+    "currencyEnabled": "قابل انتخاب برای مشتری",
+    "currencyOrder": "ترتیب",
+    "currencyBase": "ارز پایه",
+    "currencyUpdated": "آخرین نرخ: {date}",
+    "currencyNoRate": "هنوز نرخی ندارد و نمایش داده نمی‌شود",
+    "addCurrencyTitle": "افزودن واحد پول",
+    "addCurrency": "افزودن",
+    "localeDefaultsTitle": "واحد پول پیش‌فرض هر زبان",
+    "localeDefaultsHint": "مشتری با تغییر زبان ابتدا این واحد را می‌بیند و می‌تواند آن را عوض کند.",
+    "syncTitle": "نرخ‌های خودکار",
+    "syncSource": "منبع: {source}",
+    "syncNow": "به‌روزرسانی نرخ‌ها",
+    "synced": "نرخ {count} واحد پول به‌روز شد.",
+    "syncOff": "به‌روزرسانی خودکار خاموش است؛ نرخ‌ها را دستی وارد کنید.",
+    "currencyErrors": {
+      "not_found": "این واحد پول پیدا نشد.",
+      "code_invalid": "کد باید سه حرف لاتین باشد (مثل USD).",
+      "exists": "این واحد پول قبلاً اضافه شده است.",
+      "base_locked": "ارز پایه همیشه فعال است و نرخ آن ۱ است.",
+      "rate_invalid": "نرخ نامعتبر است.",
+      "decimals_invalid": "رقم اعشار باید بین ۰ و ۴ باشد.",
+      "step_invalid": "گام گرد کردن باید بزرگ‌تر از صفر باشد.",
+      "symbol_too_long": "نماد حداکثر ۱۲ نویسه است.",
+      "locale_invalid": "این فروشگاه این زبان را ندارد.",
+      "default_disabled": "واحد پیش‌فرض یک زبان را نمی‌توان غیرفعال کرد؛ ابتدا پیش‌فرض آن زبان را عوض کنید.",
+      "sync_unavailable": "منبع نرخ در دسترس نیست یا خاموش است. نرخ‌های فعلی حفظ شدند."
+    },
+    "save": "ذخیره",
+    "saved": "ذخیره شد.",
+    "navBranding": "ظاهر فروشگاه",
+    "brandingTitle": "ظاهر فروشگاه",
+    "brandingIntro": "تغییرات بلافاصله در فروشگاه اعمال می‌شود؛ نیازی به ساخت دوباره نیست.",
+    "brandColor": "رنگ اصلی",
+    "corners": "گوشه‌ها",
+    "cornersSharp": "تیز",
+    "cornersSoft": "نرم",
+    "cornersRound": "گرد",
+    "font": "فونت",
+    "fontVazirmatn": "وزیرمتن (همراه فروشگاه)",
+    "fontSystem": "فونت دستگاه کاربر",
+    "homeLayout": "چیدمان صفحهٔ اول",
+    "layoutClassic": "کلاسیک: بنر، دسترسی سریع، پیشنهادها، دسته‌بندی‌ها، جدیدترین‌ها",
+    "layoutCatalog": "کاتالوگ: اول دسته‌بندی‌ها، بدون بنر",
+    "layoutShowcase": "ویترین: بنر و بعد جدیدترین کالاها",
+    "brandingErrors": {
+      "color_invalid": "رنگ باید به شکل ‎#rrggbb باشد."
     }
   },
   "footer": {
@@ -332,7 +390,12 @@
     "addresses": "آدرس‌ها",
     "privacy": "حریم خصوصی و اطلاعات من",
     "signIn": "ورود یا ثبت‌نام",
-    "rights": "همهٔ حقوق محفوظ است."
+    "rights": "همهٔ حقوق محفوظ است.",
+    "installTitle": "نصب وب‌اپ فروشگاه",
+    "installText": "دسترسی سریع از صفحهٔ اصلی گوشی، بدون فروشگاه برنامه.",
+    "installButton": "نصب",
+    "installIos": "در Safari دکمهٔ «اشتراک‌گذاری» و سپس «افزودن به صفحهٔ اصلی» را بزنید.",
+    "installDismiss": "بستن"
   },
   "search": {
     "title": "جستجو",
@@ -361,6 +424,7 @@
     "no": "ندارد",
     "breadcrumb": "مسیر صفحه",
     "home": "خانه",
-    "sku": "کد کالا"
+    "sku": "کد کالا",
+    "approximate": "قیمت تقریبی است؛ پرداخت به {base} انجام می‌شود."
   }
 }

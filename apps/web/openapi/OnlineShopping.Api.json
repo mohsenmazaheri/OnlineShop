@@ -5,6 +5,27 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/v1/currencies": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "The base currency, the currencies a visitor may show prices in (with rates) and each language's starting currency.",
+        "operationId": "GetCurrencies",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrencySettings"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/store": {
       "get": {
         "tags": [
@@ -247,6 +268,259 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/currencies": {
+      "get": {
+        "tags": [
+          "Admin: currencies"
+        ],
+        "summary": "All currencies with rates and settings, the language defaults and the automatic rate source.",
+        "operationId": "GetCurrencyAdmin",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrencyAdminOverview"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin: currencies"
+        ],
+        "summary": "Add a display currency (ISO code or a shop-defined one such as IRT for toman).",
+        "operationId": "CreateCurrency",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveCurrencyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrencyView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/currencies/{code}": {
+      "put": {
+        "tags": [
+          "Admin: currencies"
+        ],
+        "summary": "Change a currency's symbol, decimals, rounding, rate, automatic updates or availability.",
+        "operationId": "UpdateCurrency",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveCurrencyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrencyView"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/currencies/locales/{locale}": {
+      "put": {
+        "tags": [
+          "Admin: currencies"
+        ],
+        "summary": "Choose the currency a language starts with.",
+        "operationId": "SetLocaleCurrency",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetLocaleCurrencyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocaleCurrencyView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/currencies/sync": {
+      "post": {
+        "tags": [
+          "Admin: currencies"
+        ],
+        "summary": "Fetch the automatic rates now (also done in the background every few hours).",
+        "operationId": "SyncCurrencyRates",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateSyncResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/branding": {
+      "get": {
+        "tags": [
+          "Admin: branding"
+        ],
+        "summary": "The shop's main colour, corner style, font and home page layout.",
+        "operationId": "GetBranding",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandingView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin: branding"
+        ],
+        "summary": "Change the shop's look; applied by the storefront at runtime, no rebuild.",
+        "operationId": "SaveBranding",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveBrandingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandingView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -1919,6 +2193,29 @@
           }
         }
       },
+      "BrandingView": {
+        "required": [
+          "primaryColor",
+          "corners",
+          "font",
+          "homeLayout"
+        ],
+        "type": "object",
+        "properties": {
+          "primaryColor": {
+            "type": "string"
+          },
+          "corners": {
+            "$ref": "#/components/schemas/CornerStyle"
+          },
+          "font": {
+            "$ref": "#/components/schemas/FontChoice"
+          },
+          "homeLayout": {
+            "$ref": "#/components/schemas/HomeLayout"
+          }
+        }
+      },
       "CartItemData": {
         "required": [
           "productName",
@@ -2062,6 +2359,125 @@
           }
         }
       },
+      "CornerStyle": {
+        "enum": [
+          "Sharp",
+          "Soft",
+          "Round"
+        ]
+      },
+      "CurrencyAdminOverview": {
+        "required": [
+          "base",
+          "currencies",
+          "localeDefaults",
+          "rateSource"
+        ],
+        "type": "object",
+        "properties": {
+          "base": {
+            "type": "string"
+          },
+          "currencies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CurrencyView"
+            }
+          },
+          "localeDefaults": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LocaleCurrencyView"
+            }
+          },
+          "rateSource": {
+            "type": "string"
+          }
+        }
+      },
+      "CurrencySettings": {
+        "required": [
+          "base",
+          "currencies",
+          "localeDefaults"
+        ],
+        "type": "object",
+        "properties": {
+          "base": {
+            "type": "string"
+          },
+          "currencies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicCurrency"
+            }
+          },
+          "localeDefaults": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "CurrencyView": {
+        "required": [
+          "code",
+          "symbol",
+          "decimals",
+          "roundingStep",
+          "rate",
+          "autoUpdate",
+          "rateUpdatedUtc",
+          "isEnabled",
+          "sortOrder",
+          "isBase"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "decimals": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "roundingStep": {
+            "type": "number",
+            "format": "double"
+          },
+          "rate": {
+            "type": "number",
+            "format": "double"
+          },
+          "autoUpdate": {
+            "type": "boolean"
+          },
+          "rateUpdatedUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "isEnabled": {
+            "type": "boolean"
+          },
+          "sortOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isBase": {
+            "type": "boolean"
+          }
+        }
+      },
       "CurrentUser": {
         "required": [
           "id",
@@ -2169,6 +2585,12 @@
           }
         }
       },
+      "FontChoice": {
+        "enum": [
+          "Vazirmatn",
+          "System"
+        ]
+      },
       "ForgotPasswordRequest": {
         "required": [
           "email",
@@ -2186,6 +2608,13 @@
             ]
           }
         }
+      },
+      "HomeLayout": {
+        "enum": [
+          "Classic",
+          "Catalog",
+          "Showcase"
+        ]
       },
       "HttpValidationProblemDetails": {
         "type": "object",
@@ -2254,6 +2683,21 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "LocaleCurrencyView": {
+        "required": [
+          "locale",
+          "currencyCode"
+        ],
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string"
+          },
+          "currencyCode": {
+            "type": "string"
           }
         }
       },
@@ -2722,6 +3166,59 @@
           }
         }
       },
+      "PublicCurrency": {
+        "required": [
+          "code",
+          "symbol",
+          "decimals",
+          "roundingStep",
+          "rate"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "decimals": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "roundingStep": {
+            "type": "number",
+            "format": "double"
+          },
+          "rate": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "RateSyncResult": {
+        "required": [
+          "updated",
+          "syncedUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "updated": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "syncedUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
       "RecoveryCodes": {
         "required": [
           "codes"
@@ -2798,6 +3295,75 @@
           }
         }
       },
+      "SaveBrandingRequest": {
+        "required": [
+          "primaryColor",
+          "corners",
+          "font",
+          "homeLayout"
+        ],
+        "type": "object",
+        "properties": {
+          "primaryColor": {
+            "type": "string"
+          },
+          "corners": {
+            "$ref": "#/components/schemas/CornerStyle"
+          },
+          "font": {
+            "$ref": "#/components/schemas/FontChoice"
+          },
+          "homeLayout": {
+            "$ref": "#/components/schemas/HomeLayout"
+          }
+        }
+      },
+      "SaveCurrencyRequest": {
+        "required": [
+          "code",
+          "symbol",
+          "decimals",
+          "roundingStep",
+          "rate",
+          "autoUpdate",
+          "isEnabled",
+          "sortOrder"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "decimals": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "roundingStep": {
+            "type": "number",
+            "format": "double"
+          },
+          "rate": {
+            "type": "number",
+            "format": "double"
+          },
+          "autoUpdate": {
+            "type": "boolean"
+          },
+          "isEnabled": {
+            "type": "boolean"
+          },
+          "sortOrder": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
       "SendPhoneCodeRequest": {
         "required": [
           "phone",
@@ -2813,6 +3379,17 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "SetLocaleCurrencyRequest": {
+        "required": [
+          "currencyCode"
+        ],
+        "type": "object",
+        "properties": {
+          "currencyCode": {
+            "type": "string"
           }
         }
       },
@@ -3065,7 +3642,8 @@
           "currency",
           "signUp",
           "signIn",
-          "checkout"
+          "checkout",
+          "branding"
         ],
         "type": "object",
         "properties": {
@@ -3092,6 +3670,9 @@
           },
           "checkout": {
             "$ref": "#/components/schemas/CheckoutSettings"
+          },
+          "branding": {
+            "$ref": "#/components/schemas/BrandingView"
           }
         },
         "description": "Store settings the storefront needs; `Currency` is the base currency of all prices (ISO 4217)."
@@ -3196,6 +3777,12 @@
   "tags": [
     {
       "name": "Storefront"
+    },
+    {
+      "name": "Admin: currencies"
+    },
+    {
+      "name": "Admin: branding"
     },
     {
       "name": "Account"

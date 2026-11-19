@@ -55,6 +55,8 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 ["ConnectionStrings:Default"] = ConnectionString,
                 ["Database:MigrateOnStartup"] = "true",
                 ["Store:Name"] = "Test Shop",
+                // Never call the internet from tests.
+                ["ExchangeRates:Provider"] = "None",
                 ["Store:DefaultLocale"] = "fa",
                 ["Store:Locales"] = "fa,en",
                 ["Store:PublicUrl"] = PublicUrl,

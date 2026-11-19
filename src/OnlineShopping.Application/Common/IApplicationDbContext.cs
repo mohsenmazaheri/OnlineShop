@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using OnlineShopping.Domain.Accounts;
 using OnlineShopping.Domain.Catalog;
 using OnlineShopping.Domain.Customers;
+using OnlineShopping.Domain.Pricing;
+using OnlineShopping.Domain.Settings;
 using OnlineShopping.Domain.Sales;
 using OnlineShopping.Domain.Staff;
 
@@ -29,6 +31,9 @@ public interface IApplicationDbContext
     DbSet<CustomerAddress> CustomerAddresses { get; }
     DbSet<StaffInvitation> StaffInvitations { get; }
     DbSet<StaffAuditEntry> StaffAuditEntries { get; }
+    DbSet<Currency> Currencies { get; }
+    DbSet<LocaleCurrency> LocaleCurrencies { get; }
+    DbSet<StoreBranding> StoreBranding { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

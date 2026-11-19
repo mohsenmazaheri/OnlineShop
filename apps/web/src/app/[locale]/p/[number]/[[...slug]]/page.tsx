@@ -4,6 +4,9 @@ import { Suspense } from "react";
 import { ProductView } from "@/components/product/ProductView";
 import { getProduct } from "@/lib/api/storefront";
 import { productPath } from "@/lib/catalog/product-path";
+import { convertAmount, isIsoCurrency, type DisplayCurrency } from "@/lib/currency/display";
+import { loadDisplayCurrency } from "@/lib/currency/load";
+import { currencyName } from "@/lib/i18n/display-names";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { absoluteUrl, jsonLdScript, productAlternates, productJsonLd } from "@/lib/seo/product";
@@ -59,15 +62,24 @@ async function Product({ params }: { params: Params }) {
   // Mid-stream 404: Next.js adds noindex; unknown numbers and unpublished products end here.
   if (!data) notFound();
   const { locale, store, product } = data;
-  const dict = await getDictionary(locale as Locale);
+  const [dict, { money }] = await Promise.all([getDictionary(locale as Locale), loadDisplayCurrency(locale, store.currency)]);
   const pageUrl = `${siteUrl()}${productPath(locale, product.number, product.slug)}`;
+  const offer = jsonLdOffer(product.price, money);
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd(product, pageUrl, store.currency, siteUrl())) }} />
-      <ProductView product={product} locale={locale} currency={store.currency} texts={dict.product} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd({ ...product, price: offer.price }, pageUrl, offer.currency, siteUrl())) }} />
+      <ProductView product={product} locale={locale} money={money} baseName={currencyName(money.base, locale)} texts={dict.product} />
     </>
   );
+}
+
+/**
+ * The structured-data price is the one on the screen (search engines compare them). A shop-defined currency such as
+ * IRT is not ISO 4217, so structured data then keeps the base price and currency.
+ */
+function jsonLdOffer(basePrice: number, money: DisplayCurrency): { price: number; currency: string } {
+  return isIsoCurrency(money.code) ? { price: convertAmount(basePrice, money), currency: money.code } : { price: basePrice, currency: money.base };
 }
 
 /** Space-keeping placeholder with the page's layout (no shift when the product streams in). */

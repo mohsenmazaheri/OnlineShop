@@ -3,8 +3,16 @@
  * the currency's symbol or code, no ".00" on whole amounts. Right-to-left languages get the amount first and the
  * currency after it ("۳۴۹٬۰۰۰٬۰۰۰ ریال"), as Persian and Arabic shops write prices.
  */
-export function formatMoney(amount: number, currency: string, locale: string): string {
+export function formatMoney(amount: number, currency: string, locale: string, options: MoneyOptions = {}): string {
   const whole = Number.isInteger(amount);
+  // A shop-defined symbol ("تومان") or currency (IRT): the number in the reader's digits plus that symbol.
+  if (options.symbol || !isKnownCurrency(currency)) {
+    const digits = whole ? 0 : (options.decimals ?? 2);
+    const number = formatNumber(amount, locale, digits);
+    const symbol = options.symbol || currency;
+    return rtlLocales.has(locale.split("-")[0]) || options.symbol ? `${number} ${symbol}` : `${symbol} ${number}`;
+  }
+
   let format: Intl.NumberFormat;
   try {
     format = new Intl.NumberFormat(locale, {
@@ -37,11 +45,27 @@ export function formatPercent(share: number, locale: string): string {
 }
 
 /** A plain number (spec values like 6.5 or 2400) in the reader's digits and separators. */
-export function formatNumber(value: number, locale: string): string {
+export function formatNumber(value: number, locale: string, maximumFractionDigits = 2): string {
   try {
-    return new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(value);
+    return new Intl.NumberFormat(locale, { maximumFractionDigits }).format(value);
   } catch {
     return String(value);
+  }
+}
+
+export type MoneyOptions = {
+  /** Shop-defined symbol shown instead of the standard one ("تومان"). */
+  symbol?: string | null;
+  /** Digits after the decimal point for amounts that are not whole. */
+  decimals?: number;
+};
+
+function isKnownCurrency(code: string): boolean {
+  try {
+    new Intl.NumberFormat("en", { style: "currency", currency: code });
+    return /^[A-Z]{3}$/.test(code) && (Intl.supportedValuesOf("currency") as string[]).includes(code);
+  } catch {
+    return false;
   }
 }
 
