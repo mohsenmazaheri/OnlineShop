@@ -78,6 +78,7 @@ public static class DependencyInjection
         services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
         services.AddSingleton<IFileStorage, LocalFileStorage>();
         services.AddSingleton<IImageProcessor, SkiaImageProcessor>();
+        services.AddSingleton<OnlineShopping.Application.Catalog.Transfer.ITableFile, Transfer.XlsxTableFile>();
         services.AddScoped<DataSeeder>();
 
         services.AddHealthChecks()

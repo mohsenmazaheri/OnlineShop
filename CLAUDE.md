@@ -217,6 +217,14 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   `/`, `/api`, `/_next`; one hop, no loops; CSV import). `proxy.ts` answers them before the locale redirects from a
   one-minute in-memory table (`createRedirectCache`, `GET /api/v1/redirects`) and counts hits with
   `event.waitUntil(POST /api/v1/redirects/hits)`. Error codes `seo.*` → `admin.seoErrors`. Admin: `/{locale}/admin/seo`.
+- Bulk transfer (`Application/Catalog/Transfer`): `ITableFile` formats (`CsvTableFile` in Application,
+  `XlsxTableFile` in Infrastructure via MiniExcel; `TableFiles.Detect` picks Excel by the ZIP signature).
+  `ProductExportService` writes the columns of `ProductColumns` (per-language `name:fa`…, `spec:{code}`); use flat
+  projection queries there, not one Include chain (the owned translations multiply into a huge join).
+  `ProductImportService` reuses `ProductAdminService`/`CatalogTreeService`/`BrandAdminService` row by row inside one
+  transaction (`IApplicationDbContext.Database`, a savepoint per row, `ChangeTracker.Clear()` after a failed row):
+  any problem or `dryRun` → rollback. Only the columns present change. Error codes `import.*` → `admin.importErrors`.
+  Admin page `/{locale}/admin/import`.
 - Catalog admin (`Application/Catalog/Admin`, permission catalog.manage): `CatalogTreeService` (categories →
   sub-categories → groups; only empty nodes can be deleted) and `ProductAdminService` (list/search, editor view,
   create/update/soft delete, spec values checked against the spec kind; a new product gets max(PublicNumber incl.

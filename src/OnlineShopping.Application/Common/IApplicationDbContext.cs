@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using OnlineShopping.Domain.Accounts;
 using OnlineShopping.Domain.Catalog;
 using OnlineShopping.Domain.Customers;
@@ -41,4 +43,10 @@ public interface IApplicationDbContext
     DbSet<StoreBranding> StoreBranding { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Transactions for work that must succeed or fail as a whole (a bulk import, its dry run).</summary>
+    DatabaseFacade Database { get; }
+
+    /// <summary>To forget the unsaved changes of a failed step before the next one.</summary>
+    ChangeTracker ChangeTracker { get; }
 }
