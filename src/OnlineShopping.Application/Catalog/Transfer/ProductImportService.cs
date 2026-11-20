@@ -34,7 +34,7 @@ public sealed class ProductImportService(
 
     public async Task<Result<ImportReport>> ProductsAsync(Stream upload, long length, bool dryRun, CancellationToken cancellationToken = default)
     {
-        var read = await ReadAsync(upload, length, cancellationToken);
+        var read = await ReadTableAsync(files, upload, length, cancellationToken);
         if (!read.IsSuccess)
             return read.Error!;
         var table = read.Value;
@@ -102,7 +102,7 @@ public sealed class ProductImportService(
     /// <summary>Stock by SKU (a product without variants, or a variant); a product with variants gets the variants' sum.</summary>
     public async Task<Result<ImportReport>> StockAsync(Stream upload, long length, bool dryRun, CancellationToken cancellationToken = default)
     {
-        var read = await ReadAsync(upload, length, cancellationToken);
+        var read = await ReadTableAsync(files, upload, length, cancellationToken);
         if (!read.IsSuccess)
             return read.Error!;
         var table = read.Value;
@@ -168,7 +168,8 @@ public sealed class ProductImportService(
         return new ImportReport(applied, 0, changes.Count, table.Rows.Count, applied ? [] : problems);
     }
 
-    private async Task<Result<TableData>> ReadAsync(Stream upload, long length, CancellationToken cancellationToken)
+    /// <summary>Reads an uploaded CSV or Excel file (at most 10 MB and 5000 rows); also used for stocktake counts.</summary>
+    internal static async Task<Result<TableData>> ReadTableAsync(TableFiles files, Stream upload, long length, CancellationToken cancellationToken)
     {
         if (length <= 0)
             return AppError.Validation(TransferErrors.FileEmpty, "The file is empty.");

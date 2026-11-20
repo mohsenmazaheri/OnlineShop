@@ -8,10 +8,11 @@ namespace OnlineShopping.UnitTests.TestSupport;
 public static class TestLedger
 {
     public static StockLedger For(IApplicationDbContext db, StoreOptions store, string? userId = null) =>
-        new(db, new FixedUser(userId), Options.Create(store));
+        new(db, new FixedCurrentUser(userId), Options.Create(store));
+}
 
-    private sealed class FixedUser(string? userId) : ICurrentUser
-    {
-        public string? UserId => userId;
-    }
+/// <summary>A fixed "signed-in user" for services that record who did something.</summary>
+public sealed class FixedCurrentUser(string? userId) : ICurrentUser
+{
+    public string? UserId => userId;
 }

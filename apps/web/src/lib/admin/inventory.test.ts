@@ -1,6 +1,19 @@
 import { describe, expect, it } from "vitest";
 import en from "@/lib/i18n/dictionaries/en.json";
-import { allKinds, manualKinds, movementsHref, pageWindow, parseId, parseKind, referenceLabel, signedQuantity } from "./inventory";
+import {
+  allKinds,
+  manualKinds,
+  movementsHref,
+  pageWindow,
+  parseId,
+  parseKind,
+  parseStocktakeFilter,
+  referenceLabel,
+  signedQuantity,
+  stocktakeFilters,
+  stocktakeHref,
+  stocktakeLabel,
+} from "./inventory";
 
 describe("inventory helpers", () => {
   it("translates automatic references and keeps typed ones", () => {
@@ -32,6 +45,16 @@ describe("inventory helpers", () => {
     expect(pageWindow(1, 3)).toEqual([1, 2, 3]);
     expect(pageWindow(10, 40)).toEqual([1, 8, 9, 10, 11, 12, 40]);
     expect(pageWindow(40, 40)).toEqual([1, 38, 39, 40]);
+  });
+
+  it("reads stocktake filters and builds stocktake addresses", () => {
+    expect(parseStocktakeFilter("Differences")).toBe("Differences");
+    expect(parseStocktakeFilter("x")).toBe("All");
+    expect(stocktakeLabel(7)).toBe("ST-7");
+    expect(stocktakeHref("fa", 7)).toBe("/fa/admin/stocktakes/7");
+    expect(stocktakeHref("en", 7, { filter: "All", search: "a b", page: 3 })).toBe("/en/admin/stocktakes/7?search=a+b&page=3");
+    expect(stocktakeHref("en", 7, { filter: "Uncounted", page: 1 })).toBe("/en/admin/stocktakes/7?filter=Uncounted");
+    for (const filter of stocktakeFilters) expect(en.admin.stocktakeFilters[filter]).toBeTruthy();
   });
 
   it("has a text for every kind and every automatic reference", () => {

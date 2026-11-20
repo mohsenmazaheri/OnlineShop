@@ -84,6 +84,43 @@ public sealed class InventoryApiTests(CatalogAdminApiTests.AdminFactory factory)
     }
 
     [Fact]
+    public async Task A_stocktake_counts_a_warehouse_and_posts_the_differences()
+    {
+        using var admin = await AdminAsync();
+        var suffix = Guid.NewGuid().ToString("N")[..8];
+        var category = await ReadAsync<CatalogNodeView>(await admin.PostAsJsonAsync("/api/v1/admin/catalog/categories", new SaveCatalogNodeRequest([new("fa", $"شمارش {suffix}", null, null)])));
+        var sub = await ReadAsync<CatalogNodeView>(await admin.PostAsJsonAsync($"/api/v1/admin/catalog/categories/{category.Id}/subcategories", new SaveCatalogNodeRequest([new("fa", "زیر", null, null)])));
+        var group = await ReadAsync<CatalogNodeView>(await admin.PostAsJsonAsync($"/api/v1/admin/catalog/subcategories/{sub.Id}/groups", new SaveCatalogNodeRequest([new("fa", "گروه", null, null)])));
+        var sku = $"CNT-{suffix}";
+        await ReadAsync<ProductEditView>(await admin.PostAsJsonAsync("/api/v1/admin/products",
+            new SaveProductRequest(sku, 10, null, 9, true, group.Id, [new("fa", "کالای شمارش", null, null)], [])));
+        var warehouse = await ReadAsync<WarehouseView>(await admin.PostAsJsonAsync("/api/v1/admin/inventory/warehouses",
+            new SaveWarehouseRequest($"count_{suffix}", "انبار شمارش", null, true, false)));
+        var main = (await ReadAsync<List<WarehouseView>>(await admin.GetAsync("/api/v1/admin/inventory/warehouses"))).Single(w => w.IsDefault);
+        await ReadAsync<StockRow>(await admin.PostAsJsonAsync("/api/v1/admin/inventory/transfers", new TransferStockRequest(sku, main.Id, warehouse.Id, 9, null, null)));
+
+        var opened = await ReadAsync<StocktakeSummary>(await admin.PostAsJsonAsync("/api/v1/admin/inventory/stocktakes", new OpenStocktakeRequest(warehouse.Id, "test")));
+        using var again = await admin.PostAsJsonAsync("/api/v1/admin/inventory/stocktakes", new OpenStocktakeRequest(warehouse.Id, null));
+        Assert.Equal(StocktakeErrors.AlreadyOpen, await CodeAsync(again));
+
+        var counted = await ReadAsync<List<StocktakeLineView>>(await admin.PostAsJsonAsync($"/api/v1/admin/inventory/stocktakes/{opened.Number}/counts", new CountRequest([new(sku, 7)])));
+        Assert.Equal((9, 7, -2), (counted.Single().Expected, counted.Single().Counted, counted.Single().Difference));
+        using var sheet = await admin.GetAsync($"/api/v1/admin/inventory/stocktakes/{opened.Number}/sheet?format=csv");
+        Assert.Equal(HttpStatusCode.OK, sheet.StatusCode);
+        Assert.Contains(sku, await sheet.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+
+        var view = await ReadAsync<StocktakeView>(await admin.GetAsync($"/api/v1/admin/inventory/stocktakes/{opened.Number}?filter=Differences"));
+        Assert.Equal((1, 2), (view.Totals.WithDifference, view.Totals.UnitsShort));
+        var posted = await ReadAsync<StocktakeSummary>(await admin.PostAsync($"/api/v1/admin/inventory/stocktakes/{opened.Number}/post", null));
+        Assert.Equal(StocktakeStatus.Posted, posted.Status);
+
+        var ledger = await ReadAsync<MovementPage>(await admin.GetAsync($"/api/v1/admin/inventory/movements?sku={sku}&kind=Adjustment&warehouseId={warehouse.Id}"));
+        Assert.Equal((-2, StocktakeService.Reference(opened.Number)), (ledger.Items.Single().Quantity, ledger.Items.Single().Reference));
+        var stock = await ReadAsync<StockPage>(await admin.GetAsync($"/api/v1/admin/inventory/stock?search={sku}"));
+        Assert.Equal(7, stock.Items.Single().Total);
+    }
+
+    [Fact]
     public async Task Visitors_cannot_see_or_change_stock()
     {
         using var anonymous = factory.CreateClient();

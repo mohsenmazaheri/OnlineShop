@@ -163,3 +163,23 @@ export function getMovements(
   if (query.kind) params.set("kind", query.kind);
   return getForUser<MovementPage>(`/api/v1/admin/inventory/movements?${params.toString()}`, fetchImpl);
 }
+
+export type StocktakeSummary = components["schemas"]["StocktakeSummary"];
+export type StocktakeView = components["schemas"]["StocktakeView"];
+
+/** Every stocktake, newest first (inventory.view). */
+export function getStocktakes(fetchImpl: typeof fetch = fetch): Promise<StocktakeSummary[] | null> {
+  return getForUser<StocktakeSummary[]>("/api/v1/admin/inventory/stocktakes", fetchImpl);
+}
+
+/** One stocktake with a page of its lines, or null (unknown number or no permission). */
+export function getStocktake(
+  number: number,
+  query: { filter?: string; search?: string; page?: number; locale: string },
+  fetchImpl: typeof fetch = fetch,
+): Promise<StocktakeView | null> {
+  const params = new URLSearchParams({ locale: query.locale, page: String(query.page ?? 1) });
+  if (query.filter) params.set("filter", query.filter);
+  if (query.search) params.set("search", query.search);
+  return getForUser<StocktakeView>(`/api/v1/admin/inventory/stocktakes/${number}?${params.toString()}`, fetchImpl);
+}
