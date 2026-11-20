@@ -1,11 +1,12 @@
 import { Suspense } from "react";
 import { AdminCard, AdminShell } from "@/components/admin/AdminShell";
 import { RedirectsEditor } from "@/components/admin/RedirectsEditor";
+import { SearchIndexPanel } from "@/components/admin/SearchIndexPanel";
 import { SynonymsEditor } from "@/components/admin/SynonymsEditor";
 import { requirePermission } from "@/lib/admin/access";
 import { languageNames } from "@/lib/admin/language-names";
 import { accountMetadata, routeLocale } from "@/lib/account/page-helpers";
-import { getRedirects, getSynonyms } from "@/lib/account/session";
+import { getRedirects, getSearchIndexStatus, getSynonyms } from "@/lib/account/session";
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary, type Dictionary } from "@/lib/i18n/dictionaries";
 
@@ -17,7 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/admin/se
 /** Search synonyms and redirects of old addresses (permission catalog.manage). */
 async function Seo({ locale, texts }: { locale: Locale; texts: Dictionary["admin"] }) {
   const user = await requirePermission(locale, "catalog.manage", `/${locale}/admin/seo`);
-  const [synonyms, redirects] = await Promise.all([getSynonyms(), getRedirects()]);
+  const [synonyms, redirects, index] = await Promise.all([getSynonyms(), getRedirects(), getSearchIndexStatus()]);
   const list = synonyms ?? { locales: [locale], groups: [] };
 
   return (
@@ -28,6 +29,11 @@ async function Seo({ locale, texts }: { locale: Locale; texts: Dictionary["admin
       <AdminCard title={texts.synonymsTitle} id="synonyms">
         <SynonymsEditor texts={texts} list={list} languageNames={languageNames(list.locales)} />
       </AdminCard>
+      {index && (
+        <AdminCard title={texts.searchIndexTitle} id="search-index">
+          <SearchIndexPanel locale={locale} texts={texts} status={index} />
+        </AdminCard>
+      )}
     </AdminShell>
   );
 }

@@ -95,6 +95,9 @@ public interface IProductQueries
     /// <summary>Published products for a list, named in <paramref name="locale"/> (default language as fallback).</summary>
     Task<IReadOnlyList<ProductCard>> ListAsync(ProductList list, string locale, int take, CancellationToken cancellationToken = default);
 
+    /// <summary>The cards of these products, in the given order (unknown or hidden ones left out).</summary>
+    Task<IReadOnlyList<ProductCard>> CardsAsync(IReadOnlyList<Guid> ids, string locale, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// One published product by its public number, in <paramref name="locale"/>. <paramref name="defaultLocale"/> is the
     /// language of the product's own columns (listed among the alternates).
@@ -120,6 +123,17 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
         p.Price,
         p.CompareAtPrice,
         p.Stock - p.Reserved > 0);
+
+    public async Task<IReadOnlyList<ProductCard>> CardsAsync(IReadOnlyList<Guid> ids, string locale, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(ids);
+        if (ids.Count == 0)
+            return [];
+        var query = db.Products.AsNoTracking().Where(p => ids.Contains(p.Id) && p.IsPublished);
+        var numbers = await query.Select(p => new { p.Id, p.PublicNumber }).ToDictionaryAsync(p => p.Id, p => p.PublicNumber, cancellationToken);
+        var cards = (await query.Select(ToCard(locale)).ToListAsync(cancellationToken)).ToDictionary(c => c.Number);
+        return ids.Where(numbers.ContainsKey).Select(id => cards[numbers[id]]).ToList();
+    }
 
     public async Task<IReadOnlyList<ProductCard>> ListAsync(ProductList list, string locale, int take, CancellationToken cancellationToken = default)
     {

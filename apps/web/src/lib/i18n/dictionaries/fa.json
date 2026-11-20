@@ -52,7 +52,13 @@
     "home": "خانه",
     "categoriesShort": "دسته‌بندی",
     "currency": "واحد پول",
-    "adminPanel": "پنل مدیریت"
+    "adminPanel": "پنل مدیریت",
+    "suggestProducts": "کالاها",
+    "suggestCategories": "دسته‌ها",
+    "suggestBrands": "برندها",
+    "suggestPopular": "جستجوهای پرتکرار",
+    "suggestAll": "همهٔ نتیجه‌ها برای «{query}»",
+    "suggestLabel": "پیشنهادهای جستجو"
   },
   "account": {
     "loginTitle": "ورود به حساب",
@@ -882,7 +888,12 @@
     "reservationRelease": "آزاد کردن",
     "reservationConfirmRelease": "همهٔ کالاهای رزروشدهٔ «{reference}» آزاد شوند؟",
     "stockReserved": "رزرو {count}",
-    "stockAvailable": "قابل فروش {count}"
+    "stockAvailable": "قابل فروش {count}",
+    "searchIndexTitle": "ایندکس جستجو",
+    "searchIndexIntro": "جستجو از روی متن‌های آمادهٔ هر کالا در هر زبان کار می‌کند. هر تغییر کاتالوگ چند ثانیه بعد به آن می‌رسد. اگر نتیجه‌ها کهنه به نظر می‌رسند، بازسازی کنید.",
+    "searchIndexStatus": "{documents} سند جستجو، {pending} تغییر در صف",
+    "searchIndexRebuild": "بازسازی ایندکس",
+    "searchIndexQueued": "بازسازی در صف قرار گرفت و چند ثانیه بعد انجام می‌شود."
   },
   "footer": {
     "shopping": "خرید",
@@ -935,5 +946,46 @@
     "brand": "برند",
     "soldOutOption": "این ترکیب ناموجود است",
     "video": "ویدئو"
+  },
+  "listing": {
+    "home": "خانه",
+    "productCount": "{count} کالا",
+    "sortLabel": "مرتب‌سازی",
+    "sorts": {
+      "relevance": "مرتبط‌ترین",
+      "newest": "جدیدترین",
+      "price_asc": "ارزان‌ترین",
+      "price_desc": "گران‌ترین",
+      "discount": "بیشترین تخفیف"
+    },
+    "filters": "فیلترها",
+    "clearAll": "حذف همهٔ فیلترها",
+    "removeFilter": "حذف فیلتر {filter}",
+    "subCategories": "دسته‌ها",
+    "brands": "برند",
+    "groups": "نوع کالا",
+    "price": "قیمت",
+    "priceFrom": "از {price}",
+    "priceTo": "تا {price}",
+    "from": "از",
+    "to": "تا",
+    "apply": "اعمال",
+    "rangeHint": "از {min} تا {max}",
+    "availability": "وضعیت کالا",
+    "inStock": "فقط کالاهای موجود",
+    "onSale": "فقط تخفیف‌دار",
+    "yes": "دارد",
+    "empty": "کالایی با این فیلترها پیدا نشد.",
+    "emptyScope": "هنوز کالایی در این بخش نیست.",
+    "pages": "صفحه‌ها",
+    "searchTitle": "نتیجه‌های جستجو برای «{query}»",
+    "searchNone": "برای «{query}» کالایی پیدا نشد. واژهٔ دیگری را امتحان کنید.",
+    "metaDescription": "{title} — مشاهده و خرید آنلاین در {store}",
+    "allProducts": "همهٔ کالاها",
+    "corrected": "نتیجه‌ها برای «{corrected}» نشان داده شده است. شما «{query}» را جستجو کردید.",
+    "didYouMean": "منظورتان «{suggestion}» بود؟",
+    "relaxTitle": "با حذف یکی از فیلترها کالا پیدا می‌شود:",
+    "relaxFilter": "بدون «{filter}» ({count} کالا)",
+    "newestTitle": "شاید این‌ها را بپسندید"
   }
 }

@@ -33,13 +33,14 @@ public sealed class CategoryQueries(IApplicationDbContext db) : ICategoryQueries
     private static Expression<Func<Category, CategorySummary>> ToSummary(string? locale) => c => new CategorySummary(
         c.Id,
         c.Translations.Where(t => t.Locale == locale).Select(t => t.Name).FirstOrDefault() ?? c.Name,
-        c.Slug,
+        // The slug of the reader's language, as the category page address uses (/{locale}/c/{slug}).
+        c.Translations.Where(t => t.Locale == locale).Select(t => t.Slug).FirstOrDefault() ?? c.Slug,
         c.ImageUrl,
         c.SubCategories
             .Select(s => new SubCategorySummary(
                 s.Id,
                 s.Translations.Where(t => t.Locale == locale).Select(t => t.Name).FirstOrDefault() ?? s.Name,
-                s.Slug))
+                s.Translations.Where(t => t.Locale == locale).Select(t => t.Slug).FirstOrDefault() ?? s.Slug))
             .ToList());
 
     public async Task<IReadOnlyList<CategorySummary>> GetMenuAsync(string? locale = null, CancellationToken cancellationToken = default)

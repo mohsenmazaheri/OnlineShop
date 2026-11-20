@@ -8,6 +8,7 @@ using OnlineShopping.Domain.Inventory;
 using OnlineShopping.Domain.Pricing;
 using OnlineShopping.Domain.Settings;
 using OnlineShopping.Domain.Sales;
+using OnlineShopping.Domain.Search;
 using OnlineShopping.Domain.Seo;
 using OnlineShopping.Domain.Staff;
 
@@ -53,6 +54,9 @@ public interface IApplicationDbContext
     DbSet<PurchaseReceiptLine> PurchaseReceiptLines { get; }
     DbSet<StockItemInfo> StockItems { get; }
     DbSet<StockReservation> StockReservations { get; }
+    DbSet<SearchDocument> SearchDocuments { get; }
+    DbSet<SearchOutboxEntry> SearchOutbox { get; }
+    DbSet<SearchTermStat> SearchTermStats { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 

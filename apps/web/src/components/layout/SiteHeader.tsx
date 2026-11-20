@@ -14,6 +14,7 @@ import { Brand } from "./Brand";
 import { CurrencySwitcher } from "./CurrencySwitcher";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { SearchForm } from "./SearchForm";
+import { SearchSuggest } from "./SearchSuggest";
 
 type Props = { locale: Locale; texts: Dictionary["header"] };
 
@@ -75,6 +76,16 @@ async function StoreCurrencies({ locale, label }: { locale: Locale; label: strin
 }
 
 /**
+ * The search box with suggestions: it needs the reader's currency (product prices), so it streams in; until then,
+ * and without JavaScript, the plain search form works the same.
+ */
+async function HeaderSearch({ locale, texts, className }: Props & { className: string }) {
+  const store = await loadStore();
+  const { money } = await loadDisplayCurrency(locale, store.currency);
+  return <SearchSuggest locale={locale} texts={texts} money={money} className={className} />;
+}
+
+/**
  * Sticky header. Phones: brand and quick buttons, then a full-width search box (cart and account live in the bottom
  * bar). From md up: brand, search, account and cart in one row, then the main menu.
  * Fixed heights and same-size placeholders keep the layout still while the per-request parts stream in (no CLS).
@@ -87,7 +98,9 @@ export function SiteHeader({ locale, texts }: Props) {
           <Suspense fallback={<span className="h-9 w-36 animate-pulse rounded-xl bg-border" />}>
             <StoreBrand locale={locale} />
           </Suspense>
-          <SearchForm locale={locale} texts={texts} className="hidden max-w-2xl flex-1 md:block" />
+          <Suspense fallback={<SearchForm locale={locale} texts={texts} className="hidden max-w-2xl flex-1 md:block" />}>
+            <HeaderSearch locale={locale} texts={texts} className="hidden max-w-2xl flex-1 md:block" />
+          </Suspense>
           <div className="ms-auto flex items-center gap-1 md:gap-2">
             <ThemeToggle texts={texts} />
             <Suspense fallback={<span className="h-10 w-10" />}>
@@ -110,7 +123,9 @@ export function SiteHeader({ locale, texts }: Props) {
             </Link>
           </div>
         </div>
-        <SearchForm locale={locale} texts={texts} className="pb-3 md:hidden" />
+        <Suspense fallback={<SearchForm locale={locale} texts={texts} className="pb-3 md:hidden" />}>
+          <HeaderSearch locale={locale} texts={texts} className="pb-3 md:hidden" />
+        </Suspense>
         <nav aria-label={texts.mainMenu} className="hidden h-11 items-center gap-1 text-sm md:flex">
           <Link
             href={`/${locale}#categories`}

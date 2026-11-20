@@ -41,6 +41,7 @@ public static class DependencyInjection
 
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<AuditableEntityInterceptor>();
+        services.AddScoped<SearchOutboxInterceptor>();
 
         services.AddDbContext<AppDbContext>((sp, options) =>
         {
@@ -52,9 +53,12 @@ public static class DependencyInjection
                     "user-secrets (development) or the ConnectionStrings__Default environment variable.");
             ConfigureProvider(options, databaseOptions.Provider, connectionString);
             options.UseSnakeCaseNamingConvention()
-                .AddInterceptors(sp.GetRequiredService<AuditableEntityInterceptor>());
+                .AddInterceptors(sp.GetRequiredService<AuditableEntityInterceptor>(), sp.GetRequiredService<SearchOutboxInterceptor>());
         });
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<AppDbContext>());
+        // PostgreSQL searches with full-text and trigrams; other databases keep the simple engine.
+        if (databaseOptions.Provider == DatabaseProvider.PostgreSql)
+            services.Replace(ServiceDescriptor.Scoped<Application.Search.IProductSearch, Search.PostgresProductSearch>());
 
         AddIdentityAndAuth(services, configuration);
         AddEmail(services, configuration);
@@ -295,5 +299,11 @@ public static class DependencyInjection
                 : new NoExchangeRateSource()));
         services.AddHostedService<ExchangeRateSyncWorker>();
         services.AddHostedService<Inventory.ReservationExpiryWorker>();
+        services.AddHostedService<Search.SearchIndexWorker>();
+        services.AddOptions<Application.Search.SearchOptions>()
+            .Bind(configuration.GetSection(Application.Search.SearchOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
     }
 }

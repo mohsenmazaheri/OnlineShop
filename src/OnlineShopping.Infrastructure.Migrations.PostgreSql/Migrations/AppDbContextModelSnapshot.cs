@@ -1998,6 +1998,118 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.ToTable("order_items", (string)null);
                 });
 
+            modelBuilder.Entity("OnlineShopping.Domain.Search.SearchDocument", b =>
+                {
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<string>("Locale")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("locale");
+
+                    b.Property<string>("Codes")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("codes");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("details");
+
+                    b.Property<string>("Keywords")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("keywords");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime>("UpdatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_utc");
+
+                    b.HasKey("ProductId", "Locale")
+                        .HasName("pk_search_documents");
+
+                    b.HasIndex("Locale")
+                        .HasDatabaseName("ix_search_documents_locale");
+
+                    b.ToTable("search_documents", (string)null);
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Search.SearchOutboxEntry", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("EnqueuedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("enqueued_utc");
+
+                    b.Property<string>("Target")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("target");
+
+                    b.Property<Guid>("TargetId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("target_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_search_outbox");
+
+                    b.ToTable("search_outbox", (string)null);
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Search.SearchTermStat", b =>
+                {
+                    b.Property<string>("Locale")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("locale");
+
+                    b.Property<string>("Term")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("term");
+
+                    b.Property<DateTime>("LastSearchedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_searched_utc");
+
+                    b.Property<int>("Searches")
+                        .HasColumnType("integer")
+                        .HasColumnName("searches");
+
+                    b.Property<int>("ZeroResults")
+                        .HasColumnType("integer")
+                        .HasColumnName("zero_results");
+
+                    b.HasKey("Locale", "Term")
+                        .HasName("pk_search_term_stats");
+
+                    b.HasIndex("Locale", "Searches")
+                        .HasDatabaseName("ix_search_term_stats_locale_searches");
+
+                    b.ToTable("search_term_stats", (string)null);
+                });
+
             modelBuilder.Entity("OnlineShopping.Domain.Seo.Redirect", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3330,6 +3442,16 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasConstraintName("fk_order_items_products_product_id");
 
                     b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Search.SearchDocument", b =>
+                {
+                    b.HasOne("OnlineShopping.Domain.Catalog.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_search_documents_products_product_id");
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Staff.StaffInvitation", b =>

@@ -52,7 +52,13 @@
     "home": "الرئيسية",
     "categoriesShort": "الفئات",
     "currency": "العملة",
-    "adminPanel": "لوحة الإدارة"
+    "adminPanel": "لوحة الإدارة",
+    "suggestProducts": "المنتجات",
+    "suggestCategories": "الفئات",
+    "suggestBrands": "العلامات التجارية",
+    "suggestPopular": "عمليات بحث شائعة",
+    "suggestAll": "كل النتائج لـ «{query}»",
+    "suggestLabel": "اقتراحات البحث"
   },
   "account": {
     "loginTitle": "تسجيل الدخول",
@@ -882,7 +888,12 @@
     "reservationRelease": "تحرير",
     "reservationConfirmRelease": "تحرير كل ما يحجزه «{reference}»؟",
     "stockReserved": "{count} محجوز",
-    "stockAvailable": "{count} متاح"
+    "stockAvailable": "{count} متاح",
+    "searchIndexTitle": "فهرس البحث",
+    "searchIndexIntro": "يقرأ البحث نصًا مُعدًّا لكل منتج بكل لغة. تصل تغييرات الكتالوج خلال ثوانٍ. أعد البناء إن بدت النتائج قديمة.",
+    "searchIndexStatus": "{documents} مستند بحث، {pending} تغييرات في الانتظار",
+    "searchIndexRebuild": "إعادة بناء الفهرس",
+    "searchIndexQueued": "أُضيفت إعادة البناء إلى الانتظار وتتم خلال ثوانٍ."
   },
   "footer": {
     "shopping": "التسوق",
@@ -935,5 +946,46 @@
     "brand": "العلامة التجارية",
     "soldOutOption": "هذه التركيبة نفدت",
     "video": "فيديو"
+  },
+  "listing": {
+    "home": "الرئيسية",
+    "productCount": "{count} منتج",
+    "sortLabel": "ترتيب حسب",
+    "sorts": {
+      "relevance": "الأكثر صلة",
+      "newest": "الأحدث",
+      "price_asc": "الأرخص",
+      "price_desc": "الأغلى",
+      "discount": "أكبر خصم"
+    },
+    "filters": "الفلاتر",
+    "clearAll": "إزالة كل الفلاتر",
+    "removeFilter": "إزالة الفلتر {filter}",
+    "subCategories": "الفئات",
+    "brands": "العلامة التجارية",
+    "groups": "نوع المنتج",
+    "price": "السعر",
+    "priceFrom": "من {price}",
+    "priceTo": "حتى {price}",
+    "from": "من",
+    "to": "إلى",
+    "apply": "تطبيق",
+    "rangeHint": "من {min} إلى {max}",
+    "availability": "التوفر",
+    "inStock": "المتوفر فقط",
+    "onSale": "المخفض فقط",
+    "yes": "نعم",
+    "empty": "لا توجد منتجات تطابق هذه الفلاتر.",
+    "emptyScope": "لا توجد منتجات هنا بعد.",
+    "pages": "الصفحات",
+    "searchTitle": "نتائج البحث عن «{query}»",
+    "searchNone": "لم يُعثر على شيء لـ «{query}». جرّب كلمة أخرى.",
+    "metaDescription": "{title} — تصفح واشترِ عبر الإنترنت من {store}",
+    "allProducts": "كل المنتجات",
+    "corrected": "تُعرض النتائج لـ «{corrected}». لقد بحثت عن «{query}».",
+    "didYouMean": "هل تقصد «{suggestion}»؟",
+    "relaxTitle": "إزالة أحد الفلاتر تُظهر منتجات:",
+    "relaxFilter": "بدون «{filter}» ({count} منتج)",
+    "newestTitle": "قد تعجبك هذه"
   }
 }

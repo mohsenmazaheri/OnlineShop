@@ -1,5 +1,6 @@
 using OnlineShopping.Api.Common;
 using OnlineShopping.Application.Authorization;
+using OnlineShopping.Application.Search;
 using OnlineShopping.Application.Seo;
 
 namespace OnlineShopping.Api.Endpoints;
@@ -44,6 +45,15 @@ public static class SeoEndpoints
                 return TypedResults.NoContent();
             })
             .WithName("RecordRedirectHit").WithSummary("Count a use of a redirect (sent by the storefront).");
+
+        admin.MapGet("/search-index", async (SearchIndexService index, CancellationToken ct) => TypedResults.Ok(await index.StatusAsync(ct)))
+            .WithName("GetSearchIndexStatus").WithSummary("How many search documents there are and how many catalog changes wait to reach them.");
+        admin.MapPost("/search-index/rebuild", async (SearchIndexService index, CancellationToken ct) =>
+            {
+                await index.EnqueueAllAsync(ct);
+                return TypedResults.Ok(await index.StatusAsync(ct));
+            })
+            .WithName("RebuildSearchIndex").WithSummary("Queue a rebuild of every product's search documents (done in the background).");
 
         return app;
     }

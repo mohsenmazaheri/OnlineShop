@@ -52,7 +52,13 @@
     "home": "Home",
     "categoriesShort": "Categories",
     "currency": "Currency",
-    "adminPanel": "Admin panel"
+    "adminPanel": "Admin panel",
+    "suggestProducts": "Products",
+    "suggestCategories": "Categories",
+    "suggestBrands": "Brands",
+    "suggestPopular": "Popular searches",
+    "suggestAll": "All results for “{query}”",
+    "suggestLabel": "Search suggestions"
   },
   "account": {
     "loginTitle": "Sign in",
@@ -882,7 +888,12 @@
     "reservationRelease": "Release",
     "reservationConfirmRelease": "Release everything \"{reference}\" holds?",
     "stockReserved": "{count} reserved",
-    "stockAvailable": "{count} available"
+    "stockAvailable": "{count} available",
+    "searchIndexTitle": "Search index",
+    "searchIndexIntro": "Search reads a prepared text of every product in each language. Catalog changes reach it within seconds. Rebuild it if results look out of date.",
+    "searchIndexStatus": "{documents} search documents, {pending} changes waiting",
+    "searchIndexRebuild": "Rebuild the index",
+    "searchIndexQueued": "The rebuild is queued and runs within seconds."
   },
   "footer": {
     "shopping": "Shopping",
@@ -935,5 +946,46 @@
     "brand": "Brand",
     "soldOutOption": "This combination is sold out",
     "video": "Video"
+  },
+  "listing": {
+    "home": "Home",
+    "productCount": "{count} products",
+    "sortLabel": "Sort by",
+    "sorts": {
+      "relevance": "Most relevant",
+      "newest": "Newest",
+      "price_asc": "Lowest price",
+      "price_desc": "Highest price",
+      "discount": "Biggest discount"
+    },
+    "filters": "Filters",
+    "clearAll": "Clear all filters",
+    "removeFilter": "Remove filter {filter}",
+    "subCategories": "Categories",
+    "brands": "Brand",
+    "groups": "Product type",
+    "price": "Price",
+    "priceFrom": "from {price}",
+    "priceTo": "up to {price}",
+    "from": "From",
+    "to": "To",
+    "apply": "Apply",
+    "rangeHint": "{min} to {max}",
+    "availability": "Availability",
+    "inStock": "In stock only",
+    "onSale": "On sale only",
+    "yes": "yes",
+    "empty": "No products match these filters.",
+    "emptyScope": "There are no products here yet.",
+    "pages": "Pages",
+    "searchTitle": "Results for “{query}”",
+    "searchNone": "Nothing found for “{query}”. Try another word.",
+    "metaDescription": "{title} — browse and buy online at {store}",
+    "allProducts": "All products",
+    "corrected": "Showing results for “{corrected}”. You searched for “{query}”.",
+    "didYouMean": "Did you mean “{suggestion}”?",
+    "relaxTitle": "Removing one filter finds products:",
+    "relaxFilter": "Without “{filter}” ({count} products)",
+    "newestTitle": "You might like these"
   }
 }

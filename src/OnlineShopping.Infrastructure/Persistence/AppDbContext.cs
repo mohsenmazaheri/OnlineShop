@@ -13,6 +13,7 @@ using OnlineShopping.Domain.Inventory;
 using OnlineShopping.Domain.Pricing;
 using OnlineShopping.Domain.Settings;
 using OnlineShopping.Domain.Sales;
+using OnlineShopping.Domain.Search;
 using OnlineShopping.Domain.Seo;
 using OnlineShopping.Domain.Staff;
 using OnlineShopping.Infrastructure.Identity;
@@ -65,6 +66,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<PurchaseReceiptLine> PurchaseReceiptLines => Set<PurchaseReceiptLine>();
     public DbSet<StockItemInfo> StockItems => Set<StockItemInfo>();
     public DbSet<StockReservation> StockReservations => Set<StockReservation>();
+    public DbSet<SearchDocument> SearchDocuments => Set<SearchDocument>();
+    public DbSet<SearchOutboxEntry> SearchOutbox => Set<SearchOutboxEntry>();
+    public DbSet<SearchTermStat> SearchTermStats => Set<SearchTermStat>();
 
     /// <summary>ASP.NET Core Data Protection keys, shared by all app instances (cookies, antiforgery tokens).</summary>
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
@@ -92,6 +96,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         ConfigureStocktakes(builder);
         ConfigurePurchasing(builder);
         ConfigureReservations(builder);
+        ConfigureSearch(builder);
         ApplySoftDeleteQueryFilters(builder);
     }
 
@@ -678,6 +683,42 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         // Reserved is a count of held units: never below zero.
         b.Entity<Product>().ToTable(tb => tb.HasCheckConstraint("CK_Products_Reserved", "reserved >= 0"));
         b.Entity<ProductVariant>().ToTable(tb => tb.HasCheckConstraint("CK_ProductVariants_Reserved", "reserved >= 0"));
+    }
+
+    /// <summary>
+    /// The search tables. On PostgreSQL the documents table also has a generated full-text column and GIN indexes,
+    /// added in its migration (provider-specific SQL stays in the provider's migrations).
+    /// </summary>
+    private static void ConfigureSearch(ModelBuilder b)
+    {
+        b.Entity<SearchDocument>(e =>
+        {
+            e.ToTable("search_documents");
+            e.HasKey(d => new { d.ProductId, d.Locale });
+            e.Property(d => d.Locale).HasMaxLength(10);
+            e.Property(d => d.Title).HasMaxLength(500);
+            e.Property(d => d.Keywords).HasMaxLength(2000);
+            e.Property(d => d.Details).HasMaxLength(4000);
+            e.Property(d => d.Codes).HasMaxLength(4000);
+            e.Property(d => d.Description).HasMaxLength(4000);
+            e.HasIndex(d => d.Locale);
+            e.HasOne<Product>().WithMany().HasForeignKey(d => d.ProductId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<SearchOutboxEntry>(e =>
+        {
+            e.ToTable("search_outbox");
+            e.Property(o => o.Target).HasConversion<string>().HasMaxLength(16);
+        });
+
+        b.Entity<SearchTermStat>(e =>
+        {
+            e.ToTable("search_term_stats");
+            e.HasKey(t => new { t.Locale, t.Term });
+            e.Property(t => t.Locale).HasMaxLength(10);
+            e.Property(t => t.Term).HasMaxLength(100);
+            e.HasIndex(t => new { t.Locale, t.Searches });
+        });
     }
 
     private static void ConfigureOrders(ModelBuilder b)

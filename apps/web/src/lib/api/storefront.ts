@@ -60,3 +60,21 @@ export async function getCurrencySettings(): Promise<CurrencySettings> {
   cacheLife("minutes");
   return apiGet<CurrencySettings>("/api/v1/currencies");
 }
+
+export type BrowseResult = components["schemas"]["BrowseResult"];
+
+/**
+ * A product listing (category, brand, search) with facets, or null when the address names nothing (404). Cached for
+ * minutes per query: availability follows stock, which changes without a catalog event.
+ */
+export async function browseProducts(query: string): Promise<BrowseResult | null> {
+  "use cache";
+  cacheTag(cacheTags.catalog);
+  cacheLife("minutes");
+  try {
+    return await apiGet<BrowseResult>(`/api/v1/catalog/browse?${query}`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  }
+}

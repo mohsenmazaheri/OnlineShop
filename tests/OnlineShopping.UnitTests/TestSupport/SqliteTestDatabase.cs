@@ -33,7 +33,7 @@ public sealed class SqliteTestDatabase : IDisposable
     public DbContextOptions<AppDbContext> Options => new DbContextOptionsBuilder<AppDbContext>()
         .UseSqlite(_connection)
         .UseSnakeCaseNamingConvention()
-        .AddInterceptors(new AuditableEntityInterceptor(Clock))
+        .AddInterceptors(new AuditableEntityInterceptor(Clock), new SearchOutboxInterceptor(Clock))
         .Options;
 
     /// <summary>Each call returns a fresh context (empty change tracker) over the same database.</summary>
