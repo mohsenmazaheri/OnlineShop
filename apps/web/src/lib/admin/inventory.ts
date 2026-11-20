@@ -50,3 +50,27 @@ export function pageWindow(current: number, pages: number): number[] {
   const wanted = new Set([1, pages, current - 2, current - 1, current, current + 1, current + 2]);
   return [...wanted].filter((p) => p >= 1 && p <= pages).sort((a, b) => a - b);
 }
+
+export type StocktakeFilter = NonNullable<components["schemas"]["StocktakeLineFilter"]>;
+
+export const stocktakeFilters: readonly StocktakeFilter[] = ["All", "Uncounted", "Counted", "Differences"];
+
+/** A line filter from the address bar; anything else means all lines. */
+export function parseStocktakeFilter(value: string): StocktakeFilter {
+  return (stocktakeFilters as readonly string[]).includes(value) ? (value as StocktakeFilter) : "All";
+}
+
+/** "ST-12", as the ledger references a stocktake. */
+export function stocktakeLabel(number: number): string {
+  return `ST-${number}`;
+}
+
+/** The address of a stocktake's page with these line filters (defaults left out). */
+export function stocktakeHref(locale: string, number: number, view: { filter?: StocktakeFilter; search?: string; page?: number } = {}): string {
+  const params = new URLSearchParams();
+  if (view.filter && view.filter !== "All") params.set("filter", view.filter);
+  if (view.search) params.set("search", view.search);
+  if (view.page && view.page > 1) params.set("page", String(view.page));
+  const query = params.toString();
+  return `/${locale}/admin/stocktakes/${number}${query ? `?${query}` : ""}`;
+}

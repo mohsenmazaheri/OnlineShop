@@ -2855,6 +2855,169 @@
         }
       }
     },
+    "/api/v1/admin/inventory/stocktakes": {
+      "get": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Every stocktake, newest first, with how many items were counted.",
+        "operationId": "ListStocktakes",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StocktakeSummary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Start counting a warehouse: every item with its stock now (one open count per warehouse).",
+        "operationId": "OpenStocktake",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpenStocktakeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StocktakeSummary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/stocktakes/{number}": {
+      "get": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "A stocktake with its totals and 50 lines a page (all, uncounted, counted or with a difference).",
+        "operationId": "GetStocktake",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/StocktakeLineFilter"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StocktakeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/stocktakes/{number}/sheet": {
+      "get": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "The count sheet (SKU, name, an empty counted column) as CSV or Excel.",
+        "operationId": "StocktakeSheet",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/v1/admin/inventory/warehouses/{id}": {
       "put": {
         "tags": [
@@ -2973,6 +3136,182 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StockRow"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/stocktakes/{number}/counts": {
+      "post": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Record counts by SKU (add=true adds to the count so far); returns those lines.",
+        "operationId": "CountStocktake",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CountRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StocktakeLineView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/stocktakes/{number}/counts/import": {
+      "post": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Record counts from a filled-in sheet (sku, counted); saved only when every row is valid.",
+        "operationId": "ImportStocktakeCounts",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportReport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/stocktakes/{number}/post": {
+      "post": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Write the differences to the ledger as adjustments and close the stocktake.",
+        "operationId": "PostStocktake",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StocktakeSummary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/stocktakes/{number}/cancel": {
+      "post": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Drop an open stocktake without changing the stock.",
+        "operationId": "CancelStocktake",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StocktakeSummary"
                 }
               }
             }
@@ -5015,6 +5354,40 @@
           "Round"
         ]
       },
+      "CountInput": {
+        "required": [
+          "sku",
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CountRequest": {
+        "required": [
+          "counts"
+        ],
+        "type": "object",
+        "properties": {
+          "counts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CountInput"
+            }
+          },
+          "add": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
       "CurrencyAdminOverview": {
         "required": [
           "base",
@@ -5687,6 +6060,25 @@
           "expiresUtc": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "OpenStocktakeRequest": {
+        "required": [
+          "warehouseId",
+          "note"
+        ],
+        "type": "object",
+        "properties": {
+          "warehouseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -7851,6 +8243,260 @@
             "items": {
               "$ref": "#/components/schemas/WarehouseQuantity"
             }
+          }
+        }
+      },
+      "StocktakeLineFilter": {
+        "enum": [
+          "All",
+          "Uncounted",
+          "Counted",
+          "Differences",
+          null
+        ]
+      },
+      "StocktakeLineView": {
+        "required": [
+          "itemId",
+          "productNumber",
+          "name",
+          "variantLabel",
+          "sku",
+          "snapshot",
+          "expected",
+          "counted",
+          "difference",
+          "countedUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "productNumber": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "variantLabel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sku": {
+            "type": "string"
+          },
+          "snapshot": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "expected": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "counted": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "difference": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "countedUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "StocktakeStatus": {
+        "enum": [
+          "Open",
+          "Posted",
+          "Cancelled"
+        ]
+      },
+      "StocktakeSummary": {
+        "required": [
+          "number",
+          "warehouseId",
+          "warehouse",
+          "status",
+          "note",
+          "createdUtc",
+          "closedUtc",
+          "lines",
+          "counted"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "warehouseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "warehouse": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/StocktakeStatus"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createdUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "closedUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "lines": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "counted": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "StocktakeTotals": {
+        "required": [
+          "lines",
+          "counted",
+          "withDifference",
+          "unitsOver",
+          "unitsShort"
+        ],
+        "type": "object",
+        "properties": {
+          "lines": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "counted": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "withDifference": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unitsOver": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unitsShort": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "StocktakeView": {
+        "required": [
+          "number",
+          "warehouseId",
+          "warehouse",
+          "status",
+          "note",
+          "createdUtc",
+          "closedUtc",
+          "openedBy",
+          "closedBy",
+          "totals",
+          "lines",
+          "total",
+          "page",
+          "pageSize"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "warehouseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "warehouse": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/StocktakeStatus"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createdUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "closedUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "openedBy": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "closedBy": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "totals": {
+            "$ref": "#/components/schemas/StocktakeTotals"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StocktakeLineView"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },

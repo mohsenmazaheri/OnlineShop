@@ -929,6 +929,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/inventory/stocktakes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every stocktake, newest first, with how many items were counted. */
+        get: operations["ListStocktakes"];
+        put?: never;
+        /** Start counting a warehouse: every item with its stock now (one open count per warehouse). */
+        post: operations["OpenStocktake"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/stocktakes/{number}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A stocktake with its totals and 50 lines a page (all, uncounted, counted or with a difference). */
+        get: operations["GetStocktake"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/stocktakes/{number}/sheet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The count sheet (SKU, name, an empty counted column) as CSV or Excel. */
+        get: operations["StocktakeSheet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/inventory/warehouses/{id}": {
         parameters: {
             query?: never;
@@ -958,6 +1010,74 @@ export interface paths {
         put?: never;
         /** Move stock of one item between two warehouses; returns the item's stock afterwards. */
         post: operations["TransferStock"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/stocktakes/{number}/counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record counts by SKU (add=true adds to the count so far); returns those lines. */
+        post: operations["CountStocktake"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/stocktakes/{number}/counts/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record counts from a filled-in sheet (sku, counted); saved only when every row is valid. */
+        post: operations["ImportStocktakeCounts"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/stocktakes/{number}/post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Write the differences to the ledger as adjustments and close the stocktake. */
+        post: operations["PostStocktake"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/stocktakes/{number}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Drop an open stocktake without changing the stock. */
+        post: operations["CancelStocktake"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1834,6 +1954,16 @@ export interface components {
         };
         /** @enum {unknown} */
         CornerStyle: "Sharp" | "Soft" | "Round";
+        CountInput: {
+            sku: string;
+            /** Format: int32 */
+            quantity: number;
+        };
+        CountRequest: {
+            counts: components["schemas"]["CountInput"][];
+            /** @default false */
+            add: boolean;
+        };
         CurrencyAdminOverview: {
             base: string;
             currencies: components["schemas"]["CurrencyView"][];
@@ -2009,6 +2139,11 @@ export interface components {
             roles: string[];
             /** Format: date-time */
             expiresUtc: string;
+        };
+        OpenStocktakeRequest: {
+            /** Format: uuid */
+            warehouseId: string;
+            note: null | string;
         };
         OptionText: {
             locale: string;
@@ -2529,6 +2664,81 @@ export interface components {
             /** Format: int32 */
             total: number;
             levels: components["schemas"]["WarehouseQuantity"][];
+        };
+        /** @enum {unknown} */
+        StocktakeLineFilter: "All" | "Uncounted" | "Counted" | "Differences" | null;
+        StocktakeLineView: {
+            /** Format: uuid */
+            itemId: string;
+            /** Format: int64 */
+            productNumber: number;
+            name: string;
+            variantLabel: null | string;
+            sku: string;
+            /** Format: int32 */
+            snapshot: number;
+            /** Format: int32 */
+            expected: number;
+            /** Format: int32 */
+            counted: null | number;
+            /** Format: int32 */
+            difference: null | number;
+            /** Format: date-time */
+            countedUtc: null | string;
+        };
+        /** @enum {unknown} */
+        StocktakeStatus: "Open" | "Posted" | "Cancelled";
+        StocktakeSummary: {
+            /** Format: int32 */
+            number: number;
+            /** Format: uuid */
+            warehouseId: string;
+            warehouse: string;
+            status: components["schemas"]["StocktakeStatus"];
+            note: null | string;
+            /** Format: date-time */
+            createdUtc: string;
+            /** Format: date-time */
+            closedUtc: null | string;
+            /** Format: int32 */
+            lines: number;
+            /** Format: int32 */
+            counted: number;
+        };
+        StocktakeTotals: {
+            /** Format: int32 */
+            lines: number;
+            /** Format: int32 */
+            counted: number;
+            /** Format: int32 */
+            withDifference: number;
+            /** Format: int32 */
+            unitsOver: number;
+            /** Format: int32 */
+            unitsShort: number;
+        };
+        StocktakeView: {
+            /** Format: int32 */
+            number: number;
+            /** Format: uuid */
+            warehouseId: string;
+            warehouse: string;
+            status: components["schemas"]["StocktakeStatus"];
+            note: null | string;
+            /** Format: date-time */
+            createdUtc: string;
+            /** Format: date-time */
+            closedUtc: null | string;
+            openedBy: null | string;
+            closedBy: null | string;
+            totals: components["schemas"]["StocktakeTotals"];
+            lines: components["schemas"]["StocktakeLineView"][];
+            /** Format: int32 */
+            total: number;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
         };
         /** @description Store settings the storefront needs; `Currency` is the base currency of all prices (ISO 4217). */
         StoreInfoResponse: {
@@ -4722,6 +4932,109 @@ export interface operations {
             };
         };
     };
+    ListStocktakes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StocktakeSummary"][];
+                };
+            };
+        };
+    };
+    OpenStocktake: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpenStocktakeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StocktakeSummary"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    GetStocktake: {
+        parameters: {
+            query?: {
+                filter?: components["schemas"]["StocktakeLineFilter"];
+                search?: string;
+                page?: number;
+                locale?: string;
+            };
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StocktakeView"];
+                };
+            };
+        };
+    };
+    StocktakeSheet: {
+        parameters: {
+            query?: {
+                format?: string;
+                locale?: string;
+            };
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     UpdateWarehouse: {
         parameters: {
             query?: never;
@@ -4808,6 +5121,115 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    CountStocktake: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CountRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StocktakeLineView"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    ImportStocktakeCounts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    file: components["schemas"]["IFormFile"];
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportReport"];
+                };
+            };
+        };
+    };
+    PostStocktake: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StocktakeSummary"];
+                };
+            };
+        };
+    };
+    CancelStocktake: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StocktakeSummary"];
                 };
             };
         };

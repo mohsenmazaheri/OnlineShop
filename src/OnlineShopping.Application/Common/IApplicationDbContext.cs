@@ -46,6 +46,8 @@ public interface IApplicationDbContext
     DbSet<Warehouse> Warehouses { get; }
     DbSet<StockMovement> StockMovements { get; }
     DbSet<StockLevel> StockLevels { get; }
+    DbSet<Stocktake> Stocktakes { get; }
+    DbSet<StocktakeLine> StocktakeLines { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 

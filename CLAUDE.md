@@ -249,6 +249,13 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   `admin.stockReferences`) — not `inventory.*`, which the error-code test treats as error codes (`admin.inventoryErrors`).
   The acting user comes from `ICurrentUser` (`HttpCurrentUser` in the API, `NoCurrentUser` elsewhere). Web:
   `/admin/inventory` (stock + `StockMovementForm`), `/admin/inventory/movements`, `/admin/warehouses`.
+- Stocktakes (`StocktakeService`): one open count per warehouse (filtered unique index), lines snapshot every item
+  at opening; counts by SKU (set or add) store `CountedUtc`, and the difference is counted − the stock at that moment
+  (now minus ledger lines after it), so sales during a count are not differences. Posting writes one adjustment per
+  difference with reference `ST-{n}` (never below zero); uncounted lines are skipped; posted/cancelled are read-only.
+  Count sheets reuse `ProductImportService.ReadTableAsync`/`TableFiles` (columns sku, counted). Names of items in
+  inventory lists come from `ItemNames.LoadAsync`. Web: `/admin/stocktakes` and `/admin/stocktakes/{n}` (the number is
+  read inside `<Suspense>`, or the build fails).
 - All `DateTime`s are UTC (`timestamptz`); all `decimal`s are `numeric(18,2)`.
 - User references (`Cart.CustomerId`, `Order.CustomerId`) are FKs to `users` without navigation properties
   (domain stays free of Identity). Orders `Restrict`, carts cascade.

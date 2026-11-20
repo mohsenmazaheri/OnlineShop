@@ -58,6 +58,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Warehouse> Warehouses => Set<Warehouse>();
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
     public DbSet<StockLevel> StockLevels => Set<StockLevel>();
+    public DbSet<Stocktake> Stocktakes => Set<Stocktake>();
+    public DbSet<StocktakeLine> StocktakeLines => Set<StocktakeLine>();
 
     /// <summary>ASP.NET Core Data Protection keys, shared by all app instances (cookies, antiforgery tokens).</summary>
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
@@ -82,12 +84,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         ConfigureStaff(builder);
         ConfigureCurrencies(builder);
         ConfigureInventory(builder);
+        ConfigureStocktakes(builder);
         ApplySoftDeleteQueryFilters(builder);
     }
 
     /// <summary>The SQL check that keeps the Kind column in sync with every <see cref="StockMovementKind"/> value.</summary>
     internal static string BuildStockMovementKindCheckSql() =>
         $"kind IN ({string.Join(", ", Enum.GetNames<StockMovementKind>().Select(n => $"'{n}'"))})";
+
+    /// <summary>The SQL check that keeps the Status column in sync with every <see cref="StocktakeStatus"/> value.</summary>
+    internal static string BuildStocktakeStatusCheckSql() =>
+        $"status IN ({string.Join(", ", Enum.GetNames<StocktakeStatus>().Select(n => $"'{n}'"))})";
 
     /// <summary>The SQL check that keeps the Status column in sync with every <see cref="OrderStatus"/> value.</summary>
     internal static string BuildOrderStatusCheckSql() =>
@@ -546,6 +553,34 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.HasIndex(l => l.ItemId);
             e.HasIndex(l => l.ProductId);
             e.HasOne<Warehouse>().WithMany().HasForeignKey(l => l.WarehouseId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<Product>().WithMany().HasForeignKey(l => l.ProductId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<ProductVariant>().WithMany().HasForeignKey(l => l.VariantId).OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private static void ConfigureStocktakes(ModelBuilder b)
+    {
+        b.Entity<Stocktake>(e =>
+        {
+            e.ToTable("stocktakes", tb => tb.HasCheckConstraint("CK_Stocktakes_Status", BuildStocktakeStatusCheckSql()));
+            e.Property(s => s.Status).HasConversion<string>().HasMaxLength(16);
+            e.Property(s => s.Note).HasMaxLength(500);
+            e.Property(s => s.OpenedByUserId).HasMaxLength(450);
+            e.Property(s => s.ClosedByUserId).HasMaxLength(450);
+            // Numbers are never reused, so the index ignores soft deletes on purpose.
+            e.HasIndex(s => s.Number).IsUnique();
+            // At most one open stocktake per warehouse.
+            e.HasIndex(s => s.WarehouseId).IsUnique().HasFilter("status = 'Open' AND is_deleted = false");
+            e.HasOne<Warehouse>().WithMany().HasForeignKey(s => s.WarehouseId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<AppUser>().WithMany().HasForeignKey(s => s.OpenedByUserId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<AppUser>().WithMany().HasForeignKey(s => s.ClosedByUserId).OnDelete(DeleteBehavior.Restrict);
+            e.HasMany(s => s.Lines).WithOne().HasForeignKey(l => l.StocktakeId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<StocktakeLine>(e =>
+        {
+            e.ToTable("stocktake_lines");
+            e.HasKey(l => new { l.StocktakeId, l.ItemId });
             e.HasOne<Product>().WithMany().HasForeignKey(l => l.ProductId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne<ProductVariant>().WithMany().HasForeignKey(l => l.VariantId).OnDelete(DeleteBehavior.Restrict);
         });
