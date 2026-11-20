@@ -30,9 +30,14 @@ public static class InventoryEndpoints
                 (await warehouses.DeleteAsync(id, ct)).ToHttpResult())
             .WithName("DeleteWarehouse").WithSummary("Delete a warehouse that never had a movement.");
 
-        view.MapGet("/stock", async (string? search, bool? onlyOut, int? page, string? locale, InventoryService inventory, CancellationToken ct) =>
-                TypedResults.Ok(await inventory.StockAsync(search, onlyOut ?? false, page ?? 1, locale, ct)))
-            .WithName("ListStock").WithSummary("Stock per item (a product, or each of its variants) and warehouse, 20 products a page.");
+        view.MapGet("/stock", async (string? search, bool? onlyOut, bool? onlyLow, int? page, string? locale, InventoryService inventory, CancellationToken ct) =>
+                TypedResults.Ok(await inventory.StockAsync(search, onlyOut ?? false, page ?? 1, locale, onlyLow ?? false, ct)))
+            .WithName("ListStock")
+            .WithSummary("Stock per item (a product, or each of its variants) and warehouse with average cost and minimum, 20 products a page.");
+        manage.MapPut("/items/settings", async (SaveItemSettingsRequest request, InventoryService inventory, CancellationToken ct) =>
+                (await inventory.SaveItemSettingsAsync(request, ct)).ToHttpResult())
+            .Validate<SaveItemSettingsRequest>().WithName("SaveStockItemSettings")
+            .WithSummary("Set an item's minimum stock (null = no alert) and, optionally, its average cost.").Produces<ItemSettingsView>();
         view.MapGet("/movements", async (string? sku, Guid? warehouseId, StockMovementKind? kind, int? page, string? locale, InventoryService inventory, CancellationToken ct) =>
                 TypedResults.Ok(await inventory.MovementsAsync(sku, warehouseId, kind, page ?? 1, locale, ct)))
             .WithName("ListStockMovements").WithSummary("The stock ledger, newest first, 50 lines a page.");
@@ -80,6 +85,42 @@ public static class InventoryEndpoints
                 (await stocktakes.CancelAsync(number, ct)).ToHttpResult())
             .WithName("CancelStocktake").WithSummary("Drop an open stocktake without changing the stock.").Produces<StocktakeSummary>();
 
+        MapPurchasing(view, manage);
         return app;
+    }
+
+    private static void MapPurchasing(RouteGroupBuilder view, RouteGroupBuilder manage)
+    {
+        view.MapGet("/suppliers", async (SupplierService suppliers, CancellationToken ct) => TypedResults.Ok(await suppliers.ListAsync(ct)))
+            .WithName("ListSuppliers").WithSummary("Every supplier (active first) with its number of receipts.");
+        manage.MapPost("/suppliers", async (SaveSupplierRequest request, SupplierService suppliers, CancellationToken ct) =>
+                (await suppliers.CreateAsync(request, ct)).ToHttpResult())
+            .Validate<SaveSupplierRequest>().WithName("CreateSupplier").WithSummary("Add a supplier.").Produces<SupplierView>();
+        manage.MapPut("/suppliers/{id:guid}", async (Guid id, SaveSupplierRequest request, SupplierService suppliers, CancellationToken ct) =>
+                (await suppliers.UpdateAsync(id, request, ct)).ToHttpResult())
+            .Validate<SaveSupplierRequest>().WithName("UpdateSupplier").WithSummary("Change or deactivate a supplier.").Produces<SupplierView>();
+        manage.MapDelete("/suppliers/{id:guid}", async (Guid id, SupplierService suppliers, CancellationToken ct) =>
+                (await suppliers.DeleteAsync(id, ct)).ToHttpResult())
+            .WithName("DeleteSupplier").WithSummary("Delete a supplier without receipts.");
+
+        view.MapGet("/purchases", async (PurchaseReceiptStatus? status, PurchaseService purchases, CancellationToken ct) =>
+                TypedResults.Ok(await purchases.ListAsync(status, ct)))
+            .WithName("ListPurchaseReceipts").WithSummary("Purchase receipts, newest first, with their totals (optionally by status).");
+        view.MapGet("/purchases/{number:int}", async (int number, string? locale, PurchaseService purchases, CancellationToken ct) =>
+                (await purchases.GetAsync(number, locale, ct)).ToHttpResult())
+            .WithName("GetPurchaseReceipt").WithSummary("A purchase receipt with its lines and totals.").Produces<ReceiptView>();
+        manage.MapPost("/purchases", async (SaveReceiptRequest request, string? locale, PurchaseService purchases, CancellationToken ct) =>
+                (await purchases.CreateAsync(request, locale, ct)).ToHttpResult())
+            .Validate<SaveReceiptRequest>().WithName("CreatePurchaseReceipt").WithSummary("Write a draft purchase receipt.").Produces<ReceiptView>();
+        manage.MapPut("/purchases/{number:int}", async (int number, SaveReceiptRequest request, string? locale, PurchaseService purchases, CancellationToken ct) =>
+                (await purchases.UpdateAsync(number, request, locale, ct)).ToHttpResult())
+            .Validate<SaveReceiptRequest>().WithName("UpdatePurchaseReceipt").WithSummary("Change a draft: header and the whole set of lines.").Produces<ReceiptView>();
+        manage.MapPost("/purchases/{number:int}/post", async (int number, string? locale, PurchaseService purchases, CancellationToken ct) =>
+                (await purchases.PostAsync(number, locale, ct)).ToHttpResult())
+            .WithName("PostPurchaseReceipt")
+            .WithSummary("Bring the goods in: a ledger receipt per line with its cost (updates average costs).").Produces<ReceiptView>();
+        manage.MapPost("/purchases/{number:int}/cancel", async (int number, string? locale, PurchaseService purchases, CancellationToken ct) =>
+                (await purchases.CancelAsync(number, locale, ct)).ToHttpResult())
+            .WithName("CancelPurchaseReceipt").WithSummary("Drop a draft receipt.").Produces<ReceiptView>();
     }
 }

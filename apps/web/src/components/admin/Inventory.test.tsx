@@ -21,7 +21,9 @@ const bodyOf = (i = 0) => JSON.parse(String(call(i)[1].body));
 const main = { id: "w-main", code: "main", name: "Main warehouse", address: null, isDefault: true, isActive: true, units: 40, items: 2, used: true };
 const shop = { id: "w-shop", code: "shop", name: "Shop floor", address: "1 High St", isDefault: false, isActive: true, units: 3, items: 1, used: false };
 const old = { id: "w-old", code: "old", name: "Old store", address: null, isDefault: false, isActive: false, units: 0, items: 0, used: true };
-const row = (over: Partial<{ sku: string; total: number; variantLabel: string | null }> = {}) => ({
+const row = (
+  over: Partial<{ sku: string; total: number; variantLabel: string | null; averageCost: number | null; minimumStock: number | null; low: boolean; value: number | null }> = {},
+) => ({
   itemId: over.sku ?? "SHOE-1",
   productNumber: 1001,
   name: "Walking shoes",
@@ -33,6 +35,10 @@ const row = (over: Partial<{ sku: string; total: number; variantLabel: string | 
     { warehouseId: "w-main", quantity: 30 },
     { warehouseId: "w-shop", quantity: 3 },
   ],
+  averageCost: null as number | null,
+  minimumStock: null as number | null,
+  low: false,
+  value: null as number | null,
   ...over,
 });
 
@@ -47,13 +53,21 @@ afterEach(() => {
 });
 
 describe("StockList", () => {
-  const page = { items: [row(), row({ sku: "HOOD-S", total: 0, variantLabel: "Beige / S" })], total: 2, page: 1, pageSize: 20, warehouses: [main, shop, old] };
+  const page = {
+    items: [row({ averageCost: 20, value: 660, minimumStock: 40, low: true }), row({ sku: "HOOD-S", total: 0, variantLabel: "Beige / S" })],
+    total: 2,
+    page: 1,
+    pageSize: 20,
+    warehouses: [main, shop, old],
+    lowCount: 1,
+    currency: "EUR",
+  };
 
   it("shows a column per active warehouse, the total and links to the ledger and the movement form", () => {
     render(<StockList locale="en" texts={texts} page={page} search="" onlyOut={false} canManage />);
 
     const headers = screen.getAllByRole("columnheader").map((h) => h.textContent);
-    expect(headers).toEqual([texts.stockItem, "Main warehouse", "Shop floor", texts.stockTotal, texts.stockHistory]);
+    expect(headers).toEqual([texts.stockItem, "Main warehouse", "Shop floor", texts.stockTotal, texts.stockAverageCost, texts.stockValue, texts.stockHistory]);
     const hoodie = screen.getByText("Beige / S").closest("tr")!;
     expect(within(hoodie).getByText("0", { selector: "td.text-danger" })).toBeTruthy();
     expect(within(hoodie).getByRole("link", { name: texts.stockHistory }).getAttribute("href")).toBe("/en/admin/inventory/movements?sku=HOOD-S");
@@ -65,7 +79,26 @@ describe("StockList", () => {
 
     expect(screen.queryByRole("link", { name: texts.stockMove })).toBeNull();
     expect(screen.getByRole("link", { name: "3" }).getAttribute("href")).toBe("/en/admin/inventory?search=shoe&onlyOut=true&page=3");
-    expect((screen.getByRole("checkbox") as HTMLInputElement).checked).toBe(true);
+    expect((screen.getByRole("checkbox", { name: texts.stockOnlyOut }) as HTMLInputElement).checked).toBe(true);
+  });
+
+  it("shows cost, value, the minimum and a banner for items running low", () => {
+    render(<StockList locale="en" texts={texts} page={page} search="" onlyOut={false} canManage />);
+
+    expect(screen.getByRole("status").textContent).toContain("1 items are at or below their minimum stock.");
+    expect(screen.getByRole("link", { name: texts.stockLowShow }).getAttribute("href")).toBe("/en/admin/inventory?onlyLow=true");
+    const shoes = screen.getByText("SHOE-1", { exact: false }).closest("tr")!;
+    expect(within(shoes).getByText(texts.stockLow)).toBeTruthy();
+    expect(within(shoes).getByText("€20")).toBeTruthy();
+    expect(within(shoes).getByText("€660")).toBeTruthy();
+    expect(within(shoes).getByText(`${texts.stockMinimum} 40`)).toBeTruthy();
+    expect(within(screen.getByText("Beige / S").closest("tr")!).getAllByText("—")).toHaveLength(2);
+  });
+
+  it("hides the banner while showing only the low items", () => {
+    render(<StockList locale="en" texts={texts} page={page} search="" onlyOut={false} onlyLow canManage />);
+    expect(screen.queryByRole("status")).toBeNull();
+    expect((screen.getByRole("checkbox", { name: texts.stockOnlyLow }) as HTMLInputElement).checked).toBe(true);
   });
 });
 

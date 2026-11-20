@@ -49,6 +49,8 @@ public static class DependencyInjection
         services.AddScoped<Inventory.WarehouseService>();
         services.AddScoped<Inventory.InventoryService>();
         services.AddScoped<Inventory.StocktakeService>();
+        services.AddScoped<Inventory.SupplierService>();
+        services.AddScoped<Inventory.PurchaseService>();
         services.AddOptions<MediaOptions>().Bind(configuration.GetSection(MediaOptions.SectionName));
         services.AddScoped<LoginIdentifierParser>();
         services.AddScoped<AccountService>();

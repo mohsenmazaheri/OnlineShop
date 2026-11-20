@@ -255,7 +255,15 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   difference with reference `ST-{n}` (never below zero); uncounted lines are skipped; posted/cancelled are read-only.
   Count sheets reuse `ProductImportService.ReadTableAsync`/`TableFiles` (columns sku, counted). Names of items in
   inventory lists come from `ItemNames.LoadAsync`. Web: `/admin/stocktakes` and `/admin/stocktakes/{n}` (the number is
-  read inside `<Suspense>`, or the build fails).
+  read inside `<Suspense>`, or the build fails). Find an item by SKU with `StockItemLookup.FindAsync`.
+- Purchasing: `SupplierService` (deactivate, never delete one with receipts) and `PurchaseService` (draft → post;
+  numbers `PR-{n}`; lines keyed by receipt + item, replaced with ExecuteDelete + insert; totals on the server; costs in
+  `Store:Currency`, kept on the receipt). Posting calls `StockLedger.PostAsync(..., unitCost:)` per line, which moves
+  the weighted average in `StockItemInfo` (`stock_items`: `AverageCost` numeric(18,4), `MinimumStock`) — costs use
+  four decimals, the one exception to numeric(18,2). Every `StockMovement.UnitCost` is the purchase price or the
+  average at that moment (phase 9 values movements with it). Low stock = total ≤ `MinimumStock`
+  (`InventoryService.LowStockCountAsync`, `onlyLow`). Web: `/admin/suppliers`, `/admin/purchases`, `/purchases/new`,
+  `/purchases/{n}` (`ReceiptEditor`), `ItemSettingsForm` on `/admin/inventory`.
 - All `DateTime`s are UTC (`timestamptz`); all `decimal`s are `numeric(18,2)`.
 - User references (`Cart.CustomerId`, `Order.CustomerId`) are FKs to `users` without navigation properties
   (domain stays free of Identity). Orders `Restrict`, carts cascade.

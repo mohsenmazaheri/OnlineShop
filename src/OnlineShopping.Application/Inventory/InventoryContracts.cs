@@ -21,6 +21,8 @@ public static class InventoryErrors
     public const string KindInvalid = "inventory.kind_invalid";
     public const string SameWarehouse = "inventory.same_warehouse";
     public const string TextTooLong = "inventory.text_too_long";
+    public const string CostInvalid = "inventory.cost_invalid";
+    public const string MinimumInvalid = "inventory.minimum_invalid";
 }
 
 /// <summary>
@@ -77,14 +79,20 @@ public sealed record StockRow(
     string Sku,
     bool IsPublished,
     int Total,
-    IReadOnlyList<WarehouseQuantity> Levels);
+    IReadOnlyList<WarehouseQuantity> Levels,
+    decimal? AverageCost,
+    int? MinimumStock,
+    bool Low,
+    decimal? Value);
 
 public sealed record StockPage(
     IReadOnlyList<StockRow> Items,
     int Total,
     int Page,
     int PageSize,
-    IReadOnlyList<WarehouseView> Warehouses);
+    IReadOnlyList<WarehouseView> Warehouses,
+    int LowCount,
+    string Currency);
 
 public sealed record MovementView(
     Guid Id,

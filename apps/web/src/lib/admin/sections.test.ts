@@ -10,6 +10,7 @@ describe("admin sections", () => {
     expect(sectionsByGroup([])).toEqual([]);
     // The warehouse role sees only the inventory group.
     expect(sectionsByGroup(["inventory.view", "inventory.manage", "orders.view"]).map((g) => g.group)).toEqual(["inventory"]);
+    expect(visibleSections(["inventory.view"]).map((s) => s.section)).toEqual(["inventory", "movements", "purchases", "stocktakes", "suppliers", "warehouses"]);
     expect(visibleSections(["catalog.manage"]).map((s) => s.section)).toEqual(["products", "catalog", "brands", "specs", "import", "seo"]);
   });
 

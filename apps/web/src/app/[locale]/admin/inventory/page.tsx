@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { AdminCard, AdminShell } from "@/components/admin/AdminShell";
+import { ItemSettingsForm } from "@/components/admin/ItemSettingsForm";
 import { StockList } from "@/components/admin/StockList";
 import { StockMovementForm } from "@/components/admin/StockMovementForm";
 import { requirePermission } from "@/lib/admin/access";
@@ -21,9 +22,18 @@ async function Inventory({ locale, texts, searchParams }: { locale: Locale; text
   const query = await searchParams;
   const search = firstParam(query.search).slice(0, 100);
   const onlyOut = firstParam(query.onlyOut) === "true";
+  const onlyLow = firstParam(query.onlyLow) === "true";
   const sku = firstParam(query.sku).slice(0, 64);
   const pageNumber = Math.max(1, Number.parseInt(firstParam(query.page), 10) || 1);
-  const page = (await getStock({ search, onlyOut, page: pageNumber, locale })) ?? { items: [], total: 0, page: 1, pageSize: 20, warehouses: [] };
+  const page = (await getStock({ search, onlyOut, onlyLow, page: pageNumber, locale })) ?? {
+    items: [],
+    total: 0,
+    page: 1,
+    pageSize: 20,
+    warehouses: [],
+    lowCount: 0,
+    currency: "",
+  };
   const canManage = user.permissions.includes("inventory.manage");
 
   return (
@@ -35,8 +45,13 @@ async function Inventory({ locale, texts, searchParams }: { locale: Locale; text
         </AdminCard>
       )}
       <AdminCard title={texts.inventoryTitle} id="stock">
-        <StockList locale={locale} texts={texts} page={page} search={search} onlyOut={onlyOut} canManage={canManage} />
+        <StockList locale={locale} texts={texts} page={page} search={search} onlyOut={onlyOut} onlyLow={onlyLow} canManage={canManage} />
       </AdminCard>
+      {canManage && (
+        <AdminCard title={texts.itemSettingsTitle} id="settings">
+          <ItemSettingsForm texts={texts} currency={page.currency} sku={sku} />
+        </AdminCard>
+      )}
     </AdminShell>
   );
 }

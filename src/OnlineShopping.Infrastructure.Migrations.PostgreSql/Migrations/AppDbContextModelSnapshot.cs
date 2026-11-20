@@ -1045,6 +1045,183 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.ToTable("customer_addresses", (string)null);
                 });
 
+            modelBuilder.Entity("OnlineShopping.Domain.Inventory.PurchaseReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ClosedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)")
+                        .HasColumnName("closed_by_user_id");
+
+                    b.Property<DateTime?>("ClosedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_utc");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)")
+                        .HasColumnName("created_by_user_id");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("note");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer")
+                        .HasColumnName("number");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("SupplierId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("supplier_id");
+
+                    b.Property<string>("SupplierReference")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("supplier_reference");
+
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("warehouse_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_purchase_receipts");
+
+                    b.HasIndex("ClosedByUserId")
+                        .HasDatabaseName("ix_purchase_receipts_closed_by_user_id");
+
+                    b.HasIndex("CreatedByUserId")
+                        .HasDatabaseName("ix_purchase_receipts_created_by_user_id");
+
+                    b.HasIndex("Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_purchase_receipts_number");
+
+                    b.HasIndex("SupplierId")
+                        .HasDatabaseName("ix_purchase_receipts_supplier_id");
+
+                    b.HasIndex("WarehouseId")
+                        .HasDatabaseName("ix_purchase_receipts_warehouse_id");
+
+                    b.ToTable("purchase_receipts", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_PurchaseReceipts_Status", "status IN ('Draft', 'Posted', 'Cancelled')");
+                        });
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Inventory.PurchaseReceiptLine", b =>
+                {
+                    b.Property<Guid>("ReceiptId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("receipt_id");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("item_id");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasColumnName("unit_cost");
+
+                    b.Property<Guid?>("VariantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("variant_id");
+
+                    b.HasKey("ReceiptId", "ItemId")
+                        .HasName("pk_purchase_receipt_lines");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_purchase_receipt_lines_product_id");
+
+                    b.HasIndex("VariantId")
+                        .HasDatabaseName("ix_purchase_receipt_lines_variant_id");
+
+                    b.ToTable("purchase_receipt_lines", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_PurchaseReceiptLines_Values", "quantity > 0 AND unit_cost >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Inventory.StockItemInfo", b =>
+                {
+                    b.Property<Guid>("ItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("item_id");
+
+                    b.Property<decimal?>("AverageCost")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasColumnName("average_cost");
+
+                    b.Property<int?>("MinimumStock")
+                        .HasColumnType("integer")
+                        .HasColumnName("minimum_stock");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<Guid?>("VariantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("variant_id");
+
+                    b.HasKey("ItemId")
+                        .HasName("pk_stock_items");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_stock_items_product_id");
+
+                    b.HasIndex("VariantId")
+                        .HasDatabaseName("ix_stock_items_variant_id");
+
+                    b.ToTable("stock_items", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_StockItems_Values", "(average_cost IS NULL OR average_cost >= 0) AND (minimum_stock IS NULL OR minimum_stock >= 0)");
+                        });
+                });
+
             modelBuilder.Entity("OnlineShopping.Domain.Inventory.StockLevel", b =>
                 {
                     b.Property<Guid>("WarehouseId")
@@ -1139,6 +1316,11 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.Property<Guid?>("TransferId")
                         .HasColumnType("uuid")
                         .HasColumnName("transfer_id");
+
+                    b.Property<decimal?>("UnitCost")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasColumnName("unit_cost");
 
                     b.Property<string>("UserId")
                         .HasMaxLength(450)
@@ -1307,6 +1489,69 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasDatabaseName("ix_stocktake_lines_variant_id");
 
                     b.ToTable("stocktake_lines", (string)null);
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Inventory.Supplier", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("address");
+
+                    b.Property<string>("ContactName")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("contact_name");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("email");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("note");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("phone");
+
+                    b.HasKey("Id")
+                        .HasName("pk_suppliers");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("ix_suppliers_name");
+
+                    b.ToTable("suppliers", (string)null);
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Inventory.Warehouse", b =>
@@ -2751,6 +2996,74 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasConstraintName("fk_customer_addresses_users_customer_id");
                 });
 
+            modelBuilder.Entity("OnlineShopping.Domain.Inventory.PurchaseReceipt", b =>
+                {
+                    b.HasOne("OnlineShopping.Infrastructure.Identity.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("ClosedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_purchase_receipts_users_closed_by_user_id");
+
+                    b.HasOne("OnlineShopping.Infrastructure.Identity.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_purchase_receipts_users_created_by_user_id");
+
+                    b.HasOne("OnlineShopping.Domain.Inventory.Supplier", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_purchase_receipts_suppliers_supplier_id");
+
+                    b.HasOne("OnlineShopping.Domain.Inventory.Warehouse", null)
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_purchase_receipts_warehouses_warehouse_id");
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Inventory.PurchaseReceiptLine", b =>
+                {
+                    b.HasOne("OnlineShopping.Domain.Catalog.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_purchase_receipt_lines_products_product_id");
+
+                    b.HasOne("OnlineShopping.Domain.Inventory.PurchaseReceipt", null)
+                        .WithMany("Lines")
+                        .HasForeignKey("ReceiptId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_purchase_receipt_lines_purchase_receipts_receipt_id");
+
+                    b.HasOne("OnlineShopping.Domain.Catalog.ProductVariant", null)
+                        .WithMany()
+                        .HasForeignKey("VariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_purchase_receipt_lines_product_variants_variant_id");
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Inventory.StockItemInfo", b =>
+                {
+                    b.HasOne("OnlineShopping.Domain.Catalog.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_stock_items_products_product_id");
+
+                    b.HasOne("OnlineShopping.Domain.Catalog.ProductVariant", null)
+                        .WithMany()
+                        .HasForeignKey("VariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_stock_items_product_variants_variant_id");
+                });
+
             modelBuilder.Entity("OnlineShopping.Domain.Inventory.StockLevel", b =>
                 {
                     b.HasOne("OnlineShopping.Domain.Catalog.Product", null)
@@ -2947,6 +3260,11 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
             modelBuilder.Entity("OnlineShopping.Domain.Catalog.SubCategory", b =>
                 {
                     b.Navigation("Groups");
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Inventory.PurchaseReceipt", b =>
+                {
+                    b.Navigation("Lines");
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Inventory.Stocktake", b =>

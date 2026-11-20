@@ -60,6 +60,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<StockLevel> StockLevels => Set<StockLevel>();
     public DbSet<Stocktake> Stocktakes => Set<Stocktake>();
     public DbSet<StocktakeLine> StocktakeLines => Set<StocktakeLine>();
+    public DbSet<Supplier> Suppliers => Set<Supplier>();
+    public DbSet<PurchaseReceipt> PurchaseReceipts => Set<PurchaseReceipt>();
+    public DbSet<PurchaseReceiptLine> PurchaseReceiptLines => Set<PurchaseReceiptLine>();
+    public DbSet<StockItemInfo> StockItems => Set<StockItemInfo>();
 
     /// <summary>ASP.NET Core Data Protection keys, shared by all app instances (cookies, antiforgery tokens).</summary>
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
@@ -85,6 +89,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         ConfigureCurrencies(builder);
         ConfigureInventory(builder);
         ConfigureStocktakes(builder);
+        ConfigurePurchasing(builder);
         ApplySoftDeleteQueryFilters(builder);
     }
 
@@ -95,6 +100,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     /// <summary>The SQL check that keeps the Status column in sync with every <see cref="StocktakeStatus"/> value.</summary>
     internal static string BuildStocktakeStatusCheckSql() =>
         $"status IN ({string.Join(", ", Enum.GetNames<StocktakeStatus>().Select(n => $"'{n}'"))})";
+
+    /// <summary>The SQL check that keeps the Status column in sync with every <see cref="PurchaseReceiptStatus"/> value.</summary>
+    internal static string BuildPurchaseReceiptStatusCheckSql() =>
+        $"status IN ({string.Join(", ", Enum.GetNames<PurchaseReceiptStatus>().Select(n => $"'{n}'"))})";
 
     /// <summary>The SQL check that keeps the Status column in sync with every <see cref="OrderStatus"/> value.</summary>
     internal static string BuildOrderStatusCheckSql() =>
@@ -534,6 +543,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.Property(m => m.Reference).HasMaxLength(100);
             e.Property(m => m.Note).HasMaxLength(500);
             e.Property(m => m.UserId).HasMaxLength(450);
+            e.Property(m => m.UnitCost).HasPrecision(18, 4);
             // The ledger of one item, of one warehouse, and the latest lines overall.
             e.HasIndex(m => new { m.ItemId, m.CreatedUtc });
             e.HasIndex(m => new { m.WarehouseId, m.CreatedUtc });
@@ -583,6 +593,60 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.HasKey(l => new { l.StocktakeId, l.ItemId });
             e.HasOne<Product>().WithMany().HasForeignKey(l => l.ProductId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne<ProductVariant>().WithMany().HasForeignKey(l => l.VariantId).OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    /// <summary>Costs keep four decimals: an average of several purchases is rarely a whole cent.</summary>
+    private static void ConfigurePurchasing(ModelBuilder b)
+    {
+        b.Entity<Supplier>(e =>
+        {
+            e.ToTable("suppliers");
+            e.Property(s => s.Name).HasMaxLength(150);
+            e.Property(s => s.ContactName).HasMaxLength(150);
+            e.Property(s => s.Phone).HasMaxLength(30);
+            e.Property(s => s.Email).HasMaxLength(254);
+            e.Property(s => s.Address).HasMaxLength(300);
+            e.Property(s => s.Note).HasMaxLength(500);
+            e.HasIndex(s => s.Name);
+        });
+
+        b.Entity<PurchaseReceipt>(e =>
+        {
+            e.ToTable("purchase_receipts", tb => tb.HasCheckConstraint("CK_PurchaseReceipts_Status", BuildPurchaseReceiptStatusCheckSql()));
+            e.Property(p => p.Status).HasConversion<string>().HasMaxLength(16);
+            e.Property(p => p.SupplierReference).HasMaxLength(100);
+            e.Property(p => p.Note).HasMaxLength(500);
+            e.Property(p => p.Currency).HasMaxLength(3);
+            e.Property(p => p.CreatedByUserId).HasMaxLength(450);
+            e.Property(p => p.ClosedByUserId).HasMaxLength(450);
+            // Numbers are never reused, so the index ignores soft deletes on purpose.
+            e.HasIndex(p => p.Number).IsUnique();
+            e.HasIndex(p => p.SupplierId);
+            e.HasOne<Supplier>().WithMany().HasForeignKey(p => p.SupplierId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<Warehouse>().WithMany().HasForeignKey(p => p.WarehouseId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<AppUser>().WithMany().HasForeignKey(p => p.CreatedByUserId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<AppUser>().WithMany().HasForeignKey(p => p.ClosedByUserId).OnDelete(DeleteBehavior.Restrict);
+            e.HasMany(p => p.Lines).WithOne().HasForeignKey(l => l.ReceiptId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<PurchaseReceiptLine>(e =>
+        {
+            e.ToTable("purchase_receipt_lines", tb => tb.HasCheckConstraint("CK_PurchaseReceiptLines_Values", "quantity > 0 AND unit_cost >= 0"));
+            e.HasKey(l => new { l.ReceiptId, l.ItemId });
+            e.Property(l => l.UnitCost).HasPrecision(18, 4);
+            e.HasOne<Product>().WithMany().HasForeignKey(l => l.ProductId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<ProductVariant>().WithMany().HasForeignKey(l => l.VariantId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        b.Entity<StockItemInfo>(e =>
+        {
+            e.ToTable("stock_items", tb => tb.HasCheckConstraint("CK_StockItems_Values", "(average_cost IS NULL OR average_cost >= 0) AND (minimum_stock IS NULL OR minimum_stock >= 0)"));
+            e.HasKey(i => i.ItemId);
+            e.Property(i => i.AverageCost).HasPrecision(18, 4);
+            e.HasIndex(i => i.ProductId);
+            e.HasOne<Product>().WithMany().HasForeignKey(i => i.ProductId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<ProductVariant>().WithMany().HasForeignKey(i => i.VariantId).OnDelete(DeleteBehavior.Restrict);
         });
     }
 

@@ -38,14 +38,25 @@ public sealed class AppDbContextModelTests : IDisposable
             // Exchange rates and their rounding steps are not money: they need more scale (see ConfigureCurrencies).
             .Where(p => p.DeclaringType.ClrType != typeof(OnlineShopping.Domain.Pricing.Currency))
             .ToList();
+        // Unit costs keep four decimals: an average of several purchases is rarely a whole cent.
+        var costs = decimals.Where(p => CostColumns.Contains((p.DeclaringType.ClrType.Name, p.Name))).ToList();
 
         Assert.NotEmpty(decimals);
-        Assert.All(decimals, p =>
+        Assert.Equal(CostColumns.Count, costs.Count);
+        Assert.All(costs, p => Assert.Equal((18, 4), (p.GetPrecision(), p.GetScale())));
+        Assert.All(decimals.Except(costs), p =>
         {
             Assert.Equal(18, p.GetPrecision());
             Assert.Equal(2, p.GetScale());
         });
     }
+
+    private static readonly HashSet<(string Entity, string Property)> CostColumns =
+    [
+        (nameof(OnlineShopping.Domain.Inventory.StockMovement), nameof(OnlineShopping.Domain.Inventory.StockMovement.UnitCost)),
+        (nameof(OnlineShopping.Domain.Inventory.PurchaseReceiptLine), nameof(OnlineShopping.Domain.Inventory.PurchaseReceiptLine.UnitCost)),
+        (nameof(OnlineShopping.Domain.Inventory.StockItemInfo), nameof(OnlineShopping.Domain.Inventory.StockItemInfo.AverageCost)),
+    ];
 
     [Theory]
     [InlineData(typeof(Cart), nameof(Cart.CustomerId))]

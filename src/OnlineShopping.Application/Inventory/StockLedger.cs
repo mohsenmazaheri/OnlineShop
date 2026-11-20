@@ -27,7 +27,12 @@ public sealed class StockLedger(IApplicationDbContext db, ICurrentUser currentUs
         ["ar"] = "المستودع الرئيسي",
     };
 
-    /// <summary>Adds (positive) or takes out (negative) stock of one item in one warehouse. Returns the new balance there.</summary>
+    /// <summary>
+    /// Adds (positive) or takes out (negative) stock of one item in one warehouse. Returns the new balance there.
+    /// A receipt with a <paramref name="unitCost"/> (a purchase) also moves the item's weighted average cost:
+    /// (stock before × average + quantity × cost) ÷ (stock before + quantity), over all warehouses. Every line records
+    /// a unit cost: the purchase price, else the average at that moment.
+    /// </summary>
     public async Task<Result<int>> PostAsync(
         Guid warehouseId,
         StockItem item,
@@ -36,12 +41,18 @@ public sealed class StockLedger(IApplicationDbContext db, ICurrentUser currentUs
         string? reference = null,
         string? note = null,
         Guid? transferId = null,
+        decimal? unitCost = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(item);
         if (quantity == 0)
             return AppError.Validation(InventoryErrors.QuantityInvalid, "A movement needs a quantity.");
+        if (unitCost is < 0)
+            return AppError.Validation(InventoryErrors.CostInvalid, "A cost cannot be negative.");
         var itemId = item.ItemId;
+        var stockBefore = item.VariantId is { } variant
+            ? await db.ProductVariants.IgnoreQueryFilters().Where(v => v.Id == variant).Select(v => v.Stock).SingleAsync(cancellationToken)
+            : await db.Products.IgnoreQueryFilters().Where(p => p.Id == item.ProductId).Select(p => p.Stock).SingleAsync(cancellationToken);
 
         var changed = await db.StockLevels
             .Where(l => l.WarehouseId == warehouseId && l.ItemId == itemId && l.Quantity + quantity >= 0)
@@ -68,6 +79,17 @@ public sealed class StockLedger(IApplicationDbContext db, ICurrentUser currentUs
                 .ExecuteUpdateAsync(s => s.SetProperty(v => v.Stock, v => v.Stock + quantity), cancellationToken);
         }
 
+        var info = await db.StockItems.FirstOrDefaultAsync(i => i.ItemId == itemId, cancellationToken);
+        if (kind == StockMovementKind.Receipt && quantity > 0 && unitCost is { } cost)
+        {
+            if (info is null)
+            {
+                info = new StockItemInfo { ItemId = itemId, ProductId = item.ProductId, VariantId = item.VariantId };
+                db.StockItems.Add(info);
+            }
+            info.AverageCost = AverageCost(info.AverageCost, stockBefore, quantity, cost);
+        }
+
         var line = new StockMovement
         {
             WarehouseId = warehouseId,
@@ -81,13 +103,26 @@ public sealed class StockLedger(IApplicationDbContext db, ICurrentUser currentUs
             Note = note,
             TransferId = transferId,
             UserId = currentUser.UserId,
+            UnitCost = unitCost ?? info?.AverageCost,
         };
         db.StockMovements.Add(line);
         await db.SaveChangesAsync(cancellationToken);
         Forget<StockLevel>(l => l.WarehouseId == warehouseId && l.ItemId == itemId);
         Forget<StockMovement>(m => m.Id == line.Id);
+        Forget<StockItemInfo>(i => i.ItemId == itemId);
         SyncTracked(item, quantity);
         return balance;
+    }
+
+    /// <summary>
+    /// The weighted average after receiving <paramref name="quantity"/> at <paramref name="cost"/>. Without an average
+    /// yet, or with no stock before (nothing left to average with), the new cost is the average. Four decimals.
+    /// </summary>
+    public static decimal AverageCost(decimal? average, int stockBefore, int quantity, decimal cost)
+    {
+        if (average is not { } current || stockBefore <= 0)
+            return decimal.Round(cost, 4, MidpointRounding.AwayFromZero);
+        return decimal.Round((stockBefore * current + quantity * cost) / (stockBefore + quantity), 4, MidpointRounding.AwayFromZero);
     }
 
     /// <summary>
