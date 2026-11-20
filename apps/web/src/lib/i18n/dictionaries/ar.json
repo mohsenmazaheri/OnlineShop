@@ -671,7 +671,8 @@
       "warehouses": "المستودعات والافتراضي منها وتفعيلها أو تعطيلها",
       "stocktakes": "عدّ المستودع وعرض الفروقات وترحيل التسويات",
       "suppliers": "الموردون وبيانات الاتصال",
-      "purchases": "إيصالات الشراء بتكلفة الوحدة ومتوسط التكلفة"
+      "purchases": "إيصالات الشراء بتكلفة الوحدة ومتوسط التكلفة",
+      "reservations": "وحدات محجوزة لعمليات دفع غير مكتملة"
     },
     "navInventory": "المخزون",
     "navMovements": "حركات المخزون",
@@ -772,7 +773,10 @@
       "receipt_not_found": "لم يُعثر على إيصال الشراء هذا.",
       "receipt_not_draft": "يمكن تعديل المسودة فقط.",
       "receipt_empty": "أضف سطرًا واحدًا على الأقل أولًا.",
-      "item_repeated": "صنف مكرر؛ اجمعه في سطر واحد."
+      "item_repeated": "صنف مكرر؛ اجمعه في سطر واحد.",
+      "not_available": "لم تعد هذه الكمية متاحة.",
+      "reference_required": "اكتب مرجع الحجز.",
+      "nothing_reserved": "لم يعد هناك شيء محجوز لهذه العملية؛ حاول مجددًا."
     },
     "navStocktakes": "الجرد",
     "stocktakesTitle": "عمليات الجرد",
@@ -868,7 +872,17 @@
     "itemSettingsMinimum": "الحد الأدنى للمخزون (فارغ = بلا تنبيه)",
     "itemSettingsCost": "متوسط التكلفة ({currency}) — فقط لمخزون بلا إيصالات شراء",
     "itemSettingsSave": "حفظ",
-    "itemSettingsSaved": "تم الحفظ."
+    "itemSettingsSaved": "تم الحفظ.",
+    "navReservations": "الحجوزات",
+    "reservationsTitle": "الحجوزات النشطة",
+    "reservationsIntro": "وحدات محجوزة لعمليات دفع لم تكتمل، حتى لا يشتري أحد آخر القطعة الأخيرة. يُحرَّر كل حجز تلقائيًا بعد مدة أو يصبح بيعًا عند الدفع. يمكنك تحرير الحجز العالق يدويًا.",
+    "reservationsNone": "لا يوجد شيء محجوز.",
+    "reservationReference": "المرجع",
+    "reservationExpires": "ينتهي",
+    "reservationRelease": "تحرير",
+    "reservationConfirmRelease": "تحرير كل ما يحجزه «{reference}»؟",
+    "stockReserved": "{count} محجوز",
+    "stockAvailable": "{count} متاح"
   },
   "footer": {
     "shopping": "التسوق",

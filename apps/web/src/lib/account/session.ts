@@ -206,3 +206,10 @@ export function getPurchases(fetchImpl: typeof fetch = fetch): Promise<ReceiptSu
 export function getPurchase(number: number, locale: string, fetchImpl: typeof fetch = fetch): Promise<ReceiptView | null> {
   return getForUser<ReceiptView>(`/api/v1/admin/inventory/purchases/${number}?locale=${encodeURIComponent(locale)}`, fetchImpl);
 }
+
+export type ActiveReservation = components["schemas"]["ActiveReservationView"];
+
+/** Units held for unpaid checkouts, the oldest first (inventory.view). */
+export function getReservations(locale: string, fetchImpl: typeof fetch = fetch): Promise<ActiveReservation[] | null> {
+  return getForUser<ActiveReservation[]>(`/api/v1/admin/inventory/reservations?locale=${encodeURIComponent(locale)}`, fetchImpl);
+}

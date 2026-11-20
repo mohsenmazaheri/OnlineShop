@@ -294,5 +294,6 @@ public static class DependencyInjection
                 ? sp.GetRequiredService<CurrencyApiRateSource>()
                 : new NoExchangeRateSource()));
         services.AddHostedService<ExchangeRateSyncWorker>();
+        services.AddHostedService<Inventory.ReservationExpiryWorker>();
     }
 }

@@ -671,7 +671,8 @@
       "warehouses": "Warehouses, the default one, and turning them on or off",
       "stocktakes": "Count a warehouse, see the differences and post adjustments",
       "suppliers": "Suppliers and their contact details",
-      "purchases": "Purchase receipts with unit costs and average cost"
+      "purchases": "Purchase receipts with unit costs and average cost",
+      "reservations": "Units held for unpaid checkouts"
     },
     "navInventory": "Stock",
     "navMovements": "Stock movements",
@@ -772,7 +773,10 @@
       "receipt_not_found": "This purchase receipt was not found.",
       "receipt_not_draft": "Only a draft can change.",
       "receipt_empty": "Add at least one line first.",
-      "item_repeated": "An item appears twice; put it on one line."
+      "item_repeated": "An item appears twice; put it on one line.",
+      "not_available": "That many are no longer available.",
+      "reference_required": "Enter the reservation's reference.",
+      "nothing_reserved": "Nothing is reserved for this checkout any more; try again."
     },
     "navStocktakes": "Stocktakes",
     "stocktakesTitle": "Stocktakes",
@@ -868,7 +872,17 @@
     "itemSettingsMinimum": "Minimum stock (empty = no alert)",
     "itemSettingsCost": "Average cost ({currency}) — only for stock without purchase receipts",
     "itemSettingsSave": "Save",
-    "itemSettingsSaved": "Saved."
+    "itemSettingsSaved": "Saved.",
+    "navReservations": "Reservations",
+    "reservationsTitle": "Active reservations",
+    "reservationsIntro": "Units held for checkouts that are not paid yet, so nobody else buys the last piece. Each reservation is released by itself after a while, or becomes a sale when paid. You can release a stuck one by hand.",
+    "reservationsNone": "Nothing is reserved.",
+    "reservationReference": "Reference",
+    "reservationExpires": "Expires",
+    "reservationRelease": "Release",
+    "reservationConfirmRelease": "Release everything \"{reference}\" holds?",
+    "stockReserved": "{count} reserved",
+    "stockAvailable": "{count} available"
   },
   "footer": {
     "shopping": "Shopping",

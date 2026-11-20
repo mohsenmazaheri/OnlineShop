@@ -36,7 +36,11 @@ public class Product : BaseEntity
 
     public decimal Price { get; set; }
     public decimal? CompareAtPrice { get; set; }
+    /// <summary>Stock over all warehouses, kept by the stock ledger (never set it directly).</summary>
     public int Stock { get; set; }
+
+    /// <summary>Units held for checkouts that are not paid yet (active reservations). Available = Stock − Reserved.</summary>
+    public int Reserved { get; set; }
     public bool IsPublished { get; set; }
     public Guid ProductGroupId { get; set; }
     public ProductGroup ProductGroup { get; set; } = default!;

@@ -23,7 +23,11 @@ public sealed class ProductVariant : BaseEntity
     /// <summary>Its own "old price"; null means the product's (only when <see cref="Price"/> is null too).</summary>
     public decimal? CompareAtPrice { get; set; }
 
+    /// <summary>Stock over all warehouses, kept by the stock ledger (never set it directly).</summary>
     public int Stock { get; set; }
+
+    /// <summary>Units held for checkouts that are not paid yet (active reservations). Available = Stock − Reserved.</summary>
+    public int Reserved { get; set; }
 
     public int SortOrder { get; set; }
 

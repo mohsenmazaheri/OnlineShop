@@ -52,6 +52,7 @@ public interface IApplicationDbContext
     DbSet<PurchaseReceipt> PurchaseReceipts { get; }
     DbSet<PurchaseReceiptLine> PurchaseReceiptLines { get; }
     DbSet<StockItemInfo> StockItems { get; }
+    DbSet<StockReservation> StockReservations { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 

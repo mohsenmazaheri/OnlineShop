@@ -264,6 +264,12 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   average at that moment (phase 9 values movements with it). Low stock = total ≤ `MinimumStock`
   (`InventoryService.LowStockCountAsync`, `onlyLow`). Web: `/admin/suppliers`, `/admin/purchases`, `/purchases/new`,
   `/purchases/{n}` (`ReceiptEditor`), `ItemSettingsForm` on `/admin/inventory`.
+- Reservations (`StockReservationService`): `Product.Reserved` / `ProductVariant.Reserved` are cached sums of active
+  `StockReservation` rows (never set directly). Available = Stock − Reserved; the storefront's `InStock` uses it.
+  `ReserveAsync(reference, items)` holds all or nothing with atomic `ExecuteUpdate` ("reserved + n where stock −
+  reserved ≥ n"); every close (commit / release / expiry) first claims the row with a conditional UPDATE so it happens
+  once. `CommitAsync` sells through `StockLedger.TakeAsync` (default warehouse first). `ReservationExpiryWorker`
+  releases expired ones (`Inventory:ReservationMinutes`, `ExpiryCheckSeconds`). Phase 7's checkout must use it.
 - All `DateTime`s are UTC (`timestamptz`); all `decimal`s are `numeric(18,2)`.
 - User references (`Cart.CustomerId`, `Order.CustomerId`) are FKs to `users` without navigation properties
   (domain stays free of Identity). Orders `Restrict`, carts cascade.

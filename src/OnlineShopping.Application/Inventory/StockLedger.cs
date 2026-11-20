@@ -151,19 +151,42 @@ public sealed class StockLedger(IApplicationDbContext db, ICurrentUser currentUs
             return posted.IsSuccess ? target : posted.Error!;
         }
 
+        var taken = await TakeAsync(item, -difference, StockMovementKind.Adjustment, reference, cancellationToken);
+        return taken.IsSuccess ? target : taken.Error!;
+    }
+
+    /// <summary>
+    /// Takes <paramref name="quantity"/> units of an item out of stock wherever they are: the default warehouse first,
+    /// then the others in their order (a sale, a write-down). One line per warehouse it takes from; refused when the
+    /// warehouses together do not hold that many. Run it inside a transaction.
+    /// </summary>
+    public async Task<Result<bool>> TakeAsync(StockItem item, int quantity, StockMovementKind kind, string? reference, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        if (quantity <= 0)
+            return AppError.Validation(InventoryErrors.QuantityInvalid, "Take at least one unit.");
+        var itemId = item.ItemId;
+        var levels = await db.StockLevels.AsNoTracking()
+            .Where(l => l.ItemId == itemId && l.Quantity > 0)
+            .Select(l => new { l.WarehouseId, l.Quantity })
+            .ToListAsync(cancellationToken);
+        if (levels.Sum(l => l.Quantity) < quantity)
+            return AppError.Conflict(InventoryErrors.Insufficient, "There is not that much stock of this item.");
+
+        var defaultId = await DefaultWarehouseIdAsync(cancellationToken);
         var order = await db.Warehouses.AsNoTracking().OrderBy(w => w.SortOrder).Select(w => w.Id).ToListAsync(cancellationToken);
-        var remaining = -difference;
+        var remaining = quantity;
         foreach (var level in levels.OrderBy(l => l.WarehouseId == defaultId ? -1 : order.IndexOf(l.WarehouseId)))
         {
             var take = Math.Min(remaining, level.Quantity);
-            var posted = await PostAsync(level.WarehouseId, item, StockMovementKind.Adjustment, -take, reference, cancellationToken: cancellationToken);
+            var posted = await PostAsync(level.WarehouseId, item, kind, -take, reference, cancellationToken: cancellationToken);
             if (!posted.IsSuccess)
                 return posted.Error!;
             remaining -= take;
             if (remaining == 0)
                 break;
         }
-        return target;
+        return true;
     }
 
     /// <summary>The default warehouse; a shop without one (a new database) gets "Main warehouse" in its default language.</summary>

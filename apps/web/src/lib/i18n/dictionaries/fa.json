@@ -671,7 +671,8 @@
       "warehouses": "انبارها، انبار پیش‌فرض و فعال یا غیرفعال کردن",
       "stocktakes": "شمارش انبار، گزارش مغایرت و سند تعدیل",
       "suppliers": "فهرست تأمین‌کنندگان و اطلاعات تماس",
-      "purchases": "رسید خرید با بهای هر واحد و بهای تمام‌شدهٔ میانگین"
+      "purchases": "رسید خرید با بهای هر واحد و بهای تمام‌شدهٔ میانگین",
+      "reservations": "کالای نگه‌داشته‌شده برای تسویه‌های پرداخت‌نشده"
     },
     "navInventory": "موجودی",
     "navMovements": "حرکات کالا",
@@ -772,7 +773,10 @@
       "receipt_not_found": "این رسید خرید پیدا نشد.",
       "receipt_not_draft": "فقط پیش‌نویس تغییر می‌کند.",
       "receipt_empty": "اول دست‌کم یک ردیف اضافه کنید.",
-      "item_repeated": "یک کالا دو بار آمده است؛ آن را در یک ردیف بنویسید."
+      "item_repeated": "یک کالا دو بار آمده است؛ آن را در یک ردیف بنویسید.",
+      "not_available": "این تعداد از کالا دیگر موجود نیست.",
+      "reference_required": "مرجع رزرو را بنویسید.",
+      "nothing_reserved": "برای این خرید چیزی رزرو نیست؛ دوباره تلاش کنید."
     },
     "navStocktakes": "انبارگردانی",
     "stocktakesTitle": "انبارگردانی",
@@ -868,7 +872,17 @@
     "itemSettingsMinimum": "حداقل موجودی (خالی یعنی بدون هشدار)",
     "itemSettingsCost": "بهای میانگین ({currency}) — فقط برای کالای بدون رسید خرید",
     "itemSettingsSave": "ذخیره",
-    "itemSettingsSaved": "ذخیره شد."
+    "itemSettingsSaved": "ذخیره شد.",
+    "navReservations": "رزروها",
+    "reservationsTitle": "رزروهای فعال",
+    "reservationsIntro": "کالایی که در تسویهٔ پرداخت‌نشده نگه داشته شده است، تا کس دیگری آخرین موجودی را نخرد. هر رزرو پس از مدت معین خودبه‌خود آزاد می‌شود یا با پرداخت به فروش تبدیل می‌شود. رزرو گیرکرده را می‌توانید دستی آزاد کنید.",
+    "reservationsNone": "هیچ کالایی رزرو نیست.",
+    "reservationReference": "مرجع",
+    "reservationExpires": "آزاد می‌شود",
+    "reservationRelease": "آزاد کردن",
+    "reservationConfirmRelease": "همهٔ کالاهای رزروشدهٔ «{reference}» آزاد شوند؟",
+    "stockReserved": "رزرو {count}",
+    "stockAvailable": "قابل فروش {count}"
   },
   "footer": {
     "shopping": "خرید",

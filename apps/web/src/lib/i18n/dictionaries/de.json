@@ -671,7 +671,8 @@
       "warehouses": "Lager, das Standardlager und Aktivieren oder Deaktivieren",
       "stocktakes": "Ein Lager zählen, Differenzen sehen und Korrekturen buchen",
       "suppliers": "Lieferanten und ihre Kontaktdaten",
-      "purchases": "Wareneingänge mit Stückpreisen und Durchschnittspreis"
+      "purchases": "Wareneingänge mit Stückpreisen und Durchschnittspreis",
+      "reservations": "Für unbezahlte Bestellungen zurückgehaltene Stücke"
     },
     "navInventory": "Bestand",
     "navMovements": "Lagerbewegungen",
@@ -772,7 +773,10 @@
       "receipt_not_found": "Dieser Wareneingang wurde nicht gefunden.",
       "receipt_not_draft": "Nur ein Entwurf kann geändert werden.",
       "receipt_empty": "Fügen Sie zuerst mindestens eine Zeile hinzu.",
-      "item_repeated": "Ein Artikel kommt doppelt vor; fassen Sie ihn in einer Zeile zusammen."
+      "item_repeated": "Ein Artikel kommt doppelt vor; fassen Sie ihn in einer Zeile zusammen.",
+      "not_available": "So viele sind nicht mehr verfügbar.",
+      "reference_required": "Geben Sie die Referenz der Reservierung ein.",
+      "nothing_reserved": "Für diese Bestellung ist nichts mehr reserviert; bitte erneut versuchen."
     },
     "navStocktakes": "Inventur",
     "stocktakesTitle": "Inventuren",
@@ -868,7 +872,17 @@
     "itemSettingsMinimum": "Mindestbestand (leer = keine Warnung)",
     "itemSettingsCost": "Ø-Preis ({currency}) — nur für Bestand ohne Wareneingang",
     "itemSettingsSave": "Speichern",
-    "itemSettingsSaved": "Gespeichert."
+    "itemSettingsSaved": "Gespeichert.",
+    "navReservations": "Reservierungen",
+    "reservationsTitle": "Aktive Reservierungen",
+    "reservationsIntro": "Für noch nicht bezahlte Bestellungen zurückgehaltene Stücke, damit niemand sonst das letzte kauft. Jede Reservierung wird nach einer Weile von selbst freigegeben oder beim Bezahlen zum Verkauf. Eine hängende können Sie von Hand freigeben.",
+    "reservationsNone": "Nichts ist reserviert.",
+    "reservationReference": "Referenz",
+    "reservationExpires": "Läuft ab",
+    "reservationRelease": "Freigeben",
+    "reservationConfirmRelease": "Alles freigeben, was „{reference}“ hält?",
+    "stockReserved": "{count} reserviert",
+    "stockAvailable": "{count} verfügbar"
   },
   "footer": {
     "shopping": "Einkaufen",

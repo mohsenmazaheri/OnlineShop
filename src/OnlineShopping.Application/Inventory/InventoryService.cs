@@ -66,6 +66,7 @@ public sealed class InventoryService(
                 Name = p.Translations.Where(t => t.Locale == language).Select(t => t.Name).FirstOrDefault() ?? p.Name,
                 p.SKU,
                 p.Stock,
+                p.Reserved,
                 p.IsPublished,
             })
             .ToListAsync(cancellationToken);
@@ -74,7 +75,7 @@ public sealed class InventoryService(
         var variants = await db.ProductVariants.AsNoTracking()
             .Where(v => ids.Contains(v.ProductId))
             .OrderBy(v => v.SortOrder)
-            .Select(v => new { v.Id, v.ProductId, v.Sku, v.Stock, Options = v.Options.Select(o => o.OptionId).ToList() })
+            .Select(v => new { v.Id, v.ProductId, v.Sku, v.Stock, v.Reserved, Options = v.Options.Select(o => o.OptionId).ToList() })
             .ToListAsync(cancellationToken);
         var levels = await LevelsAsync(db.StockLevels.Where(l => ids.Contains(l.ProductId)), cancellationToken);
         var labels = await OptionLabelsAsync(variants.SelectMany(v => v.Options), language, cancellationToken);
@@ -85,9 +86,9 @@ public sealed class InventoryService(
         {
             var own = variants.Where(v => v.ProductId == p.Id).ToList();
             if (own.Count == 0)
-                rows.Add(Row(p.Id, p.PublicNumber, p.Name, null, p.SKU, p.IsPublished, p.Stock, levels.GetValueOrDefault(p.Id, []), infos.GetValueOrDefault(p.Id)));
+                rows.Add(Row(p.Id, p.PublicNumber, p.Name, null, p.SKU, p.IsPublished, p.Stock, p.Reserved, levels.GetValueOrDefault(p.Id, []), infos.GetValueOrDefault(p.Id)));
             rows.AddRange(own.Select(v => Row(
-                v.Id, p.PublicNumber, p.Name, Label(v.Options, labels), v.Sku, p.IsPublished, v.Stock, levels.GetValueOrDefault(v.Id, []), infos.GetValueOrDefault(v.Id))));
+                v.Id, p.PublicNumber, p.Name, Label(v.Options, labels), v.Sku, p.IsPublished, v.Stock, v.Reserved, levels.GetValueOrDefault(v.Id, []), infos.GetValueOrDefault(v.Id))));
         }
         return new StockPage(rows, total, page, StockPageSize, await warehouses.ListAsync(cancellationToken), await LowStockCountAsync(cancellationToken), store.Value.Currency);
     }
@@ -117,8 +118,8 @@ public sealed class InventoryService(
         return new ItemSettingsView(info.ItemId, request.Sku.Trim(), info.MinimumStock, info.AverageCost);
     }
 
-    private static StockRow Row(Guid itemId, long number, string name, string? label, string sku, bool published, int total, IReadOnlyList<WarehouseQuantity> levels, StockItemInfo? info) =>
-        new(itemId, number, name, label, sku, published, total, levels, info?.AverageCost, info?.MinimumStock, info?.MinimumStock is { } minimum && total <= minimum,
+    private static StockRow Row(Guid itemId, long number, string name, string? label, string sku, bool published, int total, int reserved, IReadOnlyList<WarehouseQuantity> levels, StockItemInfo? info) =>
+        new(itemId, number, name, label, sku, published, total, reserved, Math.Max(0, total - reserved), levels, info?.AverageCost, info?.MinimumStock, info?.MinimumStock is { } minimum && total <= minimum,
             info?.AverageCost is { } cost ? decimal.Round(total * cost, 2, MidpointRounding.AwayFromZero) : null);
 
     /// <summary>The ledger, newest first; by SKU (a product with variants: all of them), warehouse and kind.</summary>
@@ -240,19 +241,19 @@ public sealed class InventoryService(
         var language = store.Value.ContentLocale(locale);
         var product = await db.Products.AsNoTracking()
             .Where(p => p.Id == item.ProductId)
-            .Select(p => new { p.PublicNumber, p.SKU, p.Stock, p.IsPublished, Name = p.Translations.Where(t => t.Locale == language).Select(t => t.Name).FirstOrDefault() ?? p.Name })
+            .Select(p => new { p.PublicNumber, p.SKU, p.Stock, p.Reserved, p.IsPublished, Name = p.Translations.Where(t => t.Locale == language).Select(t => t.Name).FirstOrDefault() ?? p.Name })
             .SingleAsync(cancellationToken);
         var levels = await LevelsAsync(db.StockLevels.Where(l => l.ItemId == item.ItemId), cancellationToken);
         var info = await db.StockItems.AsNoTracking().FirstOrDefaultAsync(i => i.ItemId == item.ItemId, cancellationToken);
         if (item.VariantId is not { } variantId)
-            return Row(item.ItemId, product.PublicNumber, product.Name, null, product.SKU, product.IsPublished, product.Stock, levels.GetValueOrDefault(item.ItemId, []), info);
+            return Row(item.ItemId, product.PublicNumber, product.Name, null, product.SKU, product.IsPublished, product.Stock, product.Reserved, levels.GetValueOrDefault(item.ItemId, []), info);
 
         var variant = await db.ProductVariants.AsNoTracking()
             .Where(v => v.Id == variantId)
-            .Select(v => new { v.Sku, v.Stock, Options = v.Options.Select(o => o.OptionId).ToList() })
+            .Select(v => new { v.Sku, v.Stock, v.Reserved, Options = v.Options.Select(o => o.OptionId).ToList() })
             .SingleAsync(cancellationToken);
         var labels = await OptionLabelsAsync(variant.Options, language, cancellationToken);
-        return Row(item.ItemId, product.PublicNumber, product.Name, Label(variant.Options, labels), variant.Sku, product.IsPublished, variant.Stock, levels.GetValueOrDefault(item.ItemId, []), info);
+        return Row(item.ItemId, product.PublicNumber, product.Name, Label(variant.Options, labels), variant.Sku, product.IsPublished, variant.Stock, variant.Reserved, levels.GetValueOrDefault(item.ItemId, []), info);
     }
 
     private static async Task<Dictionary<Guid, IReadOnlyList<WarehouseQuantity>>> LevelsAsync(IQueryable<StockLevel> levels, CancellationToken cancellationToken)
