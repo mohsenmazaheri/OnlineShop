@@ -52,7 +52,7 @@ async function Categories({ locale, dict }: { locale: Locale; dict: Dictionary }
   // An unreachable API must not break the page: show a friendly notice instead.
   const categories = await getCategoryMenu(locale).catch(() => null);
   return categories ? (
-    <CategoryGrid categories={categories} heading={dict.home.categories} emptyText={dict.home.noCategories} />
+    <CategoryGrid locale={locale} categories={categories} heading={dict.home.categories} emptyText={dict.home.noCategories} />
   ) : (
     <p role="alert" className="text-muted">
       {dict.home.unavailable}

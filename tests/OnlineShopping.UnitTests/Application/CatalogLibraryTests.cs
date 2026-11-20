@@ -31,6 +31,16 @@ public abstract class DemoCatalogTestBase : IDisposable
         await TestLedger.For(db, Store).OpenUntrackedAsync();
     }
 
+    /// <summary>Works through the search outbox, as the index worker does.</summary>
+    protected async Task IndexSearchAsync()
+    {
+        await using var db = Database.CreateContext();
+        var index = new OnlineShopping.Application.Search.SearchIndexService(db, Database.Clock, Options.Create(Store));
+        while (await index.ProcessOutboxAsync() > 0)
+        {
+        }
+    }
+
     protected async Task<long> NumberOfAsync(string sku)
     {
         await using var db = Database.CreateContext();

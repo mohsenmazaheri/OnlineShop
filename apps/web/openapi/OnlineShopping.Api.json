@@ -5,6 +5,83 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/v1/catalog/browse": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "Products of a category (c, s), a brand (b) or a search (q) with filters, facet counts, sort and page (brand, group, min, max, stock, sale, o.{spec}, n.{spec}, y.{spec}, sort, page).",
+        "operationId": "BrowseProducts",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowseResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/suggest": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "Suggestions while typing (from two characters): products, categories, brands and popular searches.",
+        "operationId": "SuggestSearch",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchSuggestions"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/currencies": {
       "get": {
         "tags": [
@@ -2435,6 +2512,48 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ImportRedirectsResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/seo/search-index": {
+      "get": {
+        "tags": [
+          "Admin: SEO"
+        ],
+        "summary": "How many search documents there are and how many catalog changes wait to reach them.",
+        "operationId": "GetSearchIndexStatus",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchIndexStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/seo/search-index/rebuild": {
+      "post": {
+        "tags": [
+          "Admin: SEO"
+        ],
+        "summary": "Queue a rebuild of every product's search documents (done in the background).",
+        "operationId": "RebuildSearchIndex",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchIndexStatus"
                 }
               }
             }
@@ -5687,6 +5806,240 @@
           }
         }
       },
+      "BrowseFacets": {
+        "required": [
+          "subCategories",
+          "groups",
+          "brands",
+          "price",
+          "selectedMin",
+          "selectedMax",
+          "inStock",
+          "inStockSelected",
+          "discounted",
+          "discountedSelected",
+          "specs"
+        ],
+        "type": "object",
+        "properties": {
+          "subCategories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacetLink"
+            }
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacetValue"
+            }
+          },
+          "brands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacetValue"
+            }
+          },
+          "price": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/PriceRange"
+              }
+            ]
+          },
+          "selectedMin": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "selectedMax": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "inStock": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "inStockSelected": {
+            "type": "boolean"
+          },
+          "discounted": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "discountedSelected": {
+            "type": "boolean"
+          },
+          "specs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpecFacet"
+            }
+          }
+        }
+      },
+      "BrowseResult": {
+        "required": [
+          "scope",
+          "items",
+          "total",
+          "page",
+          "pageSize",
+          "sort",
+          "filtered",
+          "facets",
+          "search",
+          "relaxations"
+        ],
+        "type": "object",
+        "properties": {
+          "scope": {
+            "$ref": "#/components/schemas/BrowseScope"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductCard"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/BrowseSort"
+          },
+          "filtered": {
+            "type": "boolean"
+          },
+          "facets": {
+            "$ref": "#/components/schemas/BrowseFacets"
+          },
+          "search": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BrowseSearch"
+              }
+            ]
+          },
+          "relaxations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Relaxation"
+            }
+          }
+        }
+      },
+      "BrowseScope": {
+        "required": [
+          "kind",
+          "title",
+          "description",
+          "imageUrl",
+          "path",
+          "breadcrumb",
+          "alternates"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "imageUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "path": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "breadcrumb": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScopeLink"
+            }
+          },
+          "alternates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScopeAlternate"
+            }
+          }
+        }
+      },
+      "BrowseSearch": {
+        "required": [
+          "exactNumber",
+          "correctedText",
+          "didYouMean"
+        ],
+        "type": "object",
+        "properties": {
+          "exactNumber": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int64"
+          },
+          "correctedText": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "didYouMean": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "BrowseSort": {
+        "enum": [
+          "Relevance",
+          "Newest",
+          "PriceAsc",
+          "PriceDesc",
+          "Discount"
+        ]
+      },
       "CartItemData": {
         "required": [
           "productName",
@@ -6171,6 +6524,50 @@
             "items": {
               "type": "string"
             }
+          }
+        }
+      },
+      "FacetLink": {
+        "required": [
+          "name",
+          "path",
+          "count"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "FacetValue": {
+        "required": [
+          "value",
+          "label",
+          "count",
+          "selected"
+        ],
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "selected": {
+            "type": "boolean"
           }
         }
       },
@@ -6903,6 +7300,23 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "PriceRange": {
+        "required": [
+          "min",
+          "max"
+        ],
+        "type": "object",
+        "properties": {
+          "min": {
+            "type": "number",
+            "format": "double"
+          },
+          "max": {
+            "type": "number",
+            "format": "double"
           }
         }
       },
@@ -8032,6 +8446,22 @@
           }
         }
       },
+      "Relaxation": {
+        "required": [
+          "filter",
+          "count"
+        ],
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
       "ReleaseReservationsRequest": {
         "required": [
           "reference"
@@ -8556,6 +8986,88 @@
           }
         }
       },
+      "ScopeAlternate": {
+        "required": [
+          "locale",
+          "path"
+        ],
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        }
+      },
+      "ScopeLink": {
+        "required": [
+          "name",
+          "path"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        }
+      },
+      "SearchIndexStatus": {
+        "required": [
+          "documents",
+          "pending"
+        ],
+        "type": "object",
+        "properties": {
+          "documents": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pending": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "SearchSuggestions": {
+        "required": [
+          "products",
+          "categories",
+          "brands",
+          "terms"
+        ],
+        "type": "object",
+        "properties": {
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductCard"
+            }
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SuggestedLink"
+            }
+          },
+          "brands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SuggestedLink"
+            }
+          },
+          "terms": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
       "SendPhoneCodeRequest": {
         "required": [
           "phone",
@@ -8693,6 +9205,87 @@
             "items": {
               "$ref": "#/components/schemas/SpecOptionChoice"
             }
+          }
+        }
+      },
+      "SpecFacet": {
+        "required": [
+          "code",
+          "name",
+          "group",
+          "kind",
+          "unit",
+          "options",
+          "min",
+          "max",
+          "selectedMin",
+          "selectedMax",
+          "yesCount",
+          "yesSelected"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "group": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "kind": {
+            "type": "string"
+          },
+          "unit": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacetValue"
+            }
+          },
+          "min": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "max": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "selectedMin": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "selectedMax": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "yesCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "yesSelected": {
+            "type": "boolean"
           }
         }
       },
@@ -9551,6 +10144,21 @@
             "type": "string"
           },
           "slug": {
+            "type": "string"
+          }
+        }
+      },
+      "SuggestedLink": {
+        "required": [
+          "name",
+          "path"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "path": {
             "type": "string"
           }
         }

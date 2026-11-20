@@ -52,7 +52,13 @@
     "home": "Start",
     "categoriesShort": "Kategorien",
     "currency": "Währung",
-    "adminPanel": "Verwaltung"
+    "adminPanel": "Verwaltung",
+    "suggestProducts": "Produkte",
+    "suggestCategories": "Kategorien",
+    "suggestBrands": "Marken",
+    "suggestPopular": "Häufige Suchen",
+    "suggestAll": "Alle Ergebnisse für „{query}“",
+    "suggestLabel": "Suchvorschläge"
   },
   "account": {
     "loginTitle": "Anmelden",
@@ -882,7 +888,12 @@
     "reservationRelease": "Freigeben",
     "reservationConfirmRelease": "Alles freigeben, was „{reference}“ hält?",
     "stockReserved": "{count} reserviert",
-    "stockAvailable": "{count} verfügbar"
+    "stockAvailable": "{count} verfügbar",
+    "searchIndexTitle": "Suchindex",
+    "searchIndexIntro": "Die Suche liest einen vorbereiteten Text jedes Produkts je Sprache. Katalogänderungen kommen in Sekunden an. Neu aufbauen, wenn Ergebnisse veraltet wirken.",
+    "searchIndexStatus": "{documents} Suchdokumente, {pending} Änderungen in der Warteschlange",
+    "searchIndexRebuild": "Index neu aufbauen",
+    "searchIndexQueued": "Der Neuaufbau ist eingeplant und läuft in Sekunden."
   },
   "footer": {
     "shopping": "Einkaufen",
@@ -935,5 +946,46 @@
     "brand": "Marke",
     "soldOutOption": "Diese Kombination ist ausverkauft",
     "video": "Video"
+  },
+  "listing": {
+    "home": "Startseite",
+    "productCount": "{count} Produkte",
+    "sortLabel": "Sortieren",
+    "sorts": {
+      "relevance": "Relevanz",
+      "newest": "Neueste",
+      "price_asc": "Preis aufsteigend",
+      "price_desc": "Preis absteigend",
+      "discount": "Größter Rabatt"
+    },
+    "filters": "Filter",
+    "clearAll": "Alle Filter entfernen",
+    "removeFilter": "Filter {filter} entfernen",
+    "subCategories": "Kategorien",
+    "brands": "Marke",
+    "groups": "Produktart",
+    "price": "Preis",
+    "priceFrom": "ab {price}",
+    "priceTo": "bis {price}",
+    "from": "Von",
+    "to": "Bis",
+    "apply": "Anwenden",
+    "rangeHint": "{min} bis {max}",
+    "availability": "Verfügbarkeit",
+    "inStock": "Nur verfügbare",
+    "onSale": "Nur reduzierte",
+    "yes": "ja",
+    "empty": "Keine Produkte passen zu diesen Filtern.",
+    "emptyScope": "Hier gibt es noch keine Produkte.",
+    "pages": "Seiten",
+    "searchTitle": "Ergebnisse für „{query}“",
+    "searchNone": "Nichts gefunden für „{query}“. Versuchen Sie ein anderes Wort.",
+    "metaDescription": "{title} — online ansehen und kaufen bei {store}",
+    "allProducts": "Alle Produkte",
+    "corrected": "Ergebnisse für „{corrected}“. Sie haben nach „{query}“ gesucht.",
+    "didYouMean": "Meinten Sie „{suggestion}“?",
+    "relaxTitle": "Ohne einen Filter gibt es Treffer:",
+    "relaxFilter": "Ohne „{filter}“ ({count} Produkte)",
+    "newestTitle": "Vielleicht gefällt Ihnen das"
   }
 }

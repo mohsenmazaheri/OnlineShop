@@ -4,6 +4,40 @@
  */
 
 export interface paths {
+    "/api/v1/catalog/browse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Products of a category (c, s), a brand (b) or a search (q) with filters, facet counts, sort and page (brand, group, min, max, stock, sale, o.{spec}, n.{spec}, y.{spec}, sort, page). */
+        get: operations["BrowseProducts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/catalog/suggest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Suggestions while typing (from two characters): products, categories, brands and popular searches. */
+        get: operations["SuggestSearch"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/currencies": {
         parameters: {
             query?: never;
@@ -768,6 +802,40 @@ export interface paths {
         put?: never;
         /** Add or update redirects from CSV lines (old,new[,301|302|410]). */
         post: operations["ImportRedirects"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/seo/search-index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** How many search documents there are and how many catalog changes wait to reach them. */
+        get: operations["GetSearchIndexStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/seo/search-index/rebuild": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Queue a rebuild of every product's search documents (done in the background). */
+        post: operations["RebuildSearchIndex"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2070,6 +2138,55 @@ export interface components {
             /** Format: int32 */
             productCount: number;
         };
+        BrowseFacets: {
+            subCategories: components["schemas"]["FacetLink"][];
+            groups: components["schemas"]["FacetValue"][];
+            brands: components["schemas"]["FacetValue"][];
+            price: null | components["schemas"]["PriceRange"];
+            /** Format: double */
+            selectedMin: null | number;
+            /** Format: double */
+            selectedMax: null | number;
+            /** Format: int32 */
+            inStock: number;
+            inStockSelected: boolean;
+            /** Format: int32 */
+            discounted: number;
+            discountedSelected: boolean;
+            specs: components["schemas"]["SpecFacet"][];
+        };
+        BrowseResult: {
+            scope: components["schemas"]["BrowseScope"];
+            items: components["schemas"]["ProductCard"][];
+            /** Format: int32 */
+            total: number;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+            sort: components["schemas"]["BrowseSort"];
+            filtered: boolean;
+            facets: components["schemas"]["BrowseFacets"];
+            search: null | components["schemas"]["BrowseSearch"];
+            relaxations: components["schemas"]["Relaxation"][];
+        };
+        BrowseScope: {
+            kind: string;
+            title: null | string;
+            description: null | string;
+            imageUrl: null | string;
+            path: null | string;
+            breadcrumb: components["schemas"]["ScopeLink"][];
+            alternates: components["schemas"]["ScopeAlternate"][];
+        };
+        BrowseSearch: {
+            /** Format: int64 */
+            exactNumber: null | number;
+            correctedText: null | string;
+            didYouMean: null | string;
+        };
+        /** @enum {unknown} */
+        BrowseSort: "Relevance" | "Newest" | "PriceAsc" | "PriceDesc" | "Discount";
         CartItemData: {
             productName: string;
             /** Format: int32 */
@@ -2189,6 +2306,19 @@ export interface components {
         ExternalLoginsView: {
             available: string[];
             linked: string[];
+        };
+        FacetLink: {
+            name: string;
+            path: string;
+            /** Format: int32 */
+            count: number;
+        };
+        FacetValue: {
+            value: string;
+            label: string;
+            /** Format: int32 */
+            count: number;
+            selected: boolean;
         };
         /** @enum {unknown} */
         FontChoice: "Vazirmatn" | "System";
@@ -2388,6 +2518,12 @@ export interface components {
             quantity: number;
             reference: null | string;
             note: null | string;
+        };
+        PriceRange: {
+            /** Format: double */
+            min: number;
+            /** Format: double */
+            max: number;
         };
         ProblemDetails: {
             type?: null | string;
@@ -2669,6 +2805,11 @@ export interface components {
             displayName: null | string;
             locale: null | string;
         };
+        Relaxation: {
+            filter: string;
+            /** Format: int32 */
+            count: number;
+        };
         ReleaseReservationsRequest: {
             reference: string;
         };
@@ -2790,6 +2931,26 @@ export interface components {
             isActive: boolean;
             isDefault: boolean;
         };
+        ScopeAlternate: {
+            locale: string;
+            path: string;
+        };
+        ScopeLink: {
+            name: string;
+            path: string;
+        };
+        SearchIndexStatus: {
+            /** Format: int32 */
+            documents: number;
+            /** Format: int32 */
+            pending: number;
+        };
+        SearchSuggestions: {
+            products: components["schemas"]["ProductCard"][];
+            categories: components["schemas"]["SuggestedLink"][];
+            brands: components["schemas"]["SuggestedLink"][];
+            terms: string[];
+        };
         SendPhoneCodeRequest: {
             phone: string;
             locale: null | string;
@@ -2821,6 +2982,25 @@ export interface components {
             kind: string;
             unit: null | string;
             options: components["schemas"]["SpecOptionChoice"][];
+        };
+        SpecFacet: {
+            code: string;
+            name: string;
+            group: null | string;
+            kind: string;
+            unit: null | string;
+            options: components["schemas"]["FacetValue"][];
+            /** Format: double */
+            min: null | number;
+            /** Format: double */
+            max: null | number;
+            /** Format: double */
+            selectedMin: null | number;
+            /** Format: double */
+            selectedMax: null | number;
+            /** Format: int32 */
+            yesCount: number;
+            yesSelected: boolean;
         };
         /** @enum {unknown} */
         SpecKind: "Text" | "Number" | "Boolean" | "Option";
@@ -3042,6 +3222,10 @@ export interface components {
             name: string;
             slug: string;
         };
+        SuggestedLink: {
+            name: string;
+            path: string;
+        };
         SupplierView: {
             /** Format: uuid */
             id: string;
@@ -3177,6 +3361,60 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    BrowseProducts: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowseResult"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    SuggestSearch: {
+        parameters: {
+            query?: {
+                q?: string;
+                locale?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchSuggestions"];
+                };
+            };
+        };
+    };
     GetCurrencies: {
         parameters: {
             query?: never;
@@ -4942,6 +5180,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ImportRedirectsResult"];
+                };
+            };
+        };
+    };
+    GetSearchIndexStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchIndexStatus"];
+                };
+            };
+        };
+    };
+    RebuildSearchIndex: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchIndexStatus"];
                 };
             };
         };

@@ -213,3 +213,10 @@ export type ActiveReservation = components["schemas"]["ActiveReservationView"];
 export function getReservations(locale: string, fetchImpl: typeof fetch = fetch): Promise<ActiveReservation[] | null> {
   return getForUser<ActiveReservation[]>(`/api/v1/admin/inventory/reservations?locale=${encodeURIComponent(locale)}`, fetchImpl);
 }
+
+export type SearchIndexStatus = components["schemas"]["SearchIndexStatus"];
+
+/** How many search documents exist and how many catalog changes wait (catalog.manage). */
+export function getSearchIndexStatus(fetchImpl: typeof fetch = fetch): Promise<SearchIndexStatus | null> {
+  return getForUser<SearchIndexStatus>("/api/v1/admin/seo/search-index", fetchImpl);
+}

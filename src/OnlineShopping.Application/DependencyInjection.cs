@@ -30,6 +30,12 @@ public static class DependencyInjection
 
         services.AddScoped<ICategoryQueries, CategoryQueries>();
         services.AddScoped<IProductQueries, ProductQueries>();
+        services.AddScoped<Catalog.Browse.IProductBrowse, Catalog.Browse.ProductBrowseService>();
+        services.TryAddScoped<Search.IProductSearch, Search.SimpleProductSearch>();
+        services.AddScoped<Search.ProductTextSearch>();
+        services.AddScoped<Search.SearchTermLog>();
+        services.AddScoped<Search.SearchIndexService>();
+        services.AddScoped<Search.SearchSuggestionService>();
         services.AddScoped<CatalogTreeService>();
         services.AddScoped<ProductAdminService>();
         services.AddScoped<CatalogImageService>();

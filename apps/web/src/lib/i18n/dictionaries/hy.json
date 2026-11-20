@@ -52,7 +52,13 @@
     "home": "Գլխավոր",
     "categoriesShort": "Կատեգորիաներ",
     "currency": "Արժույթ",
-    "adminPanel": "Կառավարման վահանակ"
+    "adminPanel": "Կառավարման վահանակ",
+    "suggestProducts": "Ապրանքներ",
+    "suggestCategories": "Կատեգորիաներ",
+    "suggestBrands": "Ապրանքանիշեր",
+    "suggestPopular": "Հաճախակի որոնումներ",
+    "suggestAll": "Բոլոր արդյունքները «{query}»-ի համար",
+    "suggestLabel": "Որոնման առաջարկներ"
   },
   "account": {
     "loginTitle": "Մուտք",
@@ -882,7 +888,12 @@
     "reservationRelease": "Ազատել",
     "reservationConfirmRelease": "Ազատե՞լ «{reference}»-ի ամբողջ ամրագրումը։",
     "stockReserved": "{count} ամրագրված",
-    "stockAvailable": "{count} հասանելի"
+    "stockAvailable": "{count} հասանելի",
+    "searchIndexTitle": "Որոնման ինդեքս",
+    "searchIndexIntro": "Որոնումն աշխատում է ամեն ապրանքի պատրաստված տեքստով ամեն լեզվով։ Կատալոգի փոփոխությունները հասնում են վայրկյանների ընթացքում։ Վերակառուցեք, եթե արդյունքները հնացած են թվում։",
+    "searchIndexStatus": "{documents} որոնման փաստաթուղթ, {pending} փոփոխություն հերթում",
+    "searchIndexRebuild": "Վերակառուցել ինդեքսը",
+    "searchIndexQueued": "Վերակառուցումը հերթում է և կկատարվի վայրկյանների ընթացքում։"
   },
   "footer": {
     "shopping": "Գնումներ",
@@ -935,5 +946,46 @@
     "brand": "Ապրանքանիշ",
     "soldOutOption": "Այս համակցությունը սպառված է",
     "video": "Տեսանյութ"
+  },
+  "listing": {
+    "home": "Գլխավոր",
+    "productCount": "{count} ապրանք",
+    "sortLabel": "Դասավորել",
+    "sorts": {
+      "relevance": "Ամենահամապատասխան",
+      "newest": "Նորագույն",
+      "price_asc": "Ամենաէժան",
+      "price_desc": "Ամենաթանկ",
+      "discount": "Ամենամեծ զեղչ"
+    },
+    "filters": "Զտիչներ",
+    "clearAll": "Մաքրել բոլոր զտիչները",
+    "removeFilter": "Հեռացնել {filter} զտիչը",
+    "subCategories": "Կատեգորիաներ",
+    "brands": "Ապրանքանիշ",
+    "groups": "Ապրանքի տեսակ",
+    "price": "Գին",
+    "priceFrom": "{price}-ից",
+    "priceTo": "մինչև {price}",
+    "from": "Սկսած",
+    "to": "Մինչև",
+    "apply": "Կիրառել",
+    "rangeHint": "{min}-ից {max}",
+    "availability": "Առկայություն",
+    "inStock": "Միայն առկաները",
+    "onSale": "Միայն զեղչվածները",
+    "yes": "այո",
+    "empty": "Այս զտիչներով ապրանքներ չկան։",
+    "emptyScope": "Այստեղ դեռ ապրանքներ չկան։",
+    "pages": "Էջեր",
+    "searchTitle": "Արդյունքներ «{query}»-ի համար",
+    "searchNone": "«{query}»-ի համար ոչինչ չգտնվեց։ Փորձեք այլ բառ։",
+    "metaDescription": "{title} — դիտեք և գնեք առցանց {store}-ում",
+    "allProducts": "Բոլոր ապրանքները",
+    "corrected": "Ցուցադրված են «{corrected}»-ի արդյունքները։ Դուք որոնել եք «{query}»։",
+    "didYouMean": "Գուցե նկատի ունեիք «{suggestion}»։",
+    "relaxTitle": "Մեկ զտիչ հեռացնելով՝ ապրանքներ կգտնվեն։",
+    "relaxFilter": "Առանց «{filter}» ({count} ապրանք)",
+    "newestTitle": "Գուցե սրանք դուր գան"
   }
 }

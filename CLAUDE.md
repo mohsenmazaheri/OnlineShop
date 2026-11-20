@@ -393,6 +393,23 @@ After an API contract change: build the API, run `npm run gen:api`, commit `open
   longer change its status. The page writes canonical + hreflang only for translated languages (`productAlternates`;
   untranslated → noindex, canonical on the default language) and Product JSON-LD from the same response as the
   visible price (`productJsonLd`). Money: `formatMoney` (Intl; amount first in fa/ar; currency from `Store:Currency`).
+- Listings: `/{locale}/c/{cat}[/{sub}]`, `/{locale}/b/{brand}` and `/{locale}/search` all use `GET /catalog/browse`
+  (`IProductBrowse` / `ProductBrowseService`: scope + filters + disjunctive facet counts computed in memory over
+  small rows; `BrowseQueryParser` reads `c s b q brand group min max stock sale o.{spec} n.{spec}=min-max y.{spec}
+  sort page`, repeated keys joined). Web: `lib/catalog/browse.ts` (address bar ↔ API; typed prices are display
+  currency, converted back; `nmin.`/`nmax.` form inputs become `n.`), `loadListing`/`listingMetadata`
+  (`lib/catalog/listing-page.ts`), `ProductListing` + `ListingFacets` (facet links `rel=nofollow`, ranges as GET
+  forms). Filtered/sorted → `noindex,follow`, canonical = plain list (page ≥ 2 keeps `?page`); `listingJsonLd`.
+- Search (`Application/Search`): `search_documents` (one per published product and language; Title/Keywords/
+  Details/Codes/Description, all `SearchText.Normalize`d) built by `SearchIndexService` from the `search_outbox`, which
+  `SearchOutboxInterceptor` fills on every catalog SaveChanges (never enqueue by hand; ExecuteUpdate stock changes are
+  not search texts). `SearchIndexWorker` processes it; tests call `IndexSearchAsync()` (DemoCatalogTestBase) instead.
+  Engines behind `IProductSearch`: `PostgresProductSearch` (generated weighted `search_vector` tsvector + GIN and a
+  trigram index on title, created in the migration with raw SQL; read with ADO.NET, not `SqlQuery<T>`) and
+  `SimpleProductSearch` (any database, the unit tests). `ProductTextSearch` adds code lookup (SKU/barcode/number →
+  `BrowseSearch.ExactNumber`, the search page redirects), synonyms (`SearchTerms`), `KeyboardLayouts` retries and
+  "did you mean"; `SearchTermLog` counts phrases. Suggestions: `SearchSuggestionService` → `SearchSuggest` in the header.
+  Npgsql cannot project `ValueTuple`s: use small records in projections.
 - Display currency: `loadDisplayCurrency(locale)` (cookie `os_currency` = "{locale}:{CODE}", else the language's
   default, else the base) inside Suspense; components take a `DisplayCurrency` and convert with `convertAmount` /
   `displayMoney` — never store or send converted prices. The choice is set by `GET /{locale}/currency?code=&returnTo=`

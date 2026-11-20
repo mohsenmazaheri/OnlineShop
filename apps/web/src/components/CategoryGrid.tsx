@@ -1,8 +1,10 @@
 import Image from "next/image";
+import Link from "next/link";
 import { monogram } from "@/components/layout/Brand";
 import type { CategorySummary } from "@/lib/api/storefront";
 
 type Props = {
+  locale: string;
   categories: CategorySummary[];
   heading: string;
   emptyText: string;
@@ -10,10 +12,10 @@ type Props = {
 
 /**
  * Round category tiles for the home page (the target of the "categories" links in the header and bottom bar).
- * Until categories have images (phase 4) a tile shows the name's first letter on a soft colour. Category pages
- * arrive in phase 6; until then tiles are not links.
+ * A category without an image shows the name's first letter on a soft colour. Each tile links to the category page
+ * (/{locale}/c/{slug}, the slug in the reader's language).
  */
-export function CategoryGrid({ categories, heading, emptyText }: Props) {
+export function CategoryGrid({ locale, categories, heading, emptyText }: Props) {
   return (
     <section id="categories" aria-labelledby="categories-heading" className="flex flex-col gap-4 md:gap-5">
       <h2 id="categories-heading" className="text-lg font-extrabold md:text-center md:text-2xl">
@@ -24,7 +26,8 @@ export function CategoryGrid({ categories, heading, emptyText }: Props) {
       ) : (
         <ul className="grid grid-cols-4 gap-x-2 gap-y-4 md:grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] md:gap-x-3 md:gap-y-5">
           {categories.map((category, i) => (
-            <li key={category.id} className="flex min-w-0 flex-col items-center gap-2 text-center">
+            <li key={category.id} className="min-w-0">
+              <Link href={`/${locale}/c/${category.slug}`} className="flex flex-col items-center gap-2 text-center hover:text-primary">
               <span
                 aria-hidden
                 className={`tint tint-${i % 8} flex h-16 w-16 items-center justify-center overflow-hidden rounded-[1.25rem] text-2xl font-extrabold md:h-24 md:w-24 md:rounded-[1.75rem] md:text-3xl`}
@@ -37,6 +40,7 @@ export function CategoryGrid({ categories, heading, emptyText }: Props) {
                 )}
               </span>
               <h3 className="w-full text-xs leading-snug font-medium hyphens-auto [overflow-wrap:anywhere] md:text-sm">{category.name}</h3>
+              </Link>
             </li>
           ))}
         </ul>

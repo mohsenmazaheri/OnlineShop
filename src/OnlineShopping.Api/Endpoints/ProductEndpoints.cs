@@ -1,7 +1,9 @@
 using Microsoft.Extensions.Options;
 using OnlineShopping.Api.Common;
 using OnlineShopping.Application.Catalog;
+using OnlineShopping.Application.Catalog.Browse;
 using OnlineShopping.Application.Common;
+using OnlineShopping.Application.Search;
 
 namespace OnlineShopping.Api.Endpoints;
 
@@ -36,6 +38,22 @@ public static class ProductEndpoints
             .WithSummary("The product's slug in the requested locale, for redirecting old or wrong product addresses.")
             .Produces<ProductSlugResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound);
+
+        app.MapGet("/api/v1/catalog/browse", async (HttpRequest request, string? locale, IProductBrowse browse, CancellationToken ct) =>
+                (await browse.BrowseAsync(BrowseQueryParser.Parse(request.Query.Select(p => new KeyValuePair<string, string?>(p.Key, p.Value.ToString()))), locale, ct))
+                .ToHttpResult())
+            .WithTags("Storefront")
+            .WithName("BrowseProducts")
+            .WithSummary("Products of a category (c, s), a brand (b) or a search (q) with filters, facet counts, sort and page " +
+                "(brand, group, min, max, stock, sale, o.{spec}, n.{spec}, y.{spec}, sort, page).")
+            .Produces<BrowseResult>()
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        app.MapGet("/api/v1/catalog/suggest", async (string? q, string? locale, SearchSuggestionService suggestions, CancellationToken ct) =>
+                TypedResults.Ok(await suggestions.SuggestAsync(q ?? "", locale, ct)))
+            .WithTags("Storefront")
+            .WithName("SuggestSearch")
+            .WithSummary("Suggestions while typing (from two characters): products, categories, brands and popular searches.");
 
         return app;
     }
