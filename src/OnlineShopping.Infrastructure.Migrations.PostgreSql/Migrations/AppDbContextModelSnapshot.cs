@@ -443,6 +443,10 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("public_number");
 
+                    b.Property<int>("Reserved")
+                        .HasColumnType("integer")
+                        .HasColumnName("reserved");
+
                     b.Property<string>("SKU")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -492,7 +496,10 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasDatabaseName("ix_products_sku")
                         .HasFilter("is_deleted = false");
 
-                    b.ToTable("products", (string)null);
+                    b.ToTable("products", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Products_Reserved", "reserved >= 0");
+                        });
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Catalog.ProductGroup", b =>
@@ -769,6 +776,10 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("product_id");
 
+                    b.Property<int>("Reserved")
+                        .HasColumnType("integer")
+                        .HasColumnName("reserved");
+
                     b.Property<string>("Sku")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -797,7 +808,10 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasDatabaseName("ix_product_variants_sku")
                         .HasFilter("is_deleted = false");
 
-                    b.ToTable("product_variants", (string)null);
+                    b.ToTable("product_variants", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ProductVariants_Reserved", "reserved >= 0");
+                        });
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Catalog.ProductVideo", b =>
@@ -1362,6 +1376,87 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.ToTable("stock_movements", null, t =>
                         {
                             t.HasCheckConstraint("CK_StockMovements_Kind", "kind IN ('Opening', 'Receipt', 'Issue', 'Sale', 'Return', 'Adjustment', 'TransferOut', 'TransferIn')");
+                        });
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Inventory.StockReservation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("ClosedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_utc");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<DateTime>("ExpiresUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_utc");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("item_id");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("reference");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid?>("VariantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("variant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_stock_reservations");
+
+                    b.HasIndex("ItemId")
+                        .HasDatabaseName("ix_stock_reservations_item_id");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_stock_reservations_product_id");
+
+                    b.HasIndex("Reference")
+                        .HasDatabaseName("ix_stock_reservations_reference");
+
+                    b.HasIndex("VariantId")
+                        .HasDatabaseName("ix_stock_reservations_variant_id");
+
+                    b.HasIndex("Status", "ExpiresUtc")
+                        .HasDatabaseName("ix_stock_reservations_status_expires_utc");
+
+                    b.ToTable("stock_reservations", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_StockReservations_Quantity", "quantity > 0");
+
+                            t.HasCheckConstraint("CK_StockReservations_Status", "status IN ('Active', 'Committed', 'Released', 'Expired')");
                         });
                 });
 
@@ -3114,6 +3209,22 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_stock_movements_warehouses_warehouse_id");
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Inventory.StockReservation", b =>
+                {
+                    b.HasOne("OnlineShopping.Domain.Catalog.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_stock_reservations_products_product_id");
+
+                    b.HasOne("OnlineShopping.Domain.Catalog.ProductVariant", null)
+                        .WithMany()
+                        .HasForeignKey("VariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_stock_reservations_product_variants_variant_id");
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Inventory.Stocktake", b =>

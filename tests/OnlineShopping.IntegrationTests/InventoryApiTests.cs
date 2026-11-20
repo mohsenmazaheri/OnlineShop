@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.DependencyInjection;
 using OnlineShopping.Application.Accounts;
 using OnlineShopping.Application.Catalog.Admin;
 using OnlineShopping.Application.Inventory;
@@ -153,6 +154,46 @@ public sealed class InventoryApiTests(CatalogAdminApiTests.AdminFactory factory)
         Assert.Equal((6, true, 2.5m), (row.Total, row.Low, row.AverageCost));
         var ledger = await ReadAsync<MovementPage>(await admin.GetAsync($"/api/v1/admin/inventory/movements?sku={sku}&kind=Receipt"));
         Assert.Equal((6, PurchaseService.Reference(draft.Summary.Number)), (ledger.Items.Single().Quantity, ledger.Items.Single().Reference));
+    }
+
+    [Fact]
+    public async Task Two_checkouts_racing_for_the_last_units_never_both_get_them()
+    {
+        using var admin = await AdminAsync();
+        var suffix = Guid.NewGuid().ToString("N")[..8];
+        var category = await ReadAsync<CatalogNodeView>(await admin.PostAsJsonAsync("/api/v1/admin/catalog/categories", new SaveCatalogNodeRequest([new("fa", $"رزرو {suffix}", null, null)])));
+        var sub = await ReadAsync<CatalogNodeView>(await admin.PostAsJsonAsync($"/api/v1/admin/catalog/categories/{category.Id}/subcategories", new SaveCatalogNodeRequest([new("fa", "زیر", null, null)])));
+        var group = await ReadAsync<CatalogNodeView>(await admin.PostAsJsonAsync($"/api/v1/admin/catalog/subcategories/{sub.Id}/groups", new SaveCatalogNodeRequest([new("fa", "گروه", null, null)])));
+        var sku = $"RES-{suffix}";
+        await ReadAsync<ProductEditView>(await admin.PostAsJsonAsync("/api/v1/admin/products",
+            new SaveProductRequest(sku, 10, null, 5, true, group.Id, [new("fa", "کالای رزرو", null, null)], [])));
+
+        StockItem item;
+        using (var scope = factory.Services.CreateScope())
+            item = (await StockItemLookup.FindAsync(scope.ServiceProvider.GetRequiredService<OnlineShopping.Application.Common.IApplicationDbContext>(), sku)).Value;
+
+        // Ten checkouts at once each want 3 of the 5: exactly one can have them.
+        var attempts = await Task.WhenAll(Enumerable.Range(0, 10).Select(async i =>
+        {
+            using var scope = factory.Services.CreateScope();
+            try
+            {
+                return (await scope.ServiceProvider.GetRequiredService<StockReservationService>().ReserveAsync($"race-{suffix}-{i}", [new(item, 3)])).IsSuccess;
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException)
+            {
+                return false; // a lock conflict is a refusal too
+            }
+        }));
+        Assert.Equal(1, attempts.Count(ok => ok));
+
+        var stock = await ReadAsync<StockPage>(await admin.GetAsync($"/api/v1/admin/inventory/stock?search={sku}"));
+        Assert.Equal((5, 3, 2), (stock.Items.Single().Total, stock.Items.Single().Reserved, stock.Items.Single().Available));
+        var active = await ReadAsync<List<ActiveReservationView>>(await admin.GetAsync("/api/v1/admin/inventory/reservations"));
+        var held = active.Single(r => r.Sku == sku);
+        var released = await ReadAsync<int>(await admin.PostAsJsonAsync("/api/v1/admin/inventory/reservations/release", new ReleaseReservationsRequest(held.Reference)));
+        Assert.Equal(1, released);
+        Assert.Equal(0, (await ReadAsync<StockPage>(await admin.GetAsync($"/api/v1/admin/inventory/stock?search={sku}"))).Items.Single().Reserved);
     }
 
     [Fact]

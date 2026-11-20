@@ -86,6 +86,14 @@ public static class InventoryEndpoints
             .WithName("CancelStocktake").WithSummary("Drop an open stocktake without changing the stock.").Produces<StocktakeSummary>();
 
         MapPurchasing(view, manage);
+
+        view.MapGet("/reservations", async (string? locale, StockReservationService reservations, CancellationToken ct) =>
+                TypedResults.Ok(await reservations.ListActiveAsync(locale, ct)))
+            .WithName("ListStockReservations").WithSummary("Units held for unpaid checkouts, the oldest first.");
+        manage.MapPost("/reservations/release", async (ReleaseReservationsRequest request, StockReservationService reservations, CancellationToken ct) =>
+                TypedResults.Ok(await reservations.ReleaseAsync(request.Reference.Trim(), ct)))
+            .Validate<ReleaseReservationsRequest>().WithName("ReleaseStockReservations")
+            .WithSummary("Give back every unit a checkout holds (by its reference); returns how many reservations ended.");
         return app;
     }
 

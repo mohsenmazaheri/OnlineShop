@@ -119,7 +119,7 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
         p.Images.OrderBy(i => i.SortOrder).Select(i => i.Url).FirstOrDefault(),
         p.Price,
         p.CompareAtPrice,
-        p.Stock > 0);
+        p.Stock - p.Reserved > 0);
 
     public async Task<IReadOnlyList<ProductCard>> ListAsync(ProductList list, string locale, int take, CancellationToken cancellationToken = default)
     {
@@ -151,7 +151,8 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
                 p.SKU,
                 p.Price,
                 p.CompareAtPrice,
-                p.Stock,
+                // What can still be bought: stock minus units held for unpaid checkouts.
+                Stock = p.Stock - p.Reserved,
                 Category = new CategoryLink(
                     p.ProductGroup.SubCategory.Category.Translations.Where(t => t.Locale == locale).Select(t => t.Name).FirstOrDefault()
                         ?? p.ProductGroup.SubCategory.Category.Name,
@@ -229,7 +230,7 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
             .ToList();
         return new ProductDetail(
             product.PublicNumber, product.Name, product.Slug, product.Description, product.SKU, product.Price,
-            product.CompareAtPrice, product.Stock, product.Stock > 0, images, product.Category, product.SubCategory,
+            product.CompareAtPrice, Math.Max(0, product.Stock), product.Stock > 0, images, product.Category, product.SubCategory,
             specs, alternates, product.Brand, axes, variants, product.Gtin, product.Mpn, product.WeightGrams, product.MetaTitle, product.MetaDescription, videos);
     }
 
@@ -240,7 +241,7 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
         var rows = await db.ProductVariants.AsNoTracking()
             .Where(v => v.ProductId == productId)
             .OrderBy(v => v.SortOrder)
-            .Select(v => new { v.Sku, v.Gtin, v.Price, v.CompareAtPrice, v.Stock, Options = v.Options.Select(o => new { o.SpecId, o.OptionId }).ToList() })
+            .Select(v => new { v.Sku, v.Gtin, v.Price, v.CompareAtPrice, Stock = v.Stock - v.Reserved, Options = v.Options.Select(o => new { o.SpecId, o.OptionId }).ToList() })
             .ToListAsync(cancellationToken);
         if (rows.Count == 0)
             return ([], []);

@@ -95,6 +95,11 @@ export function StockList({ locale, texts, page, search, onlyOut, onlyLow = fals
                   ))}
                   <td className={`p-3 text-end font-bold tabular-nums ${row.total === 0 ? "text-danger" : ""}`}>
                     {formatNumber(row.total, locale)}
+                    {row.reserved > 0 && (
+                      <span className="block text-xs font-normal text-muted">
+                        {texts.stockReserved.replace("{count}", formatNumber(row.reserved, locale))} · {texts.stockAvailable.replace("{count}", formatNumber(row.available, locale))}
+                      </span>
+                    )}
                     {row.minimumStock !== null && (
                       <span className="block text-xs font-normal text-muted">
                         {texts.stockMinimum} {formatNumber(row.minimumStock, locale)}

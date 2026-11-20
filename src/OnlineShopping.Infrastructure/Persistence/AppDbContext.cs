@@ -64,6 +64,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<PurchaseReceipt> PurchaseReceipts => Set<PurchaseReceipt>();
     public DbSet<PurchaseReceiptLine> PurchaseReceiptLines => Set<PurchaseReceiptLine>();
     public DbSet<StockItemInfo> StockItems => Set<StockItemInfo>();
+    public DbSet<StockReservation> StockReservations => Set<StockReservation>();
 
     /// <summary>ASP.NET Core Data Protection keys, shared by all app instances (cookies, antiforgery tokens).</summary>
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
@@ -90,6 +91,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         ConfigureInventory(builder);
         ConfigureStocktakes(builder);
         ConfigurePurchasing(builder);
+        ConfigureReservations(builder);
         ApplySoftDeleteQueryFilters(builder);
     }
 
@@ -104,6 +106,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     /// <summary>The SQL check that keeps the Status column in sync with every <see cref="PurchaseReceiptStatus"/> value.</summary>
     internal static string BuildPurchaseReceiptStatusCheckSql() =>
         $"status IN ({string.Join(", ", Enum.GetNames<PurchaseReceiptStatus>().Select(n => $"'{n}'"))})";
+
+    /// <summary>The SQL check that keeps the Status column in sync with every <see cref="StockReservationStatus"/> value.</summary>
+    internal static string BuildReservationStatusCheckSql() =>
+        $"status IN ({string.Join(", ", Enum.GetNames<StockReservationStatus>().Select(n => $"'{n}'"))})";
 
     /// <summary>The SQL check that keeps the Status column in sync with every <see cref="OrderStatus"/> value.</summary>
     internal static string BuildOrderStatusCheckSql() =>
@@ -648,6 +654,30 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.HasOne<Product>().WithMany().HasForeignKey(i => i.ProductId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne<ProductVariant>().WithMany().HasForeignKey(i => i.VariantId).OnDelete(DeleteBehavior.Restrict);
         });
+    }
+
+    private static void ConfigureReservations(ModelBuilder b)
+    {
+        b.Entity<StockReservation>(e =>
+        {
+            e.ToTable("stock_reservations", tb =>
+            {
+                tb.HasCheckConstraint("CK_StockReservations_Status", BuildReservationStatusCheckSql());
+                tb.HasCheckConstraint("CK_StockReservations_Quantity", "quantity > 0");
+            });
+            e.Property(r => r.Status).HasConversion<string>().HasMaxLength(16);
+            e.Property(r => r.Reference).HasMaxLength(100);
+            e.HasIndex(r => r.Reference);
+            // The expiry job looks for active reservations whose time ran out.
+            e.HasIndex(r => new { r.Status, r.ExpiresUtc });
+            e.HasIndex(r => r.ItemId);
+            e.HasOne<Product>().WithMany().HasForeignKey(r => r.ProductId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<ProductVariant>().WithMany().HasForeignKey(r => r.VariantId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Reserved is a count of held units: never below zero.
+        b.Entity<Product>().ToTable(tb => tb.HasCheckConstraint("CK_Products_Reserved", "reserved >= 0"));
+        b.Entity<ProductVariant>().ToTable(tb => tb.HasCheckConstraint("CK_ProductVariants_Reserved", "reserved >= 0"));
     }
 
     private static void ConfigureOrders(ModelBuilder b)

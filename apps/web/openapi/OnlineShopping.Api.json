@@ -3265,6 +3265,39 @@
         }
       }
     },
+    "/api/v1/admin/inventory/reservations": {
+      "get": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Units held for unpaid checkouts, the oldest first.",
+        "operationId": "ListStockReservations",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ActiveReservationView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/inventory/warehouses/{id}": {
       "put": {
         "tags": [
@@ -3753,6 +3786,48 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ReceiptView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/reservations/release": {
+      "post": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Give back every unit a checkout holds (by its reference); returns how many reservations ended.",
+        "operationId": "ReleaseStockReservations",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReleaseReservationsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -5284,6 +5359,57 @@
             "items": {
               "type": "string"
             }
+          }
+        }
+      },
+      "ActiveReservationView": {
+        "required": [
+          "id",
+          "productNumber",
+          "name",
+          "variantLabel",
+          "sku",
+          "quantity",
+          "reference",
+          "createdUtc",
+          "expiresUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "productNumber": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "variantLabel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sku": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "createdUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresUtc": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -7906,6 +8032,17 @@
           }
         }
       },
+      "ReleaseReservationsRequest": {
+        "required": [
+          "reference"
+        ],
+        "type": "object",
+        "properties": {
+          "reference": {
+            "type": "string"
+          }
+        }
+      },
       "ReorderSpecsRequest": {
         "required": [
           "ids"
@@ -8991,6 +9128,8 @@
           "sku",
           "isPublished",
           "total",
+          "reserved",
+          "available",
           "levels",
           "averageCost",
           "minimumStock",
@@ -9023,6 +9162,14 @@
             "type": "boolean"
           },
           "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "reserved": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "available": {
             "type": "integer",
             "format": "int32"
           },

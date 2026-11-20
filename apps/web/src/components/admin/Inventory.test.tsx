@@ -22,7 +22,17 @@ const main = { id: "w-main", code: "main", name: "Main warehouse", address: null
 const shop = { id: "w-shop", code: "shop", name: "Shop floor", address: "1 High St", isDefault: false, isActive: true, units: 3, items: 1, used: false };
 const old = { id: "w-old", code: "old", name: "Old store", address: null, isDefault: false, isActive: false, units: 0, items: 0, used: true };
 const row = (
-  over: Partial<{ sku: string; total: number; variantLabel: string | null; averageCost: number | null; minimumStock: number | null; low: boolean; value: number | null }> = {},
+  over: Partial<{
+    sku: string;
+    total: number;
+    reserved: number;
+    available: number;
+    variantLabel: string | null;
+    averageCost: number | null;
+    minimumStock: number | null;
+    low: boolean;
+    value: number | null;
+  }> = {},
 ) => ({
   itemId: over.sku ?? "SHOE-1",
   productNumber: 1001,
@@ -31,6 +41,8 @@ const row = (
   sku: "SHOE-1",
   isPublished: true,
   total: 33,
+  reserved: 0,
+  available: 33,
   levels: [
     { warehouseId: "w-main", quantity: 30 },
     { warehouseId: "w-shop", quantity: 3 },
@@ -54,7 +66,7 @@ afterEach(() => {
 
 describe("StockList", () => {
   const page = {
-    items: [row({ averageCost: 20, value: 660, minimumStock: 40, low: true }), row({ sku: "HOOD-S", total: 0, variantLabel: "Beige / S" })],
+    items: [row({ averageCost: 20, value: 660, minimumStock: 40, low: true, reserved: 5, available: 28 }), row({ sku: "HOOD-S", total: 0, available: 0, variantLabel: "Beige / S" })],
     total: 2,
     page: 1,
     pageSize: 20,
@@ -92,6 +104,7 @@ describe("StockList", () => {
     expect(within(shoes).getByText("€20")).toBeTruthy();
     expect(within(shoes).getByText("€660")).toBeTruthy();
     expect(within(shoes).getByText(`${texts.stockMinimum} 40`)).toBeTruthy();
+    expect(within(shoes).getByText("5 reserved · 28 available")).toBeTruthy();
     expect(within(screen.getByText("Beige / S").closest("tr")!).getAllByText("—")).toHaveLength(2);
   });
 

@@ -79,6 +79,8 @@ public sealed record StockRow(
     string Sku,
     bool IsPublished,
     int Total,
+    int Reserved,
+    int Available,
     IReadOnlyList<WarehouseQuantity> Levels,
     decimal? AverageCost,
     int? MinimumStock,
