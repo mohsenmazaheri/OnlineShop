@@ -74,3 +74,8 @@ export function stocktakeHref(locale: string, number: number, view: { filter?: S
   const query = params.toString();
   return `/${locale}/admin/stocktakes/${number}${query ? `?${query}` : ""}`;
 }
+
+/** "PR-12", as the ledger references a purchase receipt. */
+export function purchaseLabel(number: number): string {
+  return `PR-${number}`;
+}

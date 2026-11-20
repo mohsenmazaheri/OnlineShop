@@ -48,6 +48,10 @@ public interface IApplicationDbContext
     DbSet<StockLevel> StockLevels { get; }
     DbSet<Stocktake> Stocktakes { get; }
     DbSet<StocktakeLine> StocktakeLines { get; }
+    DbSet<Supplier> Suppliers { get; }
+    DbSet<PurchaseReceipt> PurchaseReceipts { get; }
+    DbSet<PurchaseReceiptLine> PurchaseReceiptLines { get; }
+    DbSet<StockItemInfo> StockItems { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 

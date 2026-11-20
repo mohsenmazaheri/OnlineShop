@@ -121,6 +121,41 @@ public sealed class InventoryApiTests(CatalogAdminApiTests.AdminFactory factory)
     }
 
     [Fact]
+    public async Task A_purchase_receipt_brings_goods_in_at_cost_and_a_minimum_flags_low_stock()
+    {
+        using var admin = await AdminAsync();
+        var suffix = Guid.NewGuid().ToString("N")[..8];
+        var category = await ReadAsync<CatalogNodeView>(await admin.PostAsJsonAsync("/api/v1/admin/catalog/categories", new SaveCatalogNodeRequest([new("fa", $"خرید {suffix}", null, null)])));
+        var sub = await ReadAsync<CatalogNodeView>(await admin.PostAsJsonAsync($"/api/v1/admin/catalog/categories/{category.Id}/subcategories", new SaveCatalogNodeRequest([new("fa", "زیر", null, null)])));
+        var group = await ReadAsync<CatalogNodeView>(await admin.PostAsJsonAsync($"/api/v1/admin/catalog/subcategories/{sub.Id}/groups", new SaveCatalogNodeRequest([new("fa", "گروه", null, null)])));
+        var sku = $"BUY-{suffix}";
+        await ReadAsync<ProductEditView>(await admin.PostAsJsonAsync("/api/v1/admin/products",
+            new SaveProductRequest(sku, 10, null, 0, true, group.Id, [new("fa", "کالای خرید", null, null)], [])));
+        var main = (await ReadAsync<List<WarehouseView>>(await admin.GetAsync("/api/v1/admin/inventory/warehouses"))).Single(w => w.IsDefault);
+        var supplier = await ReadAsync<SupplierView>(await admin.PostAsJsonAsync("/api/v1/admin/inventory/suppliers",
+            new SaveSupplierRequest($"تأمین {suffix}", null, null, "sales@supplier.test", null, null, true)));
+
+        var draft = await ReadAsync<ReceiptView>(await admin.PostAsJsonAsync("/api/v1/admin/inventory/purchases",
+            new SaveReceiptRequest(supplier.Id, main.Id, "INV-9", null, [new(sku, 4, 2.5m)])));
+        Assert.Equal((PurchaseReceiptStatus.Draft, 10m), (draft.Summary.Status, draft.Summary.Total));
+        var changed = await ReadAsync<ReceiptView>(await admin.PutAsJsonAsync($"/api/v1/admin/inventory/purchases/{draft.Summary.Number}",
+            new SaveReceiptRequest(supplier.Id, main.Id, "INV-9", null, [new(sku, 6, 2.5m)])));
+        Assert.Equal(15m, changed.Summary.Total);
+        var posted = await ReadAsync<ReceiptView>(await admin.PostAsync($"/api/v1/admin/inventory/purchases/{draft.Summary.Number}/post", null));
+        Assert.Equal(PurchaseReceiptStatus.Posted, posted.Summary.Status);
+        using var again = await admin.PostAsync($"/api/v1/admin/inventory/purchases/{draft.Summary.Number}/post", null);
+        Assert.Equal(PurchasingErrors.ReceiptNotDraft, await CodeAsync(again));
+
+        var settings = await ReadAsync<ItemSettingsView>(await admin.PutAsJsonAsync("/api/v1/admin/inventory/items/settings", new SaveItemSettingsRequest(sku, 6, null)));
+        Assert.Equal((6, 2.5m), (settings.MinimumStock, settings.AverageCost));
+        var low = await ReadAsync<StockPage>(await admin.GetAsync($"/api/v1/admin/inventory/stock?search={sku}&onlyLow=true"));
+        var row = Assert.Single(low.Items);
+        Assert.Equal((6, true, 2.5m), (row.Total, row.Low, row.AverageCost));
+        var ledger = await ReadAsync<MovementPage>(await admin.GetAsync($"/api/v1/admin/inventory/movements?sku={sku}&kind=Receipt"));
+        Assert.Equal((6, PurchaseService.Reference(draft.Summary.Number)), (ledger.Items.Single().Quantity, ledger.Items.Single().Reference));
+    }
+
+    [Fact]
     public async Task Visitors_cannot_see_or_change_stock()
     {
         using var anonymous = factory.CreateClient();

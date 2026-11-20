@@ -1,6 +1,6 @@
 import type { IconName } from "@/components/ui/Icon";
 
-export type AdminSection = "home" | "products" | "import" | "catalog" | "brands" | "specs" | "seo" | "staff" | "currencies" | "branding" | "inventory" | "movements" | "stocktakes" | "warehouses";
+export type AdminSection = "home" | "products" | "import" | "catalog" | "brands" | "specs" | "seo" | "staff" | "currencies" | "branding" | "inventory" | "movements" | "purchases" | "stocktakes" | "suppliers" | "warehouses";
 export type AdminGroup = "catalog" | "inventory" | "store" | "team";
 
 type SectionDefinition = {
@@ -24,7 +24,9 @@ export const adminSections: readonly SectionDefinition[] = [
   { section: "seo", path: "/seo", label: "navSeo", icon: "search", group: "catalog", permission: "catalog.manage" },
   { section: "inventory", path: "/inventory", label: "navInventory", icon: "stock", group: "inventory", permission: "inventory.view" },
   { section: "movements", path: "/inventory/movements", label: "navMovements", icon: "history", group: "inventory", permission: "inventory.view" },
+  { section: "purchases", path: "/purchases", label: "navPurchases", icon: "receipt", group: "inventory", permission: "inventory.view" },
   { section: "stocktakes", path: "/stocktakes", label: "navStocktakes", icon: "clipboard", group: "inventory", permission: "inventory.view" },
+  { section: "suppliers", path: "/suppliers", label: "navSuppliers", icon: "truck", group: "inventory", permission: "inventory.view" },
   { section: "warehouses", path: "/warehouses", label: "navWarehouses", icon: "warehouse", group: "inventory", permission: "inventory.view" },
   { section: "branding", path: "/branding", label: "navBranding", icon: "palette", group: "store", permission: "settings.manage" },
   { section: "currencies", path: "/currencies", label: "navCurrencies", icon: "coin", group: "store", permission: "settings.manage" },

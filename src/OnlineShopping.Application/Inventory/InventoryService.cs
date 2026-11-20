@@ -21,8 +21,11 @@ public sealed class InventoryService(
     public const int StockPageSize = 20;
     public const int MovementPageSize = 50;
 
-    /// <summary>A page of products (by number), each as one row or one row per variant.</summary>
-    public async Task<StockPage> StockAsync(string? search, bool onlyOut, int page, string? locale, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// A page of products (by number), each as one row or one row per variant, with average cost and minimum stock.
+    /// "Only out" keeps products with an item out of stock; "only low" those with an item at or below its minimum.
+    /// </summary>
+    public async Task<StockPage> StockAsync(string? search, bool onlyOut, int page, string? locale, bool onlyLow = false, CancellationToken cancellationToken = default)
     {
         page = Math.Max(1, page);
         var language = store.Value.ContentLocale(locale);
@@ -44,6 +47,12 @@ public sealed class InventoryService(
         }
         if (onlyOut)
             query = query.Where(p => p.Variants.Any() ? p.Variants.Any(v => v.Stock == 0) : p.Stock == 0);
+        if (onlyLow)
+        {
+            query = query.Where(p => p.Variants.Any()
+                ? p.Variants.Any(v => db.StockItems.Any(i => i.ItemId == v.Id && i.MinimumStock != null && v.Stock <= i.MinimumStock))
+                : db.StockItems.Any(i => i.ItemId == p.Id && i.MinimumStock != null && p.Stock <= i.MinimumStock));
+        }
 
         var total = await query.CountAsync(cancellationToken);
         var products = await query
@@ -69,18 +78,48 @@ public sealed class InventoryService(
             .ToListAsync(cancellationToken);
         var levels = await LevelsAsync(db.StockLevels.Where(l => ids.Contains(l.ProductId)), cancellationToken);
         var labels = await OptionLabelsAsync(variants.SelectMany(v => v.Options), language, cancellationToken);
+        var infos = await db.StockItems.AsNoTracking().Where(i => ids.Contains(i.ProductId)).ToDictionaryAsync(i => i.ItemId, cancellationToken);
 
         var rows = new List<StockRow>();
         foreach (var p in products)
         {
             var own = variants.Where(v => v.ProductId == p.Id).ToList();
             if (own.Count == 0)
-                rows.Add(new StockRow(p.Id, p.PublicNumber, p.Name, null, p.SKU, p.IsPublished, p.Stock, levels.GetValueOrDefault(p.Id, [])));
-            rows.AddRange(own.Select(v => new StockRow(
-                v.Id, p.PublicNumber, p.Name, Label(v.Options, labels), v.Sku, p.IsPublished, v.Stock, levels.GetValueOrDefault(v.Id, []))));
+                rows.Add(Row(p.Id, p.PublicNumber, p.Name, null, p.SKU, p.IsPublished, p.Stock, levels.GetValueOrDefault(p.Id, []), infos.GetValueOrDefault(p.Id)));
+            rows.AddRange(own.Select(v => Row(
+                v.Id, p.PublicNumber, p.Name, Label(v.Options, labels), v.Sku, p.IsPublished, v.Stock, levels.GetValueOrDefault(v.Id, []), infos.GetValueOrDefault(v.Id))));
         }
-        return new StockPage(rows, total, page, StockPageSize, await warehouses.ListAsync(cancellationToken));
+        return new StockPage(rows, total, page, StockPageSize, await warehouses.ListAsync(cancellationToken), await LowStockCountAsync(cancellationToken), store.Value.Currency);
     }
+
+    /// <summary>How many items (products without variants, and variants) are at or below their minimum stock.</summary>
+    public async Task<int> LowStockCountAsync(CancellationToken cancellationToken = default) =>
+        await db.Products.CountAsync(p => !p.Variants.Any() && db.StockItems.Any(i => i.ItemId == p.Id && i.MinimumStock != null && p.Stock <= i.MinimumStock), cancellationToken)
+        + await db.ProductVariants.CountAsync(v => !v.Product.IsDeleted && db.StockItems.Any(i => i.ItemId == v.Id && i.MinimumStock != null && v.Stock <= i.MinimumStock), cancellationToken);
+
+    /// <summary>Sets an item's minimum stock (null = no alert) and, when given, its average cost (for stock bought before the ledger).</summary>
+    public async Task<Result<ItemSettingsView>> SaveItemSettingsAsync(SaveItemSettingsRequest request, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var item = await FindItemAsync(request.Sku, cancellationToken);
+        if (!item.IsSuccess)
+            return item.Error!;
+        var info = await db.StockItems.FirstOrDefaultAsync(i => i.ItemId == item.Value.ItemId, cancellationToken);
+        if (info is null)
+        {
+            info = new StockItemInfo { ItemId = item.Value.ItemId, ProductId = item.Value.ProductId, VariantId = item.Value.VariantId };
+            db.StockItems.Add(info);
+        }
+        info.MinimumStock = request.MinimumStock;
+        if (request.AverageCost is { } cost)
+            info.AverageCost = decimal.Round(cost, 4, MidpointRounding.AwayFromZero);
+        await db.SaveChangesAsync(cancellationToken);
+        return new ItemSettingsView(info.ItemId, request.Sku.Trim(), info.MinimumStock, info.AverageCost);
+    }
+
+    private static StockRow Row(Guid itemId, long number, string name, string? label, string sku, bool published, int total, IReadOnlyList<WarehouseQuantity> levels, StockItemInfo? info) =>
+        new(itemId, number, name, label, sku, published, total, levels, info?.AverageCost, info?.MinimumStock, info?.MinimumStock is { } minimum && total <= minimum,
+            info?.AverageCost is { } cost ? decimal.Round(total * cost, 2, MidpointRounding.AwayFromZero) : null);
 
     /// <summary>The ledger, newest first; by SKU (a product with variants: all of them), warehouse and kind.</summary>
     public async Task<MovementPage> MovementsAsync(string? sku, Guid? warehouseId, StockMovementKind? kind, int page, string? locale, CancellationToken cancellationToken = default)
@@ -173,9 +212,9 @@ public sealed class InventoryService(
         var (reference, note) = (Clean(request.Reference), Clean(request.Note));
         var moved = await db.InTransactionAsync(async () =>
         {
-            var taken = await ledger.PostAsync(request.FromWarehouseId, item.Value, StockMovementKind.TransferOut, -request.Quantity, reference, note, transferId, cancellationToken);
+            var taken = await ledger.PostAsync(request.FromWarehouseId, item.Value, StockMovementKind.TransferOut, -request.Quantity, reference, note, transferId, cancellationToken: cancellationToken);
             return taken.IsSuccess
-                ? await ledger.PostAsync(request.ToWarehouseId, item.Value, StockMovementKind.TransferIn, request.Quantity, reference, note, transferId, cancellationToken)
+                ? await ledger.PostAsync(request.ToWarehouseId, item.Value, StockMovementKind.TransferIn, request.Quantity, reference, note, transferId, cancellationToken: cancellationToken)
                 : taken;
         }, cancellationToken);
         if (!moved.IsSuccess)
@@ -186,19 +225,7 @@ public sealed class InventoryService(
         return await RowAsync(item.Value, locale, cancellationToken);
     }
 
-    private async Task<Result<StockItem>> FindItemAsync(string sku, CancellationToken cancellationToken)
-    {
-        var code = sku.Trim();
-        var variant = await db.ProductVariants.AsNoTracking().Where(v => v.Sku == code).Select(v => new { v.Id, v.ProductId }).FirstOrDefaultAsync(cancellationToken);
-        if (variant is not null)
-            return new StockItem(variant.ProductId, variant.Id);
-        var product = await db.Products.AsNoTracking().Where(p => p.SKU == code).Select(p => new { p.Id, HasVariants = p.Variants.Any() }).FirstOrDefaultAsync(cancellationToken);
-        if (product is null)
-            return AppError.NotFound(InventoryErrors.ItemNotFound, $"No product or variant has SKU {code}.");
-        if (product.HasVariants)
-            return AppError.Validation(InventoryErrors.ItemHasVariants, "This product's stock is per variant: use a variant's SKU.");
-        return new StockItem(product.Id, null);
-    }
+    private Task<Result<StockItem>> FindItemAsync(string sku, CancellationToken cancellationToken) => StockItemLookup.FindAsync(db, sku, cancellationToken);
 
     private async Task<AppError?> CheckWarehouseAsync(Guid id, CancellationToken cancellationToken)
     {
@@ -216,15 +243,16 @@ public sealed class InventoryService(
             .Select(p => new { p.PublicNumber, p.SKU, p.Stock, p.IsPublished, Name = p.Translations.Where(t => t.Locale == language).Select(t => t.Name).FirstOrDefault() ?? p.Name })
             .SingleAsync(cancellationToken);
         var levels = await LevelsAsync(db.StockLevels.Where(l => l.ItemId == item.ItemId), cancellationToken);
+        var info = await db.StockItems.AsNoTracking().FirstOrDefaultAsync(i => i.ItemId == item.ItemId, cancellationToken);
         if (item.VariantId is not { } variantId)
-            return new StockRow(item.ItemId, product.PublicNumber, product.Name, null, product.SKU, product.IsPublished, product.Stock, levels.GetValueOrDefault(item.ItemId, []));
+            return Row(item.ItemId, product.PublicNumber, product.Name, null, product.SKU, product.IsPublished, product.Stock, levels.GetValueOrDefault(item.ItemId, []), info);
 
         var variant = await db.ProductVariants.AsNoTracking()
             .Where(v => v.Id == variantId)
             .Select(v => new { v.Sku, v.Stock, Options = v.Options.Select(o => o.OptionId).ToList() })
             .SingleAsync(cancellationToken);
         var labels = await OptionLabelsAsync(variant.Options, language, cancellationToken);
-        return new StockRow(item.ItemId, product.PublicNumber, product.Name, Label(variant.Options, labels), variant.Sku, product.IsPublished, variant.Stock, levels.GetValueOrDefault(item.ItemId, []));
+        return Row(item.ItemId, product.PublicNumber, product.Name, Label(variant.Options, labels), variant.Sku, product.IsPublished, variant.Stock, levels.GetValueOrDefault(item.ItemId, []), info);
     }
 
     private static async Task<Dictionary<Guid, IReadOnlyList<WarehouseQuantity>>> LevelsAsync(IQueryable<StockLevel> levels, CancellationToken cancellationToken)

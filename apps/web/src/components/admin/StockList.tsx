@@ -1,26 +1,37 @@
 import Link from "next/link";
+import { Badge } from "@/components/ui/Surface";
 import { movementsHref, pageWindow } from "@/lib/admin/inventory";
 import type { components } from "@/lib/api/schema";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
-import { formatNumber } from "@/lib/i18n/format-money";
+import { formatMoney, formatNumber } from "@/lib/i18n/format-money";
 
 type StockPage = components["schemas"]["StockPage"];
 type Texts = Dictionary["admin"];
 
-type Props = { locale: string; texts: Texts; page: StockPage; search: string; onlyOut: boolean; canManage: boolean };
+type Props = { locale: string; texts: Texts; page: StockPage; search: string; onlyOut: boolean; onlyLow?: boolean; canManage: boolean };
 
 /**
  * Stock per item and warehouse: a GET search form (works without JavaScript, bookmarkable), one row per product or
  * variant with a column per warehouse, and page links. Active warehouses get columns; an inactive one holds nothing.
  */
-export function StockList({ locale, texts, page, search, onlyOut, canManage }: Props) {
+export function StockList({ locale, texts, page, search, onlyOut, onlyLow = false, canManage }: Props) {
   const warehouses = page.warehouses.filter((w) => w.isActive);
   const pages = Math.max(1, Math.ceil(page.total / page.pageSize));
   const base = `/${locale}/admin/inventory`;
-  const href = (p: number) => `${base}?${new URLSearchParams({ ...(search ? { search } : {}), ...(onlyOut ? { onlyOut: "true" } : {}), page: String(p) }).toString()}`;
+  const href = (p: number) =>
+    `${base}?${new URLSearchParams({ ...(search ? { search } : {}), ...(onlyOut ? { onlyOut: "true" } : {}), ...(onlyLow ? { onlyLow: "true" } : {}), page: String(p) }).toString()}`;
+  const money = (amount: number) => formatMoney(amount, page.currency, locale);
 
   return (
     <div className="flex flex-col gap-4">
+      {page.lowCount > 0 && !onlyLow && (
+        <p role="status" className="flex flex-wrap items-center gap-2 rounded-xl border border-warning bg-warning/10 px-3 py-2 text-sm">
+          {texts.stockLowBanner.replace("{count}", formatNumber(page.lowCount, locale))}
+          <Link href={`${base}?onlyLow=true`} className="font-medium text-primary underline-offset-2 hover:underline">
+            {texts.stockLowShow}
+          </Link>
+        </p>
+      )}
       <form method="get" action={base} role="search" className="flex flex-wrap items-center gap-2">
         <input
           type="search"
@@ -33,6 +44,10 @@ export function StockList({ locale, texts, page, search, onlyOut, canManage }: P
         <label className="flex h-11 items-center gap-2 text-sm">
           <input type="checkbox" name="onlyOut" value="true" defaultChecked={onlyOut} className="h-5 w-5" />
           {texts.stockOnlyOut}
+        </label>
+        <label className="flex h-11 items-center gap-2 text-sm">
+          <input type="checkbox" name="onlyLow" value="true" defaultChecked={onlyLow} className="h-5 w-5" />
+          {texts.stockOnlyLow}
         </label>
         <button type="submit" className="h-11 rounded-xl border border-border px-4 text-sm">
           {texts.stockShow}
@@ -52,6 +67,8 @@ export function StockList({ locale, texts, page, search, onlyOut, canManage }: P
                 </th>
               ))}
               <th scope="col" className="p-3 text-end font-medium">{texts.stockTotal}</th>
+              <th scope="col" className="p-3 text-end font-medium">{texts.stockAverageCost}</th>
+              <th scope="col" className="p-3 text-end font-medium">{texts.stockValue}</th>
               <th scope="col" className="p-3">
                 <span className="sr-only">{texts.stockHistory}</span>
               </th>
@@ -69,13 +86,23 @@ export function StockList({ locale, texts, page, search, onlyOut, canManage }: P
                       #{row.productNumber} · {row.sku}
                     </span>
                     {!row.isPublished && <span className="text-xs text-muted">{texts.stockDraft}</span>}
+                    {row.low && <Badge tone="warning">{texts.stockLow}</Badge>}
                   </th>
                   {warehouses.map((w) => (
                     <td key={w.id} className="p-3 text-end tabular-nums">
                       {formatNumber(quantities.get(w.id) ?? 0, locale)}
                     </td>
                   ))}
-                  <td className={`p-3 text-end font-bold tabular-nums ${row.total === 0 ? "text-danger" : ""}`}>{formatNumber(row.total, locale)}</td>
+                  <td className={`p-3 text-end font-bold tabular-nums ${row.total === 0 ? "text-danger" : ""}`}>
+                    {formatNumber(row.total, locale)}
+                    {row.minimumStock !== null && (
+                      <span className="block text-xs font-normal text-muted">
+                        {texts.stockMinimum} {formatNumber(row.minimumStock, locale)}
+                      </span>
+                    )}
+                  </td>
+                  <td className="p-3 text-end tabular-nums">{row.averageCost === null ? "—" : money(row.averageCost)}</td>
+                  <td className="p-3 text-end tabular-nums">{row.value === null ? "—" : money(row.value)}</td>
                   <td className="p-3 text-end">
                     <span className="flex flex-col items-end gap-1 text-xs">
                       <Link href={movementsHref(locale, { sku: row.sku })} className="text-primary underline-offset-2 hover:underline">
@@ -93,7 +120,7 @@ export function StockList({ locale, texts, page, search, onlyOut, canManage }: P
             })}
             {page.items.length === 0 && (
               <tr>
-                <td colSpan={warehouses.length + 3} className="p-4 text-muted">
+                <td colSpan={warehouses.length + 5} className="p-4 text-muted">
                   {texts.stockNone}
                 </td>
               </tr>

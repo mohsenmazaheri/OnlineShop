@@ -2700,7 +2700,7 @@
         "tags": [
           "Admin: inventory"
         ],
-        "summary": "Stock per item (a product, or each of its variants) and warehouse, 20 products a page.",
+        "summary": "Stock per item (a product, or each of its variants) and warehouse with average cost and minimum, 20 products a page.",
         "operationId": "ListStock",
         "parameters": [
           {
@@ -2712,6 +2712,13 @@
           },
           {
             "name": "onlyOut",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "onlyLow",
             "in": "query",
             "schema": {
               "type": "boolean"
@@ -3018,6 +3025,246 @@
         }
       }
     },
+    "/api/v1/admin/inventory/suppliers": {
+      "get": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Every supplier (active first) with its number of receipts.",
+        "operationId": "ListSuppliers",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SupplierView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Add a supplier.",
+        "operationId": "CreateSupplier",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveSupplierRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/purchases": {
+      "get": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Purchase receipts, newest first, with their totals (optionally by status).",
+        "operationId": "ListPurchaseReceipts",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/PurchaseReceiptStatus"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReceiptSummary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Write a draft purchase receipt.",
+        "operationId": "CreatePurchaseReceipt",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveReceiptRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/purchases/{number}": {
+      "get": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "A purchase receipt with its lines and totals.",
+        "operationId": "GetPurchaseReceipt",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Change a draft: header and the whole set of lines.",
+        "operationId": "UpdatePurchaseReceipt",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveReceiptRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/inventory/warehouses/{id}": {
       "put": {
         "tags": [
@@ -3089,6 +3336,47 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/items/settings": {
+      "put": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Set an item's minimum stock (null = no alert) and, optionally, its average cost.",
+        "operationId": "SaveStockItemSettings",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveItemSettingsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemSettingsView"
+                }
+              }
+            }
           }
         }
       }
@@ -3312,6 +3600,159 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StocktakeSummary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/suppliers/{id}": {
+      "put": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Change or deactivate a supplier.",
+        "operationId": "UpdateSupplier",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveSupplierRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Delete a supplier without receipts.",
+        "operationId": "DeleteSupplier",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/purchases/{number}/post": {
+      "post": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Bring the goods in: a ledger receipt per line with its cost (updates average costs).",
+        "operationId": "PostPurchaseReceipt",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inventory/purchases/{number}/cancel": {
+      "post": {
+        "tags": [
+          "Admin: inventory"
+        ],
+        "summary": "Drop a draft receipt.",
+        "operationId": "CancelPurchaseReceipt",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptView"
                 }
               }
             }
@@ -5858,6 +6299,38 @@
           }
         }
       },
+      "ItemSettingsView": {
+        "required": [
+          "itemId",
+          "sku",
+          "minimumStock",
+          "averageCost"
+        ],
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "minimumStock": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "averageCost": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          }
+        }
+      },
       "LocaleCurrencyView": {
         "required": [
           "locale",
@@ -7089,6 +7562,13 @@
           }
         }
       },
+      "PurchaseReceiptStatus": {
+        "enum": [
+          "Draft",
+          "Posted",
+          "Cancelled"
+        ]
+      },
       "RateSyncResult": {
         "required": [
           "updated",
@@ -7106,6 +7586,186 @@
               "string"
             ],
             "format": "date-time"
+          }
+        }
+      },
+      "ReceiptLineInput": {
+        "required": [
+          "sku",
+          "quantity",
+          "unitCost"
+        ],
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unitCost": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "ReceiptLineView": {
+        "required": [
+          "itemId",
+          "productNumber",
+          "name",
+          "variantLabel",
+          "sku",
+          "quantity",
+          "unitCost",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "productNumber": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "variantLabel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sku": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unitCost": {
+            "type": "number",
+            "format": "double"
+          },
+          "total": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "ReceiptSummary": {
+        "required": [
+          "number",
+          "supplierId",
+          "supplier",
+          "warehouseId",
+          "warehouse",
+          "status",
+          "supplierReference",
+          "currency",
+          "lines",
+          "units",
+          "total",
+          "createdUtc",
+          "closedUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "supplierId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "supplier": {
+            "type": "string"
+          },
+          "warehouseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "warehouse": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PurchaseReceiptStatus"
+          },
+          "supplierReference": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "currency": {
+            "type": "string"
+          },
+          "lines": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "units": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "number",
+            "format": "double"
+          },
+          "createdUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "closedUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "ReceiptView": {
+        "required": [
+          "summary",
+          "note",
+          "createdBy",
+          "closedBy",
+          "lines"
+        ],
+        "type": "object",
+        "properties": {
+          "summary": {
+            "$ref": "#/components/schemas/ReceiptSummary"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createdBy": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "closedBy": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReceiptLineView"
+            }
           }
         }
       },
@@ -7377,6 +8037,33 @@
           }
         }
       },
+      "SaveItemSettingsRequest": {
+        "required": [
+          "sku",
+          "minimumStock",
+          "averageCost"
+        ],
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string"
+          },
+          "minimumStock": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "averageCost": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          }
+        }
+      },
       "SaveProductImagesRequest": {
         "required": [
           "images"
@@ -7492,6 +8179,44 @@
           }
         }
       },
+      "SaveReceiptRequest": {
+        "required": [
+          "supplierId",
+          "warehouseId",
+          "supplierReference",
+          "note",
+          "lines"
+        ],
+        "type": "object",
+        "properties": {
+          "supplierId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "warehouseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "supplierReference": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReceiptLineInput"
+            }
+          }
+        }
+      },
       "SaveRedirectRequest": {
         "required": [
           "fromPath",
@@ -7555,6 +8280,56 @@
             "items": {
               "$ref": "#/components/schemas/SpecOptionInput"
             }
+          }
+        }
+      },
+      "SaveSupplierRequest": {
+        "required": [
+          "name",
+          "contactName",
+          "phone",
+          "email",
+          "address",
+          "note",
+          "isActive"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "contactName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "phone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "address": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
           }
         }
       },
@@ -8168,7 +8943,9 @@
           "total",
           "page",
           "pageSize",
-          "warehouses"
+          "warehouses",
+          "lowCount",
+          "currency"
         ],
         "type": "object",
         "properties": {
@@ -8195,6 +8972,13 @@
             "items": {
               "$ref": "#/components/schemas/WarehouseView"
             }
+          },
+          "lowCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "currency": {
+            "type": "string"
           }
         }
       },
@@ -8207,7 +8991,11 @@
           "sku",
           "isPublished",
           "total",
-          "levels"
+          "levels",
+          "averageCost",
+          "minimumStock",
+          "low",
+          "value"
         ],
         "type": "object",
         "properties": {
@@ -8243,6 +9031,30 @@
             "items": {
               "$ref": "#/components/schemas/WarehouseQuantity"
             }
+          },
+          "averageCost": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "minimumStock": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "low": {
+            "type": "boolean"
+          },
+          "value": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
           }
         }
       },
@@ -8593,6 +9405,66 @@
           },
           "slug": {
             "type": "string"
+          }
+        }
+      },
+      "SupplierView": {
+        "required": [
+          "id",
+          "name",
+          "contactName",
+          "phone",
+          "email",
+          "address",
+          "note",
+          "isActive",
+          "receipts"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "contactName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "phone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "address": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "receipts": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },

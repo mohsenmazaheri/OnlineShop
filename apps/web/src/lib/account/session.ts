@@ -145,10 +145,14 @@ export function getWarehouses(fetchImpl: typeof fetch = fetch): Promise<Warehous
 }
 
 /** One page of stock per item and warehouse (inventory.view). */
-export function getStock(query: { search?: string; onlyOut?: boolean; page?: number; locale: string }, fetchImpl: typeof fetch = fetch): Promise<StockPage | null> {
+export function getStock(
+  query: { search?: string; onlyOut?: boolean; onlyLow?: boolean; page?: number; locale: string },
+  fetchImpl: typeof fetch = fetch,
+): Promise<StockPage | null> {
   const params = new URLSearchParams({ locale: query.locale, page: String(query.page ?? 1) });
   if (query.search) params.set("search", query.search);
   if (query.onlyOut) params.set("onlyOut", "true");
+  if (query.onlyLow) params.set("onlyLow", "true");
   return getForUser<StockPage>(`/api/v1/admin/inventory/stock?${params.toString()}`, fetchImpl);
 }
 
@@ -182,4 +186,23 @@ export function getStocktake(
   if (query.filter) params.set("filter", query.filter);
   if (query.search) params.set("search", query.search);
   return getForUser<StocktakeView>(`/api/v1/admin/inventory/stocktakes/${number}?${params.toString()}`, fetchImpl);
+}
+
+export type SupplierView = components["schemas"]["SupplierView"];
+export type ReceiptSummary = components["schemas"]["ReceiptSummary"];
+export type ReceiptView = components["schemas"]["ReceiptView"];
+
+/** Every supplier, active first (inventory.view). */
+export function getSuppliers(fetchImpl: typeof fetch = fetch): Promise<SupplierView[] | null> {
+  return getForUser<SupplierView[]>("/api/v1/admin/inventory/suppliers", fetchImpl);
+}
+
+/** Purchase receipts, newest first (inventory.view). */
+export function getPurchases(fetchImpl: typeof fetch = fetch): Promise<ReceiptSummary[] | null> {
+  return getForUser<ReceiptSummary[]>("/api/v1/admin/inventory/purchases", fetchImpl);
+}
+
+/** One purchase receipt with its lines, or null. */
+export function getPurchase(number: number, locale: string, fetchImpl: typeof fetch = fetch): Promise<ReceiptView | null> {
+  return getForUser<ReceiptView>(`/api/v1/admin/inventory/purchases/${number}?locale=${encodeURIComponent(locale)}`, fetchImpl);
 }

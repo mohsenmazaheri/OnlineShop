@@ -901,7 +901,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Stock per item (a product, or each of its variants) and warehouse, 20 products a page. */
+        /** Stock per item (a product, or each of its variants) and warehouse with average cost and minimum, 20 products a page. */
         get: operations["ListStock"];
         put?: never;
         post?: never;
@@ -981,6 +981,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/inventory/suppliers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every supplier (active first) with its number of receipts. */
+        get: operations["ListSuppliers"];
+        put?: never;
+        /** Add a supplier. */
+        post: operations["CreateSupplier"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/purchases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Purchase receipts, newest first, with their totals (optionally by status). */
+        get: operations["ListPurchaseReceipts"];
+        put?: never;
+        /** Write a draft purchase receipt. */
+        post: operations["CreatePurchaseReceipt"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/purchases/{number}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A purchase receipt with its lines and totals. */
+        get: operations["GetPurchaseReceipt"];
+        /** Change a draft: header and the whole set of lines. */
+        put: operations["UpdatePurchaseReceipt"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/inventory/warehouses/{id}": {
         parameters: {
             query?: never;
@@ -994,6 +1048,23 @@ export interface paths {
         post?: never;
         /** Delete a warehouse that never had a movement. */
         delete: operations["DeleteWarehouse"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/items/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set an item's minimum stock (null = no alert) and, optionally, its average cost. */
+        put: operations["SaveStockItemSettings"];
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1078,6 +1149,58 @@ export interface paths {
         put?: never;
         /** Drop an open stocktake without changing the stock. */
         post: operations["CancelStocktake"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/suppliers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change or deactivate a supplier. */
+        put: operations["UpdateSupplier"];
+        post?: never;
+        /** Delete a supplier without receipts. */
+        delete: operations["DeleteSupplier"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/purchases/{number}/post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bring the goods in: a ledger receipt per line with its cost (updates average costs). */
+        post: operations["PostPurchaseReceipt"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/purchases/{number}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Drop a draft receipt. */
+        post: operations["CancelPurchaseReceipt"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2085,6 +2208,15 @@ export interface components {
             roles: string[];
             locale: null | string;
         };
+        ItemSettingsView: {
+            /** Format: uuid */
+            itemId: string;
+            sku: string;
+            /** Format: int32 */
+            minimumStock: null | number;
+            /** Format: double */
+            averageCost: null | number;
+        };
         LocaleCurrencyView: {
             locale: string;
             currencyCode: string;
@@ -2394,11 +2526,65 @@ export interface components {
             /** Format: double */
             rate: number;
         };
+        /** @enum {unknown} */
+        PurchaseReceiptStatus: "Draft" | "Posted" | "Cancelled";
         RateSyncResult: {
             /** Format: int32 */
             updated: number;
             /** Format: date-time */
             syncedUtc: null | string;
+        };
+        ReceiptLineInput: {
+            sku: string;
+            /** Format: int32 */
+            quantity: number;
+            /** Format: double */
+            unitCost: number;
+        };
+        ReceiptLineView: {
+            /** Format: uuid */
+            itemId: string;
+            /** Format: int64 */
+            productNumber: number;
+            name: string;
+            variantLabel: null | string;
+            sku: string;
+            /** Format: int32 */
+            quantity: number;
+            /** Format: double */
+            unitCost: number;
+            /** Format: double */
+            total: number;
+        };
+        ReceiptSummary: {
+            /** Format: int32 */
+            number: number;
+            /** Format: uuid */
+            supplierId: string;
+            supplier: string;
+            /** Format: uuid */
+            warehouseId: string;
+            warehouse: string;
+            status: components["schemas"]["PurchaseReceiptStatus"];
+            supplierReference: null | string;
+            currency: string;
+            /** Format: int32 */
+            lines: number;
+            /** Format: int32 */
+            units: number;
+            /** Format: double */
+            total: number;
+            /** Format: date-time */
+            createdUtc: string;
+            /** Format: date-time */
+            closedUtc: null | string;
+        };
+        ReceiptView: {
+            summary: components["schemas"]["ReceiptSummary"];
+            note: null | string;
+            createdBy: null | string;
+            closedBy: null | string;
+            lines: components["schemas"]["ReceiptLineView"][];
         };
         RecoveryCodes: {
             codes: string[];
@@ -2467,6 +2653,13 @@ export interface components {
             /** Format: int32 */
             sortOrder: number;
         };
+        SaveItemSettingsRequest: {
+            sku: string;
+            /** Format: int32 */
+            minimumStock: null | number;
+            /** Format: double */
+            averageCost: null | number;
+        };
         SaveProductImagesRequest: {
             images: components["schemas"]["ProductImageInput"][];
         };
@@ -2494,6 +2687,15 @@ export interface components {
         SaveProductVideosRequest: {
             videos: components["schemas"]["ProductVideoInput"][];
         };
+        SaveReceiptRequest: {
+            /** Format: uuid */
+            supplierId: string;
+            /** Format: uuid */
+            warehouseId: string;
+            supplierReference: null | string;
+            note: null | string;
+            lines: components["schemas"]["ReceiptLineInput"][];
+        };
         SaveRedirectRequest: {
             fromPath: string;
             toPath: null | string;
@@ -2507,6 +2709,15 @@ export interface components {
             showInSummary: boolean;
             texts: components["schemas"]["SpecText"][];
             options: components["schemas"]["SpecOptionInput"][];
+        };
+        SaveSupplierRequest: {
+            name: string;
+            contactName: null | string;
+            phone: null | string;
+            email: null | string;
+            address: null | string;
+            note: null | string;
+            isActive: boolean;
         };
         SaveSynonymRequest: {
             locale: string;
@@ -2651,6 +2862,9 @@ export interface components {
             /** Format: int32 */
             pageSize: number;
             warehouses: components["schemas"]["WarehouseView"][];
+            /** Format: int32 */
+            lowCount: number;
+            currency: string;
         };
         StockRow: {
             /** Format: uuid */
@@ -2664,6 +2878,13 @@ export interface components {
             /** Format: int32 */
             total: number;
             levels: components["schemas"]["WarehouseQuantity"][];
+            /** Format: double */
+            averageCost: null | number;
+            /** Format: int32 */
+            minimumStock: null | number;
+            low: boolean;
+            /** Format: double */
+            value: null | number;
         };
         /** @enum {unknown} */
         StocktakeLineFilter: "All" | "Uncounted" | "Counted" | "Differences" | null;
@@ -2763,6 +2984,19 @@ export interface components {
             id: string;
             name: string;
             slug: string;
+        };
+        SupplierView: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            contactName: null | string;
+            phone: null | string;
+            email: null | string;
+            address: null | string;
+            note: null | string;
+            isActive: boolean;
+            /** Format: int32 */
+            receipts: number;
         };
         SynonymList: {
             locales: string[];
@@ -4851,6 +5085,7 @@ export interface operations {
             query?: {
                 search?: string;
                 onlyOut?: boolean;
+                onlyLow?: boolean;
                 page?: number;
                 locale?: string;
             };
@@ -5035,6 +5270,177 @@ export interface operations {
             };
         };
     };
+    ListSuppliers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierView"][];
+                };
+            };
+        };
+    };
+    CreateSupplier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveSupplierRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    ListPurchaseReceipts: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["PurchaseReceiptStatus"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptSummary"][];
+                };
+            };
+        };
+    };
+    CreatePurchaseReceipt: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveReceiptRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    GetPurchaseReceipt: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptView"];
+                };
+            };
+        };
+    };
+    UpdatePurchaseReceipt: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveReceiptRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
     UpdateWarehouse: {
         parameters: {
             query?: never;
@@ -5087,6 +5493,39 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    SaveStockItemSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveItemSettingsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemSettingsView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
             };
         };
     };
@@ -5230,6 +5669,109 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StocktakeSummary"];
+                };
+            };
+        };
+    };
+    UpdateSupplier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveSupplierRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    DeleteSupplier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PostPurchaseReceipt: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptView"];
+                };
+            };
+        };
+    };
+    CancelPurchaseReceipt: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptView"];
                 };
             };
         };

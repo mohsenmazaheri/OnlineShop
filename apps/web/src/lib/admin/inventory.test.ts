@@ -8,6 +8,7 @@ import {
   parseId,
   parseKind,
   parseStocktakeFilter,
+  purchaseLabel,
   referenceLabel,
   signedQuantity,
   stocktakeFilters,
@@ -51,6 +52,7 @@ describe("inventory helpers", () => {
     expect(parseStocktakeFilter("Differences")).toBe("Differences");
     expect(parseStocktakeFilter("x")).toBe("All");
     expect(stocktakeLabel(7)).toBe("ST-7");
+    expect(purchaseLabel(3)).toBe("PR-3");
     expect(stocktakeHref("fa", 7)).toBe("/fa/admin/stocktakes/7");
     expect(stocktakeHref("en", 7, { filter: "All", search: "a b", page: 3 })).toBe("/en/admin/stocktakes/7?search=a+b&page=3");
     expect(stocktakeHref("en", 7, { filter: "Uncounted", page: 1 })).toBe("/en/admin/stocktakes/7?filter=Uncounted");

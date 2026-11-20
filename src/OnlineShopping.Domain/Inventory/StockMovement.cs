@@ -60,6 +60,12 @@ public sealed class StockMovement : BaseEntity
 
     public string? Note { get; set; }
 
+    /// <summary>
+    /// The cost of one unit in the base currency: the purchase price on a receipt, otherwise the item's average cost at the
+    /// time (null while it has none). The accounts value stock movements with it.
+    /// </summary>
+    public decimal? UnitCost { get; set; }
+
     /// <summary>The two lines of one transfer share this id.</summary>
     public Guid? TransferId { get; set; }
 
