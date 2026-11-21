@@ -8,7 +8,7 @@ Application / Infrastructure / Api) + **Next.js 16** storefront in `apps/web`. O
 images serve every shop.
 
 **Plan and all recorded decisions: [docs/ROADMAP.md](docs/ROADMAP.md)** (Persian). Read it before starting, work on
-one step at a time, mark the status there when a step is done. Done: phases 0, 2–5, 6a–6c; phase 1 has a "remaining"
+one step at a time, mark the status there when a step is done. Done: phases 0, 2–5, 6a–6d; phase 1 has a "remaining"
 list. SEO/marketing design: [docs/SEO-MARKETING.md](docs/SEO-MARKETING.md) (acceptance checklist at its end).
 
 Key decisions (details in the roadmap):
@@ -162,6 +162,12 @@ After a model change: migration + `has-pending-model-changes` reports none. Afte
   Engine integration tests run only with `IntegrationTests:OpenSearchUrl`/`ElasticsearchUrl` (CI service containers).
 - **Browse** (`IProductBrowse`, `GET /catalog/browse`): scope + filters + disjunctive facet counts in memory over small
   rows; `BrowseQueryParser` keys `c s b q brand group min max stock sale o.{spec} n.{spec}=min-max y.{spec} sort page`.
+- **Compare** (`Catalog/Compare`): `ProductComparisonService` (≤4 numbers, `IsComparable` specs by group, variant
+  options as texts, `CompareValue.None` for missing, `Best` from `ProductSpec.Better` Higher/Lower on numbers) and
+  `CompareListService` (`compare_items`, personal data). `GET /api/v1/account/compare` answers guests 200
+  `signedIn:false` (the browser asks; no 401 noise). Web: `lib/compare/{list,store,format}.ts` (guest list in
+  localStorage `os_compare`, merged into the account after sign-in), `CompareButton` (link without JS), `CompareBar`
+  (layout), page `/{locale}/compare?ids=&diff=1` (noindex, uncached prices).
 - Redirects (`RedirectService`): decoded paths, no trailing slash, never `/`, `/api`, `/_next`, one hop, no loops.
 
 ## Accounts and authorization

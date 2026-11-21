@@ -82,6 +82,43 @@
         }
       }
     },
+    "/api/v1/catalog/compare": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "Up to four published products (numbers=12,15) side by side: current price and stock, and their comparable specs by group.",
+        "operationId": "CompareProducts",
+        "parameters": [
+          {
+            "name": "numbers",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductComparison"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/currencies": {
       "get": {
         "tags": [
@@ -383,6 +420,66 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/account/compare": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "The signed-in customer's comparison list (product numbers in the order they were added); signedIn=false for a guest.",
+        "operationId": "GetCompareList",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompareListView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Replace the signed-in customer's comparison list (published products only, at most four).",
+        "operationId": "SaveCompareList",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveCompareListRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompareListView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -6237,6 +6334,197 @@
         },
         "description": "Checkout rules: whether customers may buy without an account, and where the shop ships (ISO country codes)."
       },
+      "CompareGroup": {
+        "required": [
+          "name",
+          "rows"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompareRow"
+            }
+          }
+        }
+      },
+      "CompareItemData": {
+        "required": [
+          "number",
+          "productName",
+          "addedUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "addedUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CompareListView": {
+        "required": [
+          "numbers"
+        ],
+        "type": "object",
+        "properties": {
+          "numbers": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "signedIn": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "CompareProduct": {
+        "required": [
+          "number",
+          "name",
+          "slug",
+          "imageUrl",
+          "price",
+          "compareAtPrice",
+          "inStock",
+          "category",
+          "brand"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "compareAtPrice": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "inStock": {
+            "type": "boolean"
+          },
+          "category": {
+            "$ref": "#/components/schemas/CategoryLink"
+          },
+          "brand": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "CompareRow": {
+        "required": [
+          "code",
+          "name",
+          "kind",
+          "unit",
+          "better",
+          "values",
+          "best",
+          "differs"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/SpecKind"
+          },
+          "unit": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "better": {
+            "$ref": "#/components/schemas/SpecBetter"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompareValue"
+            }
+          },
+          "best": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "differs": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CompareValue": {
+        "required": [
+          "number",
+          "boolean",
+          "texts"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "boolean": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "texts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
       "ConfirmEmailRequest": {
         "required": [
           "userId",
@@ -7168,7 +7456,8 @@
           "account",
           "addresses",
           "orders",
-          "cart"
+          "cart",
+          "compare"
         ],
         "type": "object",
         "properties": {
@@ -7195,6 +7484,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CartItemData"
+            }
+          },
+          "compare": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompareItemData"
             }
           }
         }
@@ -7379,7 +7674,8 @@
           "imageUrl",
           "price",
           "compareAtPrice",
-          "inStock"
+          "inStock",
+          "categorySlug"
         ],
         "type": "object",
         "properties": {
@@ -7411,6 +7707,34 @@
             "format": "double"
           },
           "inStock": {
+            "type": "boolean"
+          },
+          "categorySlug": {
+            "type": "string"
+          }
+        }
+      },
+      "ProductComparison": {
+        "required": [
+          "products",
+          "groups",
+          "mixedCategories"
+        ],
+        "type": "object",
+        "properties": {
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompareProduct"
+            }
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompareGroup"
+            }
+          },
+          "mixedCategories": {
             "type": "boolean"
           }
         }
@@ -8558,6 +8882,21 @@
           }
         }
       },
+      "SaveCompareListRequest": {
+        "required": [
+          "numbers"
+        ],
+        "type": "object",
+        "properties": {
+          "numbers": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        }
+      },
       "SaveCurrencyRequest": {
         "required": [
           "code",
@@ -8847,6 +9186,9 @@
             "items": {
               "$ref": "#/components/schemas/SpecOptionInput"
             }
+          },
+          "better": {
+            "$ref": "#/components/schemas/SpecBetter"
           }
         }
       },
@@ -9205,6 +9547,13 @@
         },
         "description": "Sign-up methods currently available (phone needs a configured SMS provider)."
       },
+      "SpecBetter": {
+        "enum": [
+          "None",
+          "Higher",
+          "Lower"
+        ]
+      },
       "SpecChoice": {
         "required": [
           "code",
@@ -9495,6 +9844,9 @@
           "usageCount": {
             "type": "integer",
             "format": "int32"
+          },
+          "better": {
+            "$ref": "#/components/schemas/SpecBetter"
           }
         }
       },
@@ -10705,6 +11057,9 @@
       "name": "Storefront"
     },
     {
+      "name": "Account"
+    },
+    {
       "name": "Admin: currencies"
     },
     {
@@ -10718,9 +11073,6 @@
     },
     {
       "name": "Admin: inventory"
-    },
-    {
-      "name": "Account"
     },
     {
       "name": "Admin: staff"

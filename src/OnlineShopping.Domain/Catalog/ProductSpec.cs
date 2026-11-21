@@ -18,6 +18,19 @@ public enum SpecKind
     Option,
 }
 
+/// <summary>Which way a number spec is better, so the comparison table can mark the best value.</summary>
+public enum SpecBetter
+{
+    /// <summary>Neither (a size, a colour): nothing is marked.</summary>
+    None,
+
+    /// <summary>More is better (storage, battery life).</summary>
+    Higher,
+
+    /// <summary>Less is better (weight, noise).</summary>
+    Lower,
+}
+
 /// <summary>
 /// A product property such as "Screen size" or "Colour" (the base of specifications, filters and comparison).
 /// Name, group and unit are in the default language; <see cref="Translations"/> holds the others.
@@ -41,6 +54,9 @@ public sealed class ProductSpec : BaseEntity
     public bool IsFilterable { get; set; }
 
     public bool IsComparable { get; set; }
+
+    /// <summary>For number specs: which values the comparison marks as best.</summary>
+    public SpecBetter Better { get; set; }
 
     /// <summary>Shown in the short key-facts list next to the product's price.</summary>
     public bool ShowInSummary { get; set; }

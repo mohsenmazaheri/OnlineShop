@@ -106,6 +106,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 
 app.MapStoreEndpoints();
 app.MapProductEndpoints();
+app.MapCompareEndpoints();
 app.MapCurrencyEndpoints();
 app.MapBrandingEndpoints();
 app.MapCatalogAdminEndpoints();

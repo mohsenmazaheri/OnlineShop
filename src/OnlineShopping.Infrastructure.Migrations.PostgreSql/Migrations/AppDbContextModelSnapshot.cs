@@ -606,6 +606,12 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Better")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("better");
+
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -968,6 +974,34 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasFilter("is_deleted = false");
 
                     b.ToTable("sub_categories", (string)null);
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Customers.CompareItem", b =>
+                {
+                    b.Property<string>("CustomerId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)")
+                        .HasColumnName("customer_id");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<DateTime>("AddedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("added_utc");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.HasKey("CustomerId", "ProductId")
+                        .HasName("pk_compare_items");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_compare_items_product_id");
+
+                    b.ToTable("compare_items", (string)null);
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Customers.CustomerAddress", b =>
@@ -3214,6 +3248,23 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.Navigation("TemplateSpecs");
 
                     b.Navigation("Translations");
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Customers.CompareItem", b =>
+                {
+                    b.HasOne("OnlineShopping.Infrastructure.Identity.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_compare_items_users_customer_id");
+
+                    b.HasOne("OnlineShopping.Domain.Catalog.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_compare_items_products_product_id");
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Customers.CustomerAddress", b =>

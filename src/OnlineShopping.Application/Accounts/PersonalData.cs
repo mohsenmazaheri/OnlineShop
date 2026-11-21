@@ -22,7 +22,11 @@ public sealed record PersonalDataExport(
     AccountData Account,
     IReadOnlyList<AddressView> Addresses,
     IReadOnlyList<OrderData> Orders,
-    IReadOnlyList<CartItemData> Cart);
+    IReadOnlyList<CartItemData> Cart,
+    IReadOnlyList<CompareItemData> Compare);
+
+/// <summary>A product on the customer's comparison list.</summary>
+public sealed record CompareItemData(long Number, string ProductName, DateTime AddedUtc);
 
 public sealed record AccountData(
     string Id,

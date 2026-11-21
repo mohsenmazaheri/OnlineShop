@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CompareButton } from "@/components/compare/CompareButton";
 import { Button } from "@/components/ui/Button";
 import type { ProductDetail } from "@/lib/api/storefront";
 import { brandOf, formatSpecValue } from "@/lib/catalog/specs";
@@ -100,6 +101,7 @@ export function ProductView({ product, locale, money, baseName, texts }: Props) 
           <p id="cart-soon" className="text-xs text-muted">
             {texts.cartSoon}
           </p>
+          <CompareButton locale={locale} number={product.number} category={product.category.slug} texts={texts} />
         </aside>
       </div>
 

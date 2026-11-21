@@ -36,6 +36,7 @@ const card = (over: Partial<ProductCardData> = {}): ProductCardData => ({
   price: 349,
   compareAtPrice: 399,
   inStock: true,
+  categorySlug: "phones",
   ...over,
 });
 

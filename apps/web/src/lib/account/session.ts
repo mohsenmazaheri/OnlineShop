@@ -220,3 +220,10 @@ export type SearchIndexStatus = components["schemas"]["SearchIndexStatus"];
 export function getSearchIndexStatus(fetchImpl: typeof fetch = fetch): Promise<SearchIndexStatus | null> {
   return getForUser<SearchIndexStatus>("/api/v1/admin/seo/search-index", fetchImpl);
 }
+
+export type CompareList = components["schemas"]["CompareListView"];
+
+/** The signed-in customer's comparison list (product numbers), for the comparison page opened without ?ids. */
+export function getCompareList(fetchImpl: typeof fetch = fetch): Promise<CompareList | null> {
+  return getForUser<CompareList>("/api/v1/account/compare", fetchImpl);
+}

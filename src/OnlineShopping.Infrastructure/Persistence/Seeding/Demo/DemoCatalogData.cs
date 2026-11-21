@@ -12,7 +12,8 @@ public sealed record DemoSpec(
     DemoText? Unit = null,
     bool Filterable = false,
     bool Summary = false,
-    IReadOnlyList<DemoOption>? Options = null);
+    IReadOnlyList<DemoOption>? Options = null,
+    SpecBetter Better = SpecBetter.None);
 
 /// <summary>A product's value for one spec: exactly one of the fields is set, matching the spec's kind.</summary>
 public sealed record DemoValue(string Spec, decimal? Number = null, bool? Boolean = null, string? Text = null, string? Option = null);
@@ -111,22 +112,22 @@ public static class DemoCatalogData
             new("plastic", T("پلاستیک", "Plastic", "Պլաստիկ", "Kunststoff", "بلاستيك")),
         ]),
         new("screen_size", SpecKind.Number, T("اندازهٔ صفحه‌نمایش", "Screen size", "Էկրանի չափ", "Bildschirmgröße", "حجم الشاشة"), Display, Inch, Filterable: true, Summary: true),
-        new("storage", SpecKind.Number, T("حافظهٔ داخلی", "Storage", "Ներքին հիշողություն", "Speicherplatz", "سعة التخزين"), Memory, Gigabyte, Filterable: true, Summary: true),
-        new("ram", SpecKind.Number, T("حافظهٔ رم", "RAM", "Օպերատիվ հիշողություն", "Arbeitsspeicher", "ذاكرة الوصول العشوائي"), Memory, Gigabyte, Filterable: true),
-        new("battery_capacity", SpecKind.Number, T("ظرفیت باتری", "Battery capacity", "Մարտկոցի տարողություն", "Akkukapazität", "سعة البطارية"), Battery, MilliampHour),
-        new("battery_life", SpecKind.Number, T("عمر باتری", "Battery life", "Մարտկոցի աշխատաժամանակ", "Akkulaufzeit", "عمر البطارية"), Battery, Hour, Summary: true),
+        new("storage", SpecKind.Number, T("حافظهٔ داخلی", "Storage", "Ներքին հիշողություն", "Speicherplatz", "سعة التخزين"), Memory, Gigabyte, Filterable: true, Summary: true, Better: SpecBetter.Higher),
+        new("ram", SpecKind.Number, T("حافظهٔ رم", "RAM", "Օպերատիվ հիշողություն", "Arbeitsspeicher", "ذاكرة الوصول العشوائي"), Memory, Gigabyte, Filterable: true, Better: SpecBetter.Higher),
+        new("battery_capacity", SpecKind.Number, T("ظرفیت باتری", "Battery capacity", "Մարտկոցի տարողություն", "Akkukapazität", "سعة البطارية"), Battery, MilliampHour, Better: SpecBetter.Higher),
+        new("battery_life", SpecKind.Number, T("عمر باتری", "Battery life", "Մարտկոցի աշխատաժամանակ", "Akkulaufzeit", "عمر البطارية"), Battery, Hour, Summary: true, Better: SpecBetter.Higher),
         new("network_5g", SpecKind.Boolean, T("پشتیبانی از 5G", "5G support", "5G աջակցում", "5G-Unterstützung", "دعم 5G"), Features, Filterable: true),
         new("noise_cancelling", SpecKind.Boolean, T("حذف فعال نویز", "Active noise cancelling", "Ակտիվ աղմկաճնշում", "Aktive Geräuschunterdrückung", "إلغاء الضوضاء النشط"), Features, Filterable: true, Summary: true),
         new("water_resistant", SpecKind.Boolean, T("مقاوم در برابر آب", "Water resistant", "Ջրակայուն", "Wasserfest", "مقاوم للماء"), Features, Filterable: true),
         new("bluetooth", SpecKind.Text, T("نسخهٔ بلوتوث", "Bluetooth version", "Bluetooth-ի տարբերակ", "Bluetooth-Version", "إصدار البلوتوث"), Features),
         new("gps", SpecKind.Boolean, T("جی‌پی‌اس داخلی", "Built-in GPS", "Ներկառուցված GPS", "Integriertes GPS", "GPS مدمج"), Features),
-        new("power", SpecKind.Number, T("توان", "Power", "Հզորություն", "Leistung", "القدرة"), General, Watt, Filterable: true, Summary: true),
-        new("capacity", SpecKind.Number, T("گنجایش", "Capacity", "Տարողություն", "Fassungsvermögen", "السعة"), General, Litre, Filterable: true, Summary: true),
+        new("power", SpecKind.Number, T("توان", "Power", "Հզորություն", "Leistung", "القدرة"), General, Watt, Filterable: true, Summary: true, Better: SpecBetter.Higher),
+        new("capacity", SpecKind.Number, T("گنجایش", "Capacity", "Տարողություն", "Fassungsvermögen", "السعة"), General, Litre, Filterable: true, Summary: true, Better: SpecBetter.Higher),
         new("pieces", SpecKind.Number, T("تعداد", "Pieces", "Քանակ", "Anzahl", "عدد القطع"), General, Piece, Summary: true),
         new("diameter", SpecKind.Number, T("قطر", "Diameter", "Տրամագիծ", "Durchmesser", "القطر"), Physical, Centimetre, Filterable: true),
         new("induction", SpecKind.Boolean, T("مناسب اجاق القایی", "Induction compatible", "Հարմար է ինդուկցիոն սալօջախին", "Induktionsgeeignet", "مناسب لمواقد الحث"), Features, Filterable: true),
         new("dimmable", SpecKind.Boolean, T("قابلیت تنظیم نور", "Dimmable", "Պայծառության կարգավորում", "Dimmbar", "قابل لتعديل الإضاءة"), Features),
-        new("weight", SpecKind.Number, T("وزن", "Weight", "Քաշ", "Gewicht", "الوزن"), Physical, Gram),
+        new("weight", SpecKind.Number, T("وزن", "Weight", "Քաշ", "Gewicht", "الوزن"), Physical, Gram, Better: SpecBetter.Lower),
         new("laptop_fit", SpecKind.Number, T("جای لپ‌تاپ تا", "Fits laptops up to", "Նոութբուքի համար մինչև", "Passend für Laptops bis", "يتسع لحاسوب حتى"), General, Inch),
         new("pages", SpecKind.Number, T("تعداد صفحات", "Pages", "Էջերի քանակ", "Seitenzahl", "عدد الصفحات"), Book, Page, Summary: true),
         new("cover", SpecKind.Option, T("نوع جلد", "Cover", "Կազմ", "Einband", "نوع الغلاف"), Book, Filterable: true, Options:
@@ -136,7 +137,7 @@ public static class DemoCatalogData
         ]),
         new("sheets", SpecKind.Number, T("تعداد برگ", "Sheets", "Թերթերի քանակ", "Blattzahl", "عدد الأوراق"), General, Sheet, Summary: true),
         new("paper_size", SpecKind.Text, T("قطع", "Format", "Ձևաչափ", "Format", "المقاس"), General),
-        new("warranty", SpecKind.Number, T("گارانتی", "Warranty", "Երաշխիք", "Garantie", "الضمان"), General, Month, Summary: true),
+        new("warranty", SpecKind.Number, T("گارانتی", "Warranty", "Երաշխիք", "Garantie", "الضمان"), General, Month, Summary: true, Better: SpecBetter.Higher),
     ];
 
     public static IReadOnlyList<DemoCategory> Categories { get; } =

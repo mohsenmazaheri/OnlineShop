@@ -1,4 +1,5 @@
 using FluentValidation;
+using OnlineShopping.Domain.Catalog;
 
 namespace OnlineShopping.Application.Catalog.Admin;
 
@@ -47,7 +48,8 @@ public sealed record SaveSpecRequest(
     bool IsComparable,
     bool ShowInSummary,
     IReadOnlyList<SpecText> Texts,
-    IReadOnlyList<SpecOptionInput> Options);
+    IReadOnlyList<SpecOptionInput> Options,
+    SpecBetter Better = SpecBetter.None);
 
 public sealed record SpecOptionView(string Code, IReadOnlyList<OptionText> Texts, int UsageCount);
 
@@ -61,7 +63,8 @@ public sealed record SpecView(
     bool ShowInSummary,
     IReadOnlyList<SpecText> Texts,
     IReadOnlyList<SpecOptionView> Options,
-    int UsageCount);
+    int UsageCount,
+    SpecBetter Better = SpecBetter.None);
 
 public sealed record SpecList(string DefaultLocale, IReadOnlyList<string> Locales, IReadOnlyList<SpecView> Specs);
 
