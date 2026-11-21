@@ -55,6 +55,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/catalog/products/{number}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A page of the product's approved reviews (newest first) with its rating summary. */
+        get: operations["ListProductReviews"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/currencies": {
         parameters: {
             query?: never;
@@ -204,6 +221,111 @@ export interface paths {
         put: operations["SaveCompareList"];
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account/reviews/{number}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Whether the visitor may review the product, and their own review if any. */
+        get: operations["GetMyReview"];
+        /** Write or replace the customer's review of the product (it waits for moderation). */
+        put: operations["SubmitReview"];
+        post?: never;
+        /** Remove the customer's own review of the product. */
+        delete: operations["DeleteMyReview"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reviews of one status (all when empty) for moderation, with the number waiting. */
+        get: operations["ListReviewsForModeration"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reviews/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Approve or reject a review; the product's rating follows. */
+        put: operations["ModerateReview"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account/wishlist/ids": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Numbers of the products on the visitor's wishlist (signedIn=false for a guest). */
+        get: operations["GetWishlistIds"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account/wishlist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The signed-in customer's wishlist as product cards, the most recently added first. */
+        get: operations["ListWishlist"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account/wishlist/{number}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Add a product to the wishlist (no change when it is there already). */
+        put: operations["AddToWishlist"];
+        post?: never;
+        /** Take a product off the wishlist. */
+        delete: operations["RemoveFromWishlist"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2221,7 +2343,7 @@ export interface components {
             didYouMean: null | string;
         };
         /** @enum {unknown} */
-        BrowseSort: "Relevance" | "Newest" | "PriceAsc" | "PriceDesc" | "Discount";
+        BrowseSort: "Relevance" | "Newest" | "PriceAsc" | "PriceDesc" | "Discount" | "Rating";
         CartItemData: {
             productName: string;
             /** Format: int32 */
@@ -2273,13 +2395,6 @@ export interface components {
             name: string;
             rows: components["schemas"]["CompareRow"][];
         };
-        CompareItemData: {
-            /** Format: int64 */
-            number: number;
-            productName: string;
-            /** Format: date-time */
-            addedUtc: string;
-        };
         CompareListView: {
             numbers: number[];
             /** @default true */
@@ -2298,6 +2413,10 @@ export interface components {
             inStock: boolean;
             category: components["schemas"]["CategoryLink"];
             brand: null | string;
+            /** Format: double */
+            ratingAverage: number;
+            /** Format: int32 */
+            ratingCount: number;
         };
         CompareRow: {
             code: string;
@@ -2493,6 +2612,9 @@ export interface components {
             password: string;
             rememberMe: boolean;
         };
+        ModerateReviewRequest: {
+            status: components["schemas"]["ReviewStatus"];
+        };
         MovementPage: {
             items: components["schemas"]["MovementView"][];
             /** Format: int32 */
@@ -2525,6 +2647,20 @@ export interface components {
             /** Format: uuid */
             transferId: null | string;
             userName: null | string;
+        };
+        MyReview: {
+            /** Format: int32 */
+            rating: number;
+            title: null | string;
+            body: string;
+            status: components["schemas"]["ReviewStatus"];
+            /** Format: date-time */
+            writtenUtc: string;
+        };
+        MyReviewState: {
+            signedIn: boolean;
+            canReview: boolean;
+            review: null | components["schemas"]["MyReview"];
         };
         MyStaffInvitation: {
             /** Format: uuid */
@@ -2572,7 +2708,9 @@ export interface components {
             addresses: components["schemas"]["AddressView"][];
             orders: components["schemas"]["OrderData"][];
             cart: components["schemas"]["CartItemData"][];
-            compare: components["schemas"]["CompareItemData"][];
+            compare: components["schemas"]["SavedProductData"][];
+            wishlist: components["schemas"]["SavedProductData"][];
+            reviews: components["schemas"]["ReviewData"][];
         };
         PhoneCodeSent: {
             /** Format: int32 */
@@ -2631,6 +2769,10 @@ export interface components {
             compareAtPrice: null | number;
             inStock: boolean;
             categorySlug: string;
+            /** Format: double */
+            ratingAverage: number;
+            /** Format: int32 */
+            ratingCount: number;
         };
         ProductComparison: {
             products: components["schemas"]["CompareProduct"][];
@@ -2666,6 +2808,10 @@ export interface components {
             metaTitle: null | string;
             metaDescription: null | string;
             videos: components["schemas"]["ProductVideoInfo"][];
+            /** Format: double */
+            ratingAverage: number;
+            /** Format: int32 */
+            ratingCount: number;
         };
         ProductEditView: {
             /** Format: int64 */
@@ -2737,6 +2883,16 @@ export interface components {
             /** Format: int32 */
             pageSize: number;
         };
+        ProductReviews: {
+            summary: components["schemas"]["RatingSummary"];
+            items: components["schemas"]["ReviewView"][];
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+            /** Format: int32 */
+            total: number;
+        };
         /** @description The product's slug in the requested language (the storefront redirects any other slug to it). */
         ProductSlugResponse: {
             slug: string;
@@ -2807,6 +2963,13 @@ export interface components {
             updated: number;
             /** Format: date-time */
             syncedUtc: null | string;
+        };
+        RatingSummary: {
+            /** Format: double */
+            average: number;
+            /** Format: int32 */
+            count: number;
+            stars: number[];
         };
         ReceiptLineInput: {
             sku: string;
@@ -2909,6 +3072,67 @@ export interface components {
             token: string;
             newPassword: string;
         };
+        ReviewAdminList: {
+            items: components["schemas"]["ReviewAdminRow"][];
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+            /** Format: int32 */
+            total: number;
+            /** Format: int32 */
+            pendingCount: number;
+        };
+        ReviewAdminRow: {
+            /** Format: uuid */
+            id: string;
+            /** Format: int64 */
+            productNumber: number;
+            productName: string;
+            authorName: null | string;
+            /** Format: int32 */
+            rating: number;
+            title: null | string;
+            body: string;
+            locale: string;
+            status: components["schemas"]["ReviewStatus"];
+            verifiedBuyer: boolean;
+            /** Format: date-time */
+            createdUtc: string;
+        };
+        ReviewData: {
+            /** Format: int64 */
+            productNumber: number;
+            productName: string;
+            /** Format: int32 */
+            rating: number;
+            title: null | string;
+            body: string;
+            status: string;
+            /** Format: date-time */
+            writtenUtc: string;
+        };
+        ReviewInput: {
+            /** Format: int32 */
+            rating: number;
+            title: null | string;
+            body: string;
+        };
+        /** @enum {unknown} */
+        ReviewStatus: "Pending" | "Approved" | "Rejected";
+        ReviewView: {
+            /** Format: uuid */
+            id: string;
+            authorName: null | string;
+            /** Format: int32 */
+            rating: number;
+            title: null | string;
+            body: string;
+            locale: string;
+            verifiedBuyer: boolean;
+            /** Format: date-time */
+            createdUtc: string;
+        };
         SaveBrandingRequest: {
             primaryColor: string;
             corners: components["schemas"]["CornerStyle"];
@@ -2937,6 +3161,13 @@ export interface components {
             isEnabled: boolean;
             /** Format: int32 */
             sortOrder: number;
+        };
+        SavedProductData: {
+            /** Format: int64 */
+            number: number;
+            productName: string;
+            /** Format: date-time */
+            addedUtc: string;
         };
         SaveItemSettingsRequest: {
             sku: string;
@@ -3456,6 +3687,11 @@ export interface components {
             items: number;
             used: boolean;
         };
+        WishlistIds: {
+            numbers: number[];
+            /** @default true */
+            signedIn: boolean;
+        };
     };
     responses: never;
     parameters: never;
@@ -3538,6 +3774,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProductComparison"];
+                };
+            };
+        };
+    };
+    ListProductReviews: {
+        parameters: {
+            query?: {
+                page?: number;
+            };
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductReviews"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
         };
@@ -3811,6 +4080,218 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    GetMyReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyReviewState"];
+                };
+            };
+        };
+    };
+    SubmitReview: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewInput"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyReview"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    DeleteMyReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ListReviewsForModeration: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["ReviewStatus"];
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewAdminList"];
+                };
+            };
+        };
+    };
+    ModerateReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModerateReviewRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewAdminRow"];
+                };
+            };
+        };
+    };
+    GetWishlistIds: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WishlistIds"];
+                };
+            };
+        };
+    };
+    ListWishlist: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductCard"][];
+                };
+            };
+        };
+    };
+    AddToWishlist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RemoveFromWishlist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WishlistIds"];
                 };
             };
         };

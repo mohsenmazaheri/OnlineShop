@@ -40,12 +40,22 @@ export function absoluteUrl(siteUrl: string, path: string): string {
 /** Variant specs schema.org knows as Product properties (Google reads them in ProductGroup.variesBy). */
 const schemaProperties: Record<string, string> = { color: "color", colour: "color", size: "size", material: "material", pattern: "pattern" };
 
+/** The reviews shown on the page, for Review markup (only approved, real reviews ever reach the page). */
+export type JsonLdReviews = { items: { author: string; rating: number; title: string | null; body: string; date: string }[] };
+
 /**
  * schema.org Product + Offer for the page, or a ProductGroup with one Product per variant (Google's variant markup).
  * Prices, currency and availability are exactly what the page shows (the same API response, converted by
- * `priceOf` like the visible price), as search engines require.
+ * `priceOf` like the visible price), as search engines require; so are the rating and the reviews.
  */
-export function productJsonLd(product: ProductDetail, pageUrl: string, currency: string, siteUrl: string, priceOf: (basePrice: number) => number = (p) => p) {
+export function productJsonLd(
+  product: ProductDetail,
+  pageUrl: string,
+  currency: string,
+  siteUrl: string,
+  priceOf: (basePrice: number) => number = (p) => p,
+  reviews: JsonLdReviews = { items: [] },
+) {
   const brand = product.brand?.name ?? brandOf(product.specs);
   const image = product.images.map((i) => absoluteUrl(siteUrl, i.url));
   const offer = (price: number, inStock: boolean) => ({
@@ -77,6 +87,22 @@ export function productJsonLd(product: ProductDetail, pageUrl: string, currency:
     image,
     ...(brand ? { brand: { "@type": "Brand", name: brand } } : {}),
     ...(videos.length > 0 ? { subjectOf: videos } : {}),
+    // The rating shown next to the title, and the reviews listed below (Google ignores ratings that are not visible).
+    ...(product.ratingCount > 0
+      ? { aggregateRating: { "@type": "AggregateRating", ratingValue: product.ratingAverage, reviewCount: product.ratingCount, bestRating: 5, worstRating: 1 } }
+      : {}),
+    ...(reviews.items.length > 0
+      ? {
+          review: reviews.items.map((r) => ({
+            "@type": "Review",
+            author: { "@type": "Person", name: r.author },
+            reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5, worstRating: 1 },
+            ...(r.title ? { name: r.title } : {}),
+            reviewBody: r.body,
+            datePublished: r.date,
+          })),
+        }
+      : {}),
   };
 
   const codes = {

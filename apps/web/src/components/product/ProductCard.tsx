@@ -5,9 +5,11 @@ import type { ProductCard as ProductCardData } from "@/lib/api/storefront";
 import { productPath } from "@/lib/catalog/product-path";
 import { imageVariant } from "@/lib/media/image";
 import type { DisplayCurrency } from "@/lib/currency/display";
+import { Stars } from "@/components/ui/Stars";
+import { formatNumber } from "@/lib/i18n/format-money";
 import { Price, type PriceTexts } from "./Price";
 
-export type ProductCardTexts = PriceTexts & CompareButtonTexts & { outOfStock: string };
+export type ProductCardTexts = PriceTexts & CompareButtonTexts & { outOfStock: string; ratingLabel: string };
 
 type Props = {
   product: ProductCardData;
@@ -46,6 +48,7 @@ export function ProductCard({ product, locale, money, texts, priority = false }:
           )}
         </span>
         <span className="line-clamp-2 min-h-[2.8em] text-sm leading-snug">{product.name}</span>
+        {product.ratingCount > 0 && <RatingLine average={product.ratingAverage} count={product.ratingCount} locale={locale} label={texts.ratingLabel} />}
         <span className="mt-auto">
           <Price price={product.price} compareAtPrice={product.compareAtPrice} money={money} locale={locale} texts={texts} />
         </span>
@@ -54,5 +57,20 @@ export function ProductCard({ product, locale, money, texts, priority = false }:
         <CompareButton locale={locale} number={product.number} category={product.categorySlug} texts={texts} look="icon" />
       </span>
     </div>
+  );
+}
+
+/** "★★★★½ 4.5 (12)": the stars and numbers for the eye, the full sentence for screen readers. */
+export function RatingLine({ average, count, locale, label }: { average: number; count: number; locale: string; label: string }) {
+  const value = formatNumber(average, locale, 1);
+  const total = formatNumber(count, locale);
+  return (
+    <span className="flex items-center gap-1 text-xs text-muted">
+      <Stars rating={average} size={12} label={null} />
+      <span aria-hidden>
+        {value} ({total})
+      </span>
+      <span className="sr-only">{label.replace("{average}", value).replace("{count}", total)}</span>
+    </span>
   );
 }

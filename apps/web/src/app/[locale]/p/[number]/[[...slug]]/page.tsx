@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ProductView } from "@/components/product/ProductView";
-import { getProduct } from "@/lib/api/storefront";
+import { ProductReviews } from "@/components/reviews/ProductReviews";
+import { firstParam } from "@/lib/account/page-helpers";
+import { getProduct, getProductReviews } from "@/lib/api/storefront";
 import { productPath } from "@/lib/catalog/product-path";
 import { imageVariant } from "@/lib/media/image";
 import { convertAmount, isIsoCurrency, type DisplayCurrency } from "@/lib/currency/display";
@@ -61,22 +63,53 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/p/[numbe
   };
 }
 
-async function Product({ params }: { params: Params }) {
+async function Product({ params, searchParams }: { params: Params; searchParams: Search }) {
   const data = await load(params);
   // Mid-stream 404: Next.js adds noindex; unknown numbers and unpublished products end here.
   if (!data) notFound();
   const { locale, store, product } = data;
-  const [dict, { money }] = await Promise.all([getDictionary(locale as Locale), loadDisplayCurrency(locale, store.currency)]);
-  const pageUrl = `${siteUrl()}${productPath(locale, product.number, product.slug)}`;
+  // ?reviews=N pages through the reviews (the canonical stays the plain product address).
+  const reviewPage = Math.min(1000, Math.max(1, Number.parseInt(firstParam((await searchParams).reviews), 10) || 1));
+  const [dict, { money }, reviews] = await Promise.all([
+    getDictionary(locale as Locale),
+    loadDisplayCurrency(locale, store.currency),
+    getProductReviews(product.number, reviewPage).catch(() => null),
+  ]);
+  const path = productPath(locale, product.number, product.slug);
+  const pageUrl = `${siteUrl()}${path}`;
   const offer = jsonLdCurrency(money);
+  const shown = (reviews?.items ?? []).map((r) => ({
+    author: r.authorName || dict.reviews.anonymous,
+    rating: r.rating,
+    title: r.title,
+    body: r.body,
+    date: r.createdUtc.slice(0, 10),
+  }));
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd(product, pageUrl, offer.currency, siteUrl(), offer.priceOf)) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd(product, pageUrl, offer.currency, siteUrl(), offer.priceOf, { items: shown })) }}
+      />
       <ProductView product={product} locale={locale} money={money} baseName={currencyName(money.base, locale)} texts={dict.product} />
+      {reviews && (
+        <div className="mt-8 border-t border-border pt-6">
+          <ProductReviews
+            reviews={reviews}
+            number={product.number}
+            path={path}
+            locale={locale}
+            texts={dict.reviews}
+            errors={{ ...dict.account.errors, ...dict.reviews.errors }}
+          />
+        </div>
+      )}
     </>
   );
 }
+
+type Search = PageProps<"/[locale]/p/[number]/[[...slug]]">["searchParams"];
 
 /**
  * The structured-data price is the one on the screen (search engines compare them). A shop-defined currency such as
@@ -106,11 +139,11 @@ function ProductSkeleton() {
 }
 
 /** Product page /{locale}/p/{number}/{slug} (docs/SEO-MARKETING.md): server-rendered, canonical, hreflang, JSON-LD. */
-export default function ProductPage({ params }: PageProps<"/[locale]/p/[number]/[[...slug]]">) {
+export default function ProductPage({ params, searchParams }: PageProps<"/[locale]/p/[number]/[[...slug]]">) {
   return (
     <main className="mx-auto w-full max-w-7xl flex-1 px-4 pt-4 md:px-6 md:pt-6">
       <Suspense fallback={<ProductSkeleton />}>
-        <Product params={params} />
+        <Product params={params} searchParams={searchParams} />
       </Suspense>
     </main>
   );

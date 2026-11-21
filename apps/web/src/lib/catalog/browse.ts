@@ -2,7 +2,7 @@ import type { components } from "@/lib/api/schema";
 
 export type BrowseResult = components["schemas"]["BrowseResult"];
 export type BrowseFacets = components["schemas"]["BrowseFacets"];
-export type BrowseSortName = "relevance" | "newest" | "price_asc" | "price_desc" | "discount";
+export type BrowseSortName = "relevance" | "newest" | "price_asc" | "price_desc" | "discount" | "rating";
 
 /** The address bar's parameters as Next.js gives them. */
 export type SearchParams = Record<string, string | string[] | undefined>;
@@ -12,7 +12,7 @@ export type ListingParams = Record<string, string>;
 
 const filterKeys = ["brand", "group", "min", "max", "stock", "sale"] as const;
 const filterPrefixes = ["o.", "n.", "y.", "nmin.", "nmax."] as const;
-const sortNames: readonly BrowseSortName[] = ["relevance", "newest", "price_asc", "price_desc", "discount"];
+const sortNames: readonly BrowseSortName[] = ["relevance", "newest", "price_asc", "price_desc", "discount", "rating"];
 
 const isFilterKey = (key: string) => (filterKeys as readonly string[]).includes(key) || filterPrefixes.some((p) => key.startsWith(p) && key.length > p.length);
 
@@ -149,7 +149,7 @@ export function sortsFor(isSearch: boolean): BrowseSortName[] {
 
 /** The API's sort as the address bar names it. */
 export function sortName(sort: BrowseResult["sort"]): BrowseSortName {
-  return ({ Relevance: "relevance", Newest: "newest", PriceAsc: "price_asc", PriceDesc: "price_desc", Discount: "discount" } as const)[sort];
+  return ({ Relevance: "relevance", Newest: "newest", PriceAsc: "price_asc", PriceDesc: "price_desc", Discount: "discount", Rating: "rating" } as const)[sort];
 }
 
 type RelaxTexts = { brands: string; groups: string; price: string; inStock: string; onSale: string; relaxFilter: string };

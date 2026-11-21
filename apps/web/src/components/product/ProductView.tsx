@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { CompareButton } from "@/components/compare/CompareButton";
+import { WishlistButton } from "@/components/wishlist/WishlistButton";
+import { productPath } from "@/lib/catalog/product-path";
+import { RatingLine } from "./ProductCard";
 import { Button } from "@/components/ui/Button";
 import type { ProductDetail } from "@/lib/api/storefront";
 import { brandOf, formatSpecValue } from "@/lib/catalog/specs";
@@ -50,6 +53,11 @@ export function ProductView({ product, locale, money, baseName, texts }: Props) 
 
         <div className="flex flex-col gap-4">
           <h1 className="text-xl leading-snug font-extrabold md:text-2xl">{product.name}</h1>
+          {product.ratingCount > 0 && (
+            <a href="#reviews" className="w-fit hover:text-primary">
+              <RatingLine average={product.ratingAverage} count={product.ratingCount} locale={locale} label={texts.ratingLabel} />
+            </a>
+          )}
           {brand && (
             <p className="text-sm">
               <span className="text-muted">{texts.brand}: </span>
@@ -101,7 +109,10 @@ export function ProductView({ product, locale, money, baseName, texts }: Props) 
           <p id="cart-soon" className="text-xs text-muted">
             {texts.cartSoon}
           </p>
-          <CompareButton locale={locale} number={product.number} category={product.category.slug} texts={texts} />
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+            <WishlistButton locale={locale} number={product.number} returnPath={productPath(locale, product.number, product.slug)} texts={texts} />
+            <CompareButton locale={locale} number={product.number} category={product.category.slug} texts={texts} />
+          </div>
         </aside>
       </div>
 

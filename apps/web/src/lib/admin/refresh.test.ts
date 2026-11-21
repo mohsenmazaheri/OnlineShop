@@ -4,6 +4,7 @@ import { allowedTags, refreshStorefront } from "./refresh";
 describe("allowedTags", () => {
   it("keeps known tags the user may clear", () => {
     expect(allowedTags({ tags: ["store", "currencies", "store"] }, ["settings.manage"])).toEqual(["store", "currencies"]);
+    expect(allowedTags({ tags: ["reviews", "catalog"] }, ["reviews.moderate"])).toEqual(["reviews"]);
   });
 
   it("drops unknown tags, missing permissions and malformed bodies", () => {

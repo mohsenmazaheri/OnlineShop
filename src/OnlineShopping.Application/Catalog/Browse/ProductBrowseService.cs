@@ -31,7 +31,7 @@ public sealed class ProductBrowseService(
     public const int PageSize = 24;
     public const string NotFoundCode = "browse.not_found";
 
-    private sealed record Row(Guid Id, decimal Price, decimal? CompareAt, bool Available, Guid? BrandId, DateTime Created, Guid GroupId, Guid SubId);
+    private sealed record Row(Guid Id, decimal Price, decimal? CompareAt, bool Available, Guid? BrandId, DateTime Created, Guid GroupId, Guid SubId, decimal Rating, int Ratings);
 
     private sealed record SpecInfo(Guid Id, string Code, SpecKind Kind, int SortOrder, string Name, string? Group, string? Unit);
 
@@ -49,7 +49,7 @@ public sealed class ProductBrowseService(
         var (scope, inScope, categoryId) = scoped.Value;
 
         var rows = await inScope
-            .Select(p => new Row(p.Id, p.Price, p.CompareAtPrice, p.Stock - p.Reserved > 0, p.BrandId, p.CreatedUtc, p.ProductGroupId, p.ProductGroup.SubCategoryId))
+            .Select(p => new Row(p.Id, p.Price, p.CompareAtPrice, p.Stock - p.Reserved > 0, p.BrandId, p.CreatedUtc, p.ProductGroupId, p.ProductGroup.SubCategoryId, p.RatingAverage, p.RatingCount))
             .ToListAsync(cancellationToken);
         IReadOnlyDictionary<Guid, double>? scores = null;
         TextSearchOutcome? search = null;
@@ -152,6 +152,7 @@ public sealed class ProductBrowseService(
         {
             BrowseSort.PriceAsc => matching.OrderBy(r => r.Price).ThenByDescending(r => r.Created),
             BrowseSort.PriceDesc => matching.OrderByDescending(r => r.Price).ThenByDescending(r => r.Created),
+            BrowseSort.Rating => matching.OrderByDescending(r => r.Rating).ThenByDescending(r => r.Ratings).ThenByDescending(r => r.Created),
             BrowseSort.Discount => matching.OrderByDescending(r => r.CompareAt > r.Price ? (r.CompareAt.Value - r.Price) / r.CompareAt.Value : 0).ThenByDescending(r => r.Created),
             BrowseSort.Relevance when scores is not null => matching.OrderByDescending(r => scores[r.Id]).ThenByDescending(r => r.Available).ThenByDescending(r => r.Created),
             _ => matching.OrderByDescending(r => r.Created),

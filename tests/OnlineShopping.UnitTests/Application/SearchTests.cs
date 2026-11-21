@@ -14,6 +14,15 @@ namespace OnlineShopping.UnitTests.Application;
 
 public sealed class SearchTermsTests
 {
+    [Theory]
+    [InlineData("ball b-12345678", "ball b-12345678 b 12345678")]
+    [InlineData("x-1000 usb-c/hdmi", "x-1000 usb-c/hdmi x 1000 usb c hdmi")]
+    [InlineData("plain words only", "plain words only")]
+    [InlineData("a-b a-b", "a-b a-b a b")]
+    [InlineData("-- x", "-- x")]
+    public void Joined_words_also_get_their_parts_in_the_documents(string text, string expected) =>
+        Assert.Equal(expected, SearchIndexService.WithParts(text));
+
     [Fact]
     public void Words_get_their_synonyms_and_a_phrase_synonym_counts_as_one_word()
     {

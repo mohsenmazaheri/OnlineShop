@@ -227,3 +227,20 @@ export type CompareList = components["schemas"]["CompareListView"];
 export function getCompareList(fetchImpl: typeof fetch = fetch): Promise<CompareList | null> {
   return getForUser<CompareList>("/api/v1/account/compare", fetchImpl);
 }
+
+export type WishlistCard = components["schemas"]["ProductCard"];
+
+/** The signed-in customer's wishlist as product cards (most recently added first), or null without a session. */
+export function getWishlist(locale: string, fetchImpl: typeof fetch = fetch): Promise<WishlistCard[] | null> {
+  return getForUser<WishlistCard[]>(`/api/v1/account/wishlist?locale=${encodeURIComponent(locale)}`, fetchImpl);
+}
+
+export type ReviewAdminList = components["schemas"]["ReviewAdminList"];
+export type ReviewStatusName = components["schemas"]["ReviewStatus"];
+
+/** Reviews for moderation (reviews.moderate): one status (all when null), a page of them. */
+export function getReviewsForModeration(status: ReviewStatusName | null, page: number, fetchImpl: typeof fetch = fetch): Promise<ReviewAdminList | null> {
+  const query = new URLSearchParams({ page: String(page) });
+  if (status) query.set("status", status);
+  return getForUser<ReviewAdminList>(`/api/v1/admin/reviews?${query}`, fetchImpl);
+}

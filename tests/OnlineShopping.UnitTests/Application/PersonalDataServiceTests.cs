@@ -54,6 +54,13 @@ public sealed class PersonalDataServiceTests : IDisposable
         var product = await TestData.SaveProductAsync(_db, sku: $"SKU-{userId[..8]}");
         _db.Carts.Add(new Cart { CustomerId = userId, Items = { new CartItem { ProductId = product.Id, Quantity = 2 } } });
         _db.CompareItems.Add(new OnlineShopping.Domain.Customers.CompareItem { CustomerId = userId, ProductId = product.Id, AddedUtc = Now.UtcDateTime });
+        _db.WishlistItems.Add(new OnlineShopping.Domain.Customers.WishlistItem { CustomerId = userId, ProductId = product.Id, AddedUtc = Now.UtcDateTime });
+        _db.ProductReviews.Add(new OnlineShopping.Domain.Catalog.ProductReview
+        {
+            ProductId = product.Id, CustomerId = userId, Rating = 4, Body = "Good phone, works well.", Locale = "fa", Status = OnlineShopping.Domain.Catalog.ReviewStatus.Approved,
+        });
+        product.RatingAverage = 4;
+        product.RatingCount = 1;
         _db.Orders.Add(new Order
         {
             CustomerId = userId, OrderedUtc = Now.UtcDateTime, Subtotal = 10, Total = 10, Status = OrderStatus.Pending,
@@ -83,6 +90,8 @@ public sealed class PersonalDataServiceTests : IDisposable
         Assert.Equal(new CartItemData("Phone X", 2), Assert.Single(export.Cart));
         var compared = Assert.Single(export.Compare);
         Assert.Equal(Now.UtcDateTime, compared.AddedUtc);
+        Assert.Single(export.Wishlist);
+        Assert.Equal((4, "Approved"), (Assert.Single(export.Reviews).Rating, export.Reviews[0].Status));
     }
 
     [Fact]
@@ -96,6 +105,8 @@ public sealed class PersonalDataServiceTests : IDisposable
         Assert.Empty(export.Orders);
         Assert.Empty(export.Cart);
         Assert.Empty(export.Compare);
+        Assert.Empty(export.Wishlist);
+        Assert.Empty(export.Reviews);
     }
 
     [Fact]
@@ -112,6 +123,10 @@ public sealed class PersonalDataServiceTests : IDisposable
         Assert.False(await check.Carts.IgnoreQueryFilters().AnyAsync());
         Assert.False(await check.CartItems.IgnoreQueryFilters().AnyAsync());
         Assert.False(await check.CompareItems.AnyAsync());
+        Assert.False(await check.WishlistItems.AnyAsync());
+        Assert.False(await check.ProductReviews.IgnoreQueryFilters().AnyAsync());
+        // The product's rating no longer counts the erased review.
+        Assert.Equal(0, (await check.Products.SingleAsync()).RatingCount);
         Assert.False(await check.PhoneVerificationCodes.AnyAsync());
         Assert.Equal(1, await check.Orders.CountAsync(o => o.CustomerId == _password));
     }

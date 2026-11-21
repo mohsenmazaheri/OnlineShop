@@ -34,6 +34,8 @@ const product: ProductDetail = {
   metaTitle: null,
   metaDescription: null,
   videos: [],
+  ratingAverage: 0,
+  ratingCount: 0,
 };
 
 const offers = (data: ReturnType<typeof productJsonLd>) => ("offers" in data ? data.offers : undefined);
@@ -126,6 +128,27 @@ describe("productJsonLd", () => {
     expect(isoDuration(3600)).toBe("PT1H");
     expect(isoDuration(0)).toBe("PT0S");
     expect(isoDuration(3725)).toBe("PT1H2M5S");
+  });
+
+  it("carries the shown rating and reviews, and nothing without reviews", () => {
+    const rated = productJsonLd({ ...product, ratingAverage: 4.5, ratingCount: 2 }, "u", "EUR", site, undefined, {
+      items: [{ author: "Sara", rating: 5, title: "Great", body: "Works well.", date: "2026-11-20" }],
+    });
+
+    expect(rated.aggregateRating).toEqual({ "@type": "AggregateRating", ratingValue: 4.5, reviewCount: 2, bestRating: 5, worstRating: 1 });
+    expect(rated.review).toEqual([
+      {
+        "@type": "Review",
+        author: { "@type": "Person", name: "Sara" },
+        reviewRating: { "@type": "Rating", ratingValue: 5, bestRating: 5, worstRating: 1 },
+        name: "Great",
+        reviewBody: "Works well.",
+        datePublished: "2026-11-20",
+      },
+    ]);
+    const plain = productJsonLd(product, "u", "EUR", site);
+    expect("aggregateRating" in plain).toBe(false);
+    expect("review" in plain).toBe(false);
   });
 
   it("is safe to embed in a script tag", () => {

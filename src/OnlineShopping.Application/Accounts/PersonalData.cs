@@ -23,10 +23,15 @@ public sealed record PersonalDataExport(
     IReadOnlyList<AddressView> Addresses,
     IReadOnlyList<OrderData> Orders,
     IReadOnlyList<CartItemData> Cart,
-    IReadOnlyList<CompareItemData> Compare);
+    IReadOnlyList<SavedProductData> Compare,
+    IReadOnlyList<SavedProductData> Wishlist,
+    IReadOnlyList<ReviewData> Reviews);
 
-/// <summary>A product on the customer's comparison list.</summary>
-public sealed record CompareItemData(long Number, string ProductName, DateTime AddedUtc);
+/// <summary>A product on the customer's comparison list or wishlist.</summary>
+public sealed record SavedProductData(long Number, string ProductName, DateTime AddedUtc);
+
+/// <summary>A review the customer wrote (in any moderation status).</summary>
+public sealed record ReviewData(long ProductNumber, string ProductName, int Rating, string? Title, string Body, string Status, DateTime WrittenUtc);
 
 public sealed record AccountData(
     string Id,

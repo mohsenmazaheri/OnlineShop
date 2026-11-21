@@ -181,6 +181,9 @@ const paths = {
     </>
   ),
   close: <path d="M6 6l12 12M18 6L6 18" />,
+  star: <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" />,
+  heart: <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />,
+  message: <path d="M4 5h16v11H9l-5 4z" />,
 } as const;
 
 export type IconName = keyof typeof paths;

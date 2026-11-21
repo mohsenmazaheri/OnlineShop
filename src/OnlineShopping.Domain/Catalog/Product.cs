@@ -41,6 +41,12 @@ public class Product : BaseEntity
 
     /// <summary>Units held for checkouts that are not paid yet (active reservations). Available = Stock − Reserved.</summary>
     public int Reserved { get; set; }
+
+    /// <summary>Average stars of the approved reviews (0 without any), kept by the review service.</summary>
+    public decimal RatingAverage { get; set; }
+
+    /// <summary>How many approved reviews there are.</summary>
+    public int RatingCount { get; set; }
     public bool IsPublished { get; set; }
     public Guid ProductGroupId { get; set; }
     public ProductGroup ProductGroup { get; set; } = default!;

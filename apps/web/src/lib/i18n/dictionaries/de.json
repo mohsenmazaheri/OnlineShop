@@ -153,7 +153,8 @@
       "address_too_long": "Dieser Text ist zu lang.",
       "address_country_not_supported": "Der Shop liefert nicht in dieses Land.",
       "address_postal_code_invalid": "Diese Postleitzahl ist für das Land nicht gültig.",
-      "compare_too_many": "Sie können bis zu 4 Produkte vergleichen."
+      "compare_too_many": "Sie können bis zu 4 Produkte vergleichen.",
+      "wishlist_product_not_found": "Dieses Produkt ist nicht mehr verfügbar."
     },
     "withCode": "Mit SMS-Code",
     "withPassword": "Mit Passwort",
@@ -248,7 +249,11 @@
     "staffInvitationText": "Sie wurden eingeladen, im Verwaltungsbereich mit diesen Rollen zu arbeiten: {roles}. Gültig bis {date}.",
     "acceptInvitation": "Einladung annehmen",
     "invitationAccepted": "Einladung angenommen. Sie haben jetzt Zugang zum Verwaltungsbereich.",
-    "adminPanel": "Verwaltungsbereich"
+    "adminPanel": "Verwaltungsbereich",
+    "navWishlist": "Wunschliste",
+    "wishlistTitle": "Meine Wunschliste",
+    "wishlistEmpty": "Ihre Wunschliste ist leer. Merken Sie sich Produkte mit dem Herz-Symbol.",
+    "wishlistRemove": "{name} entfernen"
   },
   "admin": {
     "title": "Verwaltungsbereich",
@@ -685,7 +690,8 @@
       "stocktakes": "Ein Lager zählen, Differenzen sehen und Korrekturen buchen",
       "suppliers": "Lieferanten und ihre Kontaktdaten",
       "purchases": "Wareneingänge mit Stückpreisen und Durchschnittspreis",
-      "reservations": "Für unbezahlte Bestellungen zurückgehaltene Stücke"
+      "reservations": "Für unbezahlte Bestellungen zurückgehaltene Stücke",
+      "reviews": "Kundenbewertungen freigeben oder ablehnen"
     },
     "navInventory": "Bestand",
     "navMovements": "Lagerbewegungen",
@@ -902,7 +908,23 @@
     "searchIndexRebuild": "Index neu aufbauen",
     "searchIndexQueued": "Der Neuaufbau ist eingeplant und läuft in Sekunden.",
     "searchEngineServing": "Suchmaschine: {engine}, beantwortet die Suchen. {pending} Produkte warten auf die Übertragung.",
-    "searchEngineFallback": "Suchmaschine: {engine} antwortet gerade nicht, daher beantwortet die Datenbank die Suchen. {pending} Produkte warten auf die Übertragung."
+    "searchEngineFallback": "Suchmaschine: {engine} antwortet gerade nicht, daher beantwortet die Datenbank die Suchen. {pending} Produkte warten auf die Übertragung.",
+    "navReviews": "Bewertungen",
+    "reviewsTitle": "Bewertungen",
+    "reviewsIntro": "Kundenbewertungen erscheinen erst nach der Freigabe auf der Produktseite. Freigegebene Bewertungen ergeben die Produktbewertung.",
+    "reviewsWaiting": "{count} warten auf Freigabe",
+    "reviewsEmpty": "Keine Bewertungen hier.",
+    "reviewFilterAll": "Alle",
+    "reviewStatuses": {
+      "Pending": "Wartend",
+      "Approved": "Freigegeben",
+      "Rejected": "Abgelehnt"
+    },
+    "reviewApprove": "Freigeben",
+    "reviewReject": "Ablehnen",
+    "reviewVerified": "Verifizierter Kauf",
+    "reviewAnonymous": "Ein Kunde",
+    "reviewOn": "Zu {product}"
   },
   "footer": {
     "shopping": "Einkaufen",
@@ -956,7 +978,10 @@
     "soldOutOption": "Diese Kombination ist ausverkauft",
     "video": "Video",
     "compare": "Vergleichen",
-    "compareAdded": "Im Vergleich"
+    "compareAdded": "Im Vergleich",
+    "wishlistAdd": "Auf die Wunschliste",
+    "wishlistAdded": "Auf Ihrer Wunschliste",
+    "ratingLabel": "{average} von 5 ({count} Bewertungen)"
   },
   "listing": {
     "home": "Startseite",
@@ -967,7 +992,8 @@
       "newest": "Neueste",
       "price_asc": "Preis aufsteigend",
       "price_desc": "Preis absteigend",
-      "discount": "Größter Rabatt"
+      "discount": "Größter Rabatt",
+      "rating": "Beste Bewertung"
     },
     "filters": "Filter",
     "clearAll": "Alle Filter entfernen",
@@ -1022,6 +1048,48 @@
     "category": "Kategorie",
     "viewProduct": "Zum Produkt",
     "product": "Produkt",
-    "backHome": "Zurück zum Shop"
+    "backHome": "Zurück zum Shop",
+    "rating": "Bewertung",
+    "noRating": "Noch keine Bewertungen"
+  },
+  "reviews": {
+    "title": "Bewertungen",
+    "outOf": "von 5",
+    "count": "{count} Bewertungen",
+    "none": "Noch keine Bewertungen. Schreiben Sie die erste.",
+    "stars": "{rating} von 5 Sternen",
+    "starRow": "{stars} Sterne",
+    "verified": "Verifizierter Kauf",
+    "anonymous": "Ein Kunde",
+    "write": "Bewertung schreiben",
+    "edit": "Ihre Bewertung bearbeiten",
+    "yourRating": "Ihre Bewertung",
+    "titleLabel": "Titel (optional)",
+    "bodyLabel": "Ihre Bewertung",
+    "bodyHint": "Mindestens 10 Zeichen. Links sind nicht erlaubt.",
+    "submit": "Bewertung senden",
+    "cancel": "Abbrechen",
+    "delete": "Meine Bewertung löschen",
+    "pending": "Ihre Bewertung wartet auf Freigabe.",
+    "rejected": "Ihre Bewertung wurde nicht freigegeben. Sie können sie bearbeiten und erneut senden.",
+    "approved": "Ihre Bewertung ist veröffentlicht.",
+    "thanks": "Danke! Ihre Bewertung erscheint nach der Freigabe.",
+    "deleted": "Ihre Bewertung wurde gelöscht.",
+    "signIn": "Anmelden, um eine Bewertung zu schreiben",
+    "unverified": "Bestätigen Sie Ihre E-Mail-Adresse oder Handynummer im Konto, um zu bewerten.",
+    "pages": "Bewertungsseiten",
+    "previous": "Neuere Bewertungen",
+    "next": "Ältere Bewertungen",
+    "errors": {
+      "not_found": "Dieses Produkt kann nicht bewertet werden.",
+      "unverified_account": "Bestätigen Sie zuerst Ihre E-Mail-Adresse oder Handynummer.",
+      "links_not_allowed": "Bitte entfernen Sie die Links aus Ihrer Bewertung.",
+      "too_many": "Sie haben gerade mehrere Bewertungen geschrieben. Bitte versuchen Sie es später.",
+      "rating_invalid": "Wählen Sie 1 bis 5 Sterne.",
+      "body_required": "Schreiben Sie mindestens 10 Zeichen.",
+      "body_too_long": "Die Bewertung ist zu lang (höchstens 2000 Zeichen).",
+      "title_too_long": "Der Titel ist zu lang (höchstens 120 Zeichen).",
+      "status_invalid": "Geben Sie die Bewertung frei oder lehnen Sie sie ab."
+    }
   }
 }
