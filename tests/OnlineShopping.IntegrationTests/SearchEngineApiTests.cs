@@ -5,7 +5,6 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using OnlineShopping.Application.Accounts;
 using OnlineShopping.Application.Catalog.Admin;
 using OnlineShopping.Application.Catalog.Browse;
@@ -39,7 +38,7 @@ public abstract class SearchEngineFactory(SearchProvider provider, string urlKey
         ["Search:Engine:Url"] = EngineUrl ?? "http://localhost:9",
         ["Search:Engine:IndexPrefix"] = IndexPrefix,
         ["Search:Engine:QueryTimeoutSeconds"] = "10",
-        // The tests run the worker's steps themselves.
+        // The worker is not hosted in tests (ApiFactory); the scenario runs its steps itself.
         ["Search:IndexIntervalSeconds"] = "3600",
     };
 
@@ -74,9 +73,9 @@ public static class SearchEngineScenario
         return (await response.Content.ReadFromJsonAsync<T>(Json))!;
     }
 
-    /// <summary>One run of the index worker: the database documents, then the engine.</summary>
+    /// <summary>One run of the index worker (not hosted in tests): the database documents, then the engine.</summary>
     private static Task RunWorkerAsync(SearchEngineFactory factory) =>
-        factory.Services.GetServices<IHostedService>().OfType<SearchIndexWorker>().Single().RunAsync(ensureBuilt: false, CancellationToken.None);
+        ActivatorUtilities.CreateInstance<SearchIndexWorker>(factory.Services).RunAsync(ensureBuilt: false, CancellationToken.None);
 
     public static async Task RunAsync(SearchEngineFactory factory)
     {
@@ -134,10 +133,13 @@ public static class SearchEngineScenario
         await RunWorkerAsync(factory);
         Assert.Equal([renamed], (await ReadAsync<BrowseResult>(await visitor.GetAsync($"/api/v1/catalog/browse?q={renamed}&locale=en"))).Items.Select(i => i.Name));
 
-        // A full rebuild switches to new indexes without losing anything.
+        // A full rebuild switches to new indexes without losing anything (the renamed stand no longer contains the
+        // word, so the word finds only the lamp now).
         await ReadAsync<SearchIndexStatus>(await admin.PostAsync("/api/v1/admin/seo/search-index/rebuild", null));
         await RunWorkerAsync(factory);
-        Assert.Equal(2, (await ReadAsync<BrowseResult>(await visitor.GetAsync($"/api/v1/catalog/browse?q={word[..7]}&locale=en"))).Total);
+        Assert.Equal([$"{word} lamp"], (await ReadAsync<BrowseResult>(await visitor.GetAsync($"/api/v1/catalog/browse?q={word[..7]}&locale=en"))).Items.Select(i => i.Name));
+        Assert.Equal([renamed], (await ReadAsync<BrowseResult>(await visitor.GetAsync($"/api/v1/catalog/browse?q={renamed}&locale=en"))).Items.Select(i => i.Name));
+        Assert.Equal(new SearchEngineStatus(factory.Provider, true, 0), (await ReadAsync<SearchIndexStatus>(await admin.GetAsync("/api/v1/admin/seo/search-index"))).Engine);
     }
 
     private static async Task CleanUpAsync(SearchEngineFactory factory)

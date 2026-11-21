@@ -71,11 +71,15 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             config.AddInMemoryCollection(settings);
         });
 
-        // Capture emails instead of writing files.
         builder.ConfigureTestServices(services =>
         {
+            // Capture emails instead of writing files.
             services.RemoveAll<IEmailSender>();
             services.AddSingleton<IEmailSender>(Emails);
+            // Tests work through the search queues themselves; a background run at the same moment would rebuild
+            // the same documents concurrently and make them flaky.
+            foreach (var worker in services.Where(d => d.ImplementationType == typeof(OnlineShopping.Infrastructure.Search.SearchIndexWorker)).ToList())
+                services.Remove(worker);
         });
     }
 
