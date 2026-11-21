@@ -11,6 +11,8 @@ public enum SitemapKind
     Categories,
     Brands,
     Landing,
+    Posts,
+    Pages,
 }
 
 /// <summary>A page's address in one language: the path after the locale ("p/1001/orvia-x1").</summary>
@@ -26,10 +28,10 @@ public sealed record SitemapEntry(IReadOnlyList<SitemapLink> Links, DateTime Mod
 
 /// <summary>
 /// What the sitemaps list (docs/SEO-MARKETING.md §6): published products, categories and sub-categories with published
-/// products, brands with published products, and published landing pages. A language appears only where the page is
-/// translated (an untranslated language is noindex and canonical to the default one).
+/// products, brands with published products, published landing pages, blog posts and content pages. A language appears
+/// only where the page is translated (an untranslated language is noindex and canonical to the default one).
 /// </summary>
-public sealed class SitemapService(IApplicationDbContext db, IOptions<StoreOptions> store)
+public sealed class SitemapService(IApplicationDbContext db, IOptions<StoreOptions> store, TimeProvider clock)
 {
     /// <summary>Search engines read at most 50,000 addresses per sitemap; one per kind is plenty for a small shop.</summary>
     public const int MaxEntries = 10_000;
@@ -41,6 +43,8 @@ public sealed class SitemapService(IApplicationDbContext db, IOptions<StoreOptio
         SitemapKind.Products => ProductsAsync(cancellationToken),
         SitemapKind.Categories => CategoriesAsync(cancellationToken),
         SitemapKind.Brands => BrandsAsync(cancellationToken),
+        SitemapKind.Posts => ContentAsync(Domain.Content.ContentKind.Post, "blog/", cancellationToken),
+        SitemapKind.Pages => ContentAsync(Domain.Content.ContentKind.Page, "", cancellationToken),
         _ => LandingAsync(cancellationToken),
     };
 
@@ -127,6 +131,21 @@ public sealed class SitemapService(IApplicationDbContext db, IOptions<StoreOptio
         var texts = (await db.LandingPages.AsNoTracking().Where(p => ids.Contains(p.Id))
             .SelectMany(p => p.Translations, (p, t) => new { p.Id, t.Locale, t.Slug }).ToListAsync(cancellationToken)).ToLookup(t => t.Id);
         return pages.Select(p => new SitemapEntry(Links(p.Slug, texts[p.Id].Select(t => (t.Locale, t.Slug)), slug => $"l/{slug}"), p.Modified, [], [])).ToList();
+    }
+
+    /// <summary>Published posts or pages whose time has come (blog/{slug} or {slug}).</summary>
+    private async Task<IReadOnlyList<SitemapEntry>> ContentAsync(Domain.Content.ContentKind kind, string prefix, CancellationToken cancellationToken)
+    {
+        var now = clock.GetUtcNow().UtcDateTime;
+        var pages = await db.ContentPages.AsNoTracking()
+            .Where(p => p.Kind == kind && p.IsPublished && (p.PublishedUtc == null || p.PublishedUtc <= now))
+            .Select(p => new { p.Slug, p.CoverImageUrl, Modified = p.ModifiedUtc ?? p.CreatedUtc, Translated = p.Translations.Select(t => new { t.Locale, t.Slug }).ToList() })
+            .ToListAsync(cancellationToken);
+        return pages.Select(p => new SitemapEntry(
+            Links(p.Slug, p.Translated.Select(t => (t.Locale, (string?)t.Slug)), slug => $"{prefix}{slug}"),
+            p.Modified,
+            p.CoverImageUrl is null ? [] : [p.CoverImageUrl],
+            [])).ToList();
     }
 
     /// <summary>Where a language comes in the shop's list (links follow it).</summary>

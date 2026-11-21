@@ -8,7 +8,7 @@ Application / Infrastructure / Api) + **Next.js 16** storefront in `apps/web`. O
 images serve every shop.
 
 **Plan and all recorded decisions: [docs/ROADMAP.md](docs/ROADMAP.md)** (Persian). Read it before starting, work on
-one step at a time, mark the status there when a step is done. Done: phases 0, 2–5, 6a–6f; phase 1 has a "remaining"
+one step at a time, mark the status there when a step is done. Done: phases 0, 2–6; phase 1 has a "remaining"
 list. SEO/marketing design: [docs/SEO-MARKETING.md](docs/SEO-MARKETING.md) (acceptance checklist at its end).
 
 Key decisions (details in the roadmap):
@@ -184,6 +184,10 @@ After a model change: migration + `has-pending-model-changes` reports none. Afte
 - **Special offers**: `Product.SaleEndsUtc` (only with `CompareAtPrice`); `SaleExpiryService`/`SaleExpiryWorker`
   restore the old price after the end. Web fetchers holding offer times cache with `cacheForOffers`/`saleAwareLife`
   so no page shows an ended offer; `Countdown` renders only a label on the server (the clock is browser time).
+- **Blog & content pages** (`Domain/Content/ContentPage`, `ContentService`, content.manage, codes `content.*` →
+  `admin.contentErrors`): posts at `/{locale}/blog/{slug}`, pages at `/{locale}/{slug}` (`app/[locale]/[page]`); a
+  new top-level route must be added to `ContentService.ReservedSlugs`. Bodies use the safe marks of
+  `lib/content/markdown.tsx` (never HTML). Cache tag `content` (refreshable); footer pages via `getFooterPages`.
 - Redirects (`RedirectService`): decoded paths, no trailing slash, never `/`, `/api`, `/_next`, one hop, no loops.
 
 ## Accounts and authorization

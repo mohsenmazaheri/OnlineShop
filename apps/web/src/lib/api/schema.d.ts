@@ -401,6 +401,111 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/content/posts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A page of published blog posts (newest first), optionally one tag's, with every tag in use. */
+        get: operations["ListPosts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/content/{kind}/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A published post or page by its slug in any language, in the requested language. */
+        get: operations["GetContent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/content/footer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Published pages listed in the shop's footer. */
+        get: operations["GetFooterPages"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every post and page with its texts in each shop language. */
+        get: operations["ListContent"];
+        put?: never;
+        /** Create a post or page. */
+        post: operations["CreateContent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/content/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change a post or page. */
+        put: operations["UpdateContent"];
+        post?: never;
+        /** Delete a post or page (its address then answers 404; add a redirect if it was popular). */
+        delete: operations["DeleteContent"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/content/{id}/cover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload a post's or page's cover image (multipart field "file"). */
+        post: operations["SetContentCover"];
+        /** Remove the cover image. */
+        delete: operations["RemoveContentCover"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/currencies": {
         parameters: {
             query?: never;
@@ -2512,6 +2617,60 @@ export interface components {
             phone: string;
             code: string;
         };
+        ContentAlternate: {
+            locale: string;
+            slug: string;
+        };
+        ContentArticle: {
+            kind: components["schemas"]["ContentKind"];
+            title: string;
+            slug: string;
+            summary: null | string;
+            body: string;
+            metaTitle: null | string;
+            metaDescription: null | string;
+            coverImageUrl: null | string;
+            authorName: null | string;
+            tags: string[];
+            /** Format: date-time */
+            publishedUtc: string;
+            /** Format: date-time */
+            modifiedUtc: string;
+            alternates: components["schemas"]["ContentAlternate"][];
+            relatedProducts: components["schemas"]["ProductCard"][];
+        };
+        /** @enum {unknown} */
+        ContentKind: "Post" | "Page";
+        ContentList: {
+            defaultLocale: string;
+            locales: string[];
+            items: components["schemas"]["ContentView"][];
+        };
+        ContentText: {
+            locale: string;
+            title: string;
+            slug: null | string;
+            summary: null | string;
+            body: string;
+            metaTitle: null | string;
+            metaDescription: null | string;
+            tags: null | string;
+        };
+        ContentView: {
+            /** Format: uuid */
+            id: string;
+            kind: components["schemas"]["ContentKind"];
+            texts: components["schemas"]["ContentText"][];
+            authorName: null | string;
+            relatedProducts: number[];
+            isPublished: boolean;
+            /** Format: date-time */
+            publishedUtc: null | string;
+            showInFooter: boolean;
+            coverImageUrl: null | string;
+            /** Format: date-time */
+            modifiedUtc: string;
+        };
         /** @enum {unknown} */
         CornerStyle: "Sharp" | "Soft" | "Round";
         CountInput: {
@@ -2592,6 +2751,10 @@ export interface components {
         };
         /** @enum {unknown} */
         FontChoice: "Vazirmatn" | "System";
+        FooterPage: {
+            title: string;
+            slug: string;
+        };
         ForgotPasswordRequest: {
             email: string;
             locale: null | string;
@@ -2827,6 +2990,16 @@ export interface components {
             user: components["schemas"]["CurrentUser"];
             isNewAccount: boolean;
         };
+        PostList: {
+            items: components["schemas"]["PostSummary"][];
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+            /** Format: int32 */
+            total: number;
+            tags: string[];
+        };
         PostMovementRequest: {
             sku: string;
             /** Format: uuid */
@@ -2836,6 +3009,15 @@ export interface components {
             quantity: number;
             reference: null | string;
             note: null | string;
+        };
+        PostSummary: {
+            title: string;
+            slug: string;
+            summary: null | string;
+            coverImageUrl: null | string;
+            /** Format: date-time */
+            publishedUtc: string;
+            tags: string[];
         };
         PriceRange: {
             /** Format: double */
@@ -3252,6 +3434,16 @@ export interface components {
         SaveCompareListRequest: {
             numbers: number[];
         };
+        SaveContentRequest: {
+            kind: components["schemas"]["ContentKind"];
+            texts: components["schemas"]["ContentText"][];
+            authorName: null | string;
+            relatedProducts: number[];
+            isPublished: boolean;
+            /** Format: date-time */
+            publishedUtc: null | string;
+            showInFooter: boolean;
+        };
         SaveCurrencyRequest: {
             code: string;
             symbol: null | string;
@@ -3427,7 +3619,7 @@ export interface components {
             videos: components["schemas"]["SitemapVideo"][];
         };
         /** @enum {unknown} */
-        SitemapKind: "Products" | "Categories" | "Brands" | "Landing";
+        SitemapKind: "Products" | "Categories" | "Brands" | "Landing" | "Posts" | "Pages";
         SitemapLink: {
             locale: string;
             path: string;
@@ -4573,6 +4765,240 @@ export interface operations {
         };
     };
     DeleteLandingPage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ListPosts: {
+        parameters: {
+            query?: {
+                locale?: string;
+                page?: number;
+                tag?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostList"];
+                };
+            };
+        };
+    };
+    GetContent: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path: {
+                kind: components["schemas"]["ContentKind"];
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentArticle"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetFooterPages: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FooterPage"][];
+                };
+            };
+        };
+    };
+    ListContent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentList"];
+                };
+            };
+        };
+    };
+    CreateContent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveContentRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    UpdateContent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveContentRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    DeleteContent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SetContentCover: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    file: components["schemas"]["IFormFile"];
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RemoveContentCover: {
         parameters: {
             query?: never;
             header?: never;

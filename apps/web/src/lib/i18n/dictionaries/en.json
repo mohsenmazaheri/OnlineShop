@@ -697,7 +697,8 @@
       "purchases": "Purchase receipts with unit costs and average cost",
       "reservations": "Units held for unpaid checkouts",
       "reviews": "Approve or reject customer reviews",
-      "landing": "Indexed pages for much-searched combinations of category, brand and filters"
+      "landing": "Indexed pages for much-searched combinations of category, brand and filters",
+      "content": "Blog posts and pages such as About us, in every language"
     },
     "navInventory": "Stock",
     "navMovements": "Stock movements",
@@ -947,7 +948,39 @@
     "landingConfirmDelete": "Delete this landing page? Its address will stop working.",
     "landingOpen": "Open",
     "landingEmpty": "No landing pages yet.",
-    "landingDraft": "Not published"
+    "landingDraft": "Not published",
+    "navContent": "Blog & pages",
+    "contentTitle": "Blog & pages",
+    "contentIntro": "Posts appear on the blog, newest first; pages get their own address (/about) and can be linked in the footer. Texts are written by hand for each language; a language left empty shows the main language and is not indexed.",
+    "contentNew": "New post or page",
+    "contentEmpty": "No posts or pages yet.",
+    "contentKind": "Kind",
+    "contentKinds": {
+      "Post": "Blog post",
+      "Page": "Page"
+    },
+    "contentSummary": "Summary",
+    "contentBody": "Text",
+    "contentBodyHint": "Blank line = new paragraph · ## heading · - list item · **bold** · [link text](/fa/c/…)",
+    "contentTags": "Tags (comma-separated)",
+    "contentAuthor": "Author",
+    "contentProducts": "Product numbers in this post",
+    "contentPublishedAt": "Published from (empty: now)",
+    "contentPublished": "Published",
+    "contentDraft": "Draft",
+    "contentInFooter": "Link in the footer",
+    "contentCover": "Cover image",
+    "contentConfirmDelete": "Delete this post or page? Its address will stop working.",
+    "contentTitleLabel": "Title",
+    "contentErrors": {
+      "not_found": "This post or page no longer exists.",
+      "title_required": "A title in the shop's main language is required.",
+      "body_required": "The text is required.",
+      "too_long": "A text is too long.",
+      "locale_invalid": "A text is in a language the shop does not offer.",
+      "slug_taken": "Another post or page already uses this address.",
+      "slug_reserved": "This address belongs to the shop itself (such as account or blog). Choose another one."
+    }
   },
   "footer": {
     "shopping": "Shopping",
@@ -965,7 +998,9 @@
     "installText": "Quick access from your home screen, no app store needed.",
     "installButton": "Install",
     "installIos": "In Safari, tap “Share” and then “Add to Home Screen”.",
-    "installDismiss": "Close"
+    "installDismiss": "Close",
+    "blog": "Blog",
+    "aboutShop": "About the shop"
   },
   "search": {
     "title": "Search",
@@ -1117,5 +1152,16 @@
       "title_too_long": "The title is too long (120 characters at most).",
       "status_invalid": "Approve or reject the review."
     }
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "News, buying guides and tips.",
+    "tagTitle": "Posts tagged “{tag}”",
+    "allPosts": "All posts",
+    "empty": "No posts yet.",
+    "by": "By {author}",
+    "related": "Products in this post",
+    "tags": "Tags",
+    "pages": "Blog pages"
   }
 }

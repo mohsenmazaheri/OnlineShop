@@ -14,12 +14,14 @@ type Props = {
   /** The current year, formatted by the caller (Persian calendar and digits for fa). */
   year: string;
   logoUrl?: string | null;
+  /** Content pages the admin listed in the footer ("about", "returns"). */
+  pages?: readonly { title: string; slug: string }[];
 };
 
 const linkClass = "flex min-h-9 items-center text-inverse-foreground hover:text-white";
 
 /** The dark band at the bottom of every page: about the shop, the main links, languages and the copyright line. */
-export function SiteFooter({ locale, storeName, locales, description, texts, year, logoUrl }: Props) {
+export function SiteFooter({ locale, storeName, locales, description, texts, year, logoUrl, pages = [] }: Props) {
   const shopping = [
     { href: `/${locale}#categories`, label: texts.categories },
     { href: `/${locale}/search`, label: texts.search },
@@ -30,6 +32,8 @@ export function SiteFooter({ locale, storeName, locales, description, texts, yea
     { href: `/${locale}/account/addresses`, label: texts.addresses },
     { href: `/${locale}/account/privacy`, label: texts.privacy },
   ];
+
+  const about = [{ href: `/${locale}/blog`, label: texts.blog }, ...pages.map((p) => ({ href: `/${locale}/${encodeURIComponent(p.slug)}`, label: p.title }))];
 
   return (
     <footer className="mt-12 bg-inverse text-sm text-inverse-foreground">
@@ -44,6 +48,7 @@ export function SiteFooter({ locale, storeName, locales, description, texts, yea
           </div>
           <FooterLinks title={texts.shopping} links={shopping} />
           <FooterLinks title={texts.account} links={account} />
+          <FooterLinks title={texts.aboutShop} links={about} />
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-inverse-border pt-5 text-xs">
           <span>

@@ -55,7 +55,7 @@ describe("sitemaps", () => {
     const xml = sitemapIndexXml(site);
     expect(xml).toContain("<sitemapindex");
     expect(xml).toContain(`<loc>${site}/sitemaps/sitemap/products.xml</loc>`);
-    expect(xml.match(/<sitemap>/g)).toHaveLength(5);
+    expect(xml.match(/<sitemap>/g)).toHaveLength(7);
   });
 
   it("list a page in each translated language with alternates, images and videos with a thumbnail", () => {

@@ -1055,6 +1055,341 @@
         }
       }
     },
+    "/api/v1/content/posts": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "A page of published blog posts (newest first), optionally one tag's, with every tag in use.",
+        "operationId": "ListPosts",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/content/{kind}/{slug}": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "A published post or page by its slug in any language, in the requested language.",
+        "operationId": "GetContent",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ContentKind"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentArticle"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/content/footer": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "Published pages listed in the shop's footer.",
+        "operationId": "GetFooterPages",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FooterPage"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/content": {
+      "get": {
+        "tags": [
+          "Admin: content"
+        ],
+        "summary": "Every post and page with its texts in each shop language.",
+        "operationId": "ListContent",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin: content"
+        ],
+        "summary": "Create a post or page.",
+        "operationId": "CreateContent",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveContentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/content/{id}": {
+      "put": {
+        "tags": [
+          "Admin: content"
+        ],
+        "summary": "Change a post or page.",
+        "operationId": "UpdateContent",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveContentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin: content"
+        ],
+        "summary": "Delete a post or page (its address then answers 404; add a redirect if it was popular).",
+        "operationId": "DeleteContent",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/content/{id}/cover": {
+      "post": {
+        "tags": [
+          "Admin: content"
+        ],
+        "summary": "Upload a post's or page's cover image (multipart field \"file\").",
+        "operationId": "SetContentCover",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin: content"
+        ],
+        "summary": "Remove the cover image.",
+        "operationId": "RemoveContentCover",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/v1/admin/currencies": {
       "get": {
         "tags": [
@@ -7113,6 +7448,261 @@
           }
         }
       },
+      "ContentAlternate": {
+        "required": [
+          "locale",
+          "slug"
+        ],
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          }
+        }
+      },
+      "ContentArticle": {
+        "required": [
+          "kind",
+          "title",
+          "slug",
+          "summary",
+          "body",
+          "metaTitle",
+          "metaDescription",
+          "coverImageUrl",
+          "authorName",
+          "tags",
+          "publishedUtc",
+          "modifiedUtc",
+          "alternates",
+          "relatedProducts"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/ContentKind"
+          },
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "summary": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "body": {
+            "type": "string"
+          },
+          "metaTitle": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "metaDescription": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "coverImageUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "authorName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "publishedUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "alternates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContentAlternate"
+            }
+          },
+          "relatedProducts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductCard"
+            }
+          }
+        }
+      },
+      "ContentKind": {
+        "enum": [
+          "Post",
+          "Page"
+        ]
+      },
+      "ContentList": {
+        "required": [
+          "defaultLocale",
+          "locales",
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "defaultLocale": {
+            "type": "string"
+          },
+          "locales": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContentView"
+            }
+          }
+        }
+      },
+      "ContentText": {
+        "required": [
+          "locale",
+          "title",
+          "slug",
+          "summary",
+          "body",
+          "metaTitle",
+          "metaDescription",
+          "tags"
+        ],
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "summary": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "body": {
+            "type": "string"
+          },
+          "metaTitle": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "metaDescription": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "tags": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ContentView": {
+        "required": [
+          "id",
+          "kind",
+          "texts",
+          "authorName",
+          "relatedProducts",
+          "isPublished",
+          "publishedUtc",
+          "showInFooter",
+          "coverImageUrl",
+          "modifiedUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ContentKind"
+          },
+          "texts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContentText"
+            }
+          },
+          "authorName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "relatedProducts": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "isPublished": {
+            "type": "boolean"
+          },
+          "publishedUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "showInFooter": {
+            "type": "boolean"
+          },
+          "coverImageUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "modifiedUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
       "CornerStyle": {
         "enum": [
           "Sharp",
@@ -7422,6 +8012,21 @@
           "Vazirmatn",
           "System"
         ]
+      },
+      "FooterPage": {
+        "required": [
+          "title",
+          "slug"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          }
+        }
       },
       "ForgotPasswordRequest": {
         "required": [
@@ -8326,6 +8931,42 @@
           }
         }
       },
+      "PostList": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total",
+          "tags"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PostSummary"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
       "PostMovementRequest": {
         "required": [
           "sku",
@@ -8362,6 +9003,47 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "PostSummary": {
+        "required": [
+          "title",
+          "slug",
+          "summary",
+          "coverImageUrl",
+          "publishedUtc",
+          "tags"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "summary": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "coverImageUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "publishedUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
@@ -9980,6 +10662,55 @@
           }
         }
       },
+      "SaveContentRequest": {
+        "required": [
+          "kind",
+          "texts",
+          "authorName",
+          "relatedProducts",
+          "isPublished",
+          "publishedUtc",
+          "showInFooter"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/ContentKind"
+          },
+          "texts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContentText"
+            }
+          },
+          "authorName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "relatedProducts": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "isPublished": {
+            "type": "boolean"
+          },
+          "publishedUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "showInFooter": {
+            "type": "boolean"
+          }
+        }
+      },
       "SaveCurrencyRequest": {
         "required": [
           "code",
@@ -10728,7 +11459,9 @@
           "Products",
           "Categories",
           "Brands",
-          "Landing"
+          "Landing",
+          "Posts",
+          "Pages"
         ]
       },
       "SitemapLink": {

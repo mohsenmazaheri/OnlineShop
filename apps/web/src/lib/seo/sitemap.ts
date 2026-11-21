@@ -32,7 +32,7 @@ export type SitemapSource = {
 };
 
 /** The sitemap index's parts: home pages, then one sitemap per kind of page. */
-export const sitemapIds = ["pages", "products", "categories", "brands", "landing"] as const;
+export const sitemapIds = ["pages", "products", "categories", "brands", "landing", "posts", "content"] as const;
 export type SitemapId = (typeof sitemapIds)[number];
 
 /** The sitemap index (docs/SEO-MARKETING.md §6): the address of every part. */

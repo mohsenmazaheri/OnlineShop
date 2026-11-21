@@ -697,7 +697,8 @@
       "purchases": "Wareneingänge mit Stückpreisen und Durchschnittspreis",
       "reservations": "Für unbezahlte Bestellungen zurückgehaltene Stücke",
       "reviews": "Kundenbewertungen freigeben oder ablehnen",
-      "landing": "Indexierte Seiten für oft gesuchte Kombinationen aus Kategorie, Marke und Filtern"
+      "landing": "Indexierte Seiten für oft gesuchte Kombinationen aus Kategorie, Marke und Filtern",
+      "content": "Blogbeiträge und Seiten wie „Über uns“ in jeder Sprache"
     },
     "navInventory": "Bestand",
     "navMovements": "Lagerbewegungen",
@@ -947,7 +948,39 @@
     "landingConfirmDelete": "Diese Landingpage löschen? Ihre Adresse funktioniert dann nicht mehr.",
     "landingOpen": "Öffnen",
     "landingEmpty": "Noch keine Landingpages.",
-    "landingDraft": "Nicht veröffentlicht"
+    "landingDraft": "Nicht veröffentlicht",
+    "navContent": "Blog & Seiten",
+    "contentTitle": "Blog & Seiten",
+    "contentIntro": "Beiträge erscheinen im Blog, die neuesten zuerst; Seiten bekommen eine eigene Adresse (/about) und können im Fußbereich verlinkt werden. Texte werden je Sprache von Hand geschrieben; eine leere Sprache zeigt die Hauptsprache und wird nicht indexiert.",
+    "contentNew": "Neuer Beitrag oder neue Seite",
+    "contentEmpty": "Noch keine Beiträge oder Seiten.",
+    "contentKind": "Art",
+    "contentKinds": {
+      "Post": "Blogbeitrag",
+      "Page": "Seite"
+    },
+    "contentSummary": "Zusammenfassung",
+    "contentBody": "Text",
+    "contentBodyHint": "Leerzeile = neuer Absatz · ## Überschrift · - Listenpunkt · **fett** · [Linktext](/de/c/…)",
+    "contentTags": "Schlagwörter (durch Komma getrennt)",
+    "contentAuthor": "Autor",
+    "contentProducts": "Produktnummern in diesem Beitrag",
+    "contentPublishedAt": "Veröffentlicht ab (leer: jetzt)",
+    "contentPublished": "Veröffentlicht",
+    "contentDraft": "Entwurf",
+    "contentInFooter": "Im Fußbereich verlinken",
+    "contentCover": "Titelbild",
+    "contentConfirmDelete": "Diesen Beitrag oder diese Seite löschen? Die Adresse funktioniert dann nicht mehr.",
+    "contentTitleLabel": "Titel",
+    "contentErrors": {
+      "not_found": "Dieser Beitrag oder diese Seite existiert nicht mehr.",
+      "title_required": "Ein Titel in der Hauptsprache des Shops ist nötig.",
+      "body_required": "Der Text ist nötig.",
+      "too_long": "Ein Text ist zu lang.",
+      "locale_invalid": "Ein Text ist in einer Sprache, die der Shop nicht anbietet.",
+      "slug_taken": "Ein anderer Beitrag oder eine andere Seite verwendet diese Adresse bereits.",
+      "slug_reserved": "Diese Adresse gehört dem Shop selbst (etwa account oder blog). Wählen Sie eine andere."
+    }
   },
   "footer": {
     "shopping": "Einkaufen",
@@ -965,7 +998,9 @@
     "installText": "Schneller Zugriff vom Startbildschirm, ohne App-Store.",
     "installButton": "Installieren",
     "installIos": "Tippen Sie in Safari auf „Teilen“ und dann auf „Zum Home-Bildschirm“.",
-    "installDismiss": "Schließen"
+    "installDismiss": "Schließen",
+    "blog": "Blog",
+    "aboutShop": "Über den Shop"
   },
   "search": {
     "title": "Suche",
@@ -1117,5 +1152,16 @@
       "title_too_long": "Der Titel ist zu lang (höchstens 120 Zeichen).",
       "status_invalid": "Geben Sie die Bewertung frei oder lehnen Sie sie ab."
     }
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "Neuigkeiten, Kaufratgeber und Tipps.",
+    "tagTitle": "Beiträge zu „{tag}“",
+    "allPosts": "Alle Beiträge",
+    "empty": "Noch keine Beiträge.",
+    "by": "Von {author}",
+    "related": "Produkte in diesem Beitrag",
+    "tags": "Schlagwörter",
+    "pages": "Blogseiten"
   }
 }

@@ -9,7 +9,7 @@ export type StoreInfo = components["schemas"]["StoreInfoResponse"];
 export type CategorySummary = components["schemas"]["CategorySummary"];
 
 /** Cache tags; the API (or admin panel) revalidates them when the data changes (POST /api/revalidate). */
-export const cacheTags = { store: "store", catalog: "catalog", currencies: "currencies", reviews: "reviews" } as const;
+export const cacheTags = { store: "store", catalog: "catalog", currencies: "currencies", reviews: "reviews", content: "content" } as const;
 
 export async function getStoreInfo(): Promise<StoreInfo> {
   "use cache";
@@ -143,4 +143,39 @@ function cacheForOffers(ends: readonly (string | null | undefined)[], profile: "
   if (life === "hours") cacheLife("hours");
   else if (life === "minutes") cacheLife("minutes");
   else cacheLife(life);
+}
+
+export type PostList = components["schemas"]["PostList"];
+export type ContentArticle = components["schemas"]["ContentArticle"];
+export type FooterPage = components["schemas"]["FooterPage"];
+
+/** A page of published blog posts in a language (newest first), optionally one tag's. */
+export async function getPosts(locale: string, page: number, tag: string | null): Promise<PostList> {
+  "use cache";
+  cacheTag(cacheTags.content);
+  cacheLife("minutes");
+  const query = new URLSearchParams({ locale, page: String(page) });
+  if (tag) query.set("tag", tag);
+  return apiGet<PostList>(`/api/v1/content/posts?${query}`);
+}
+
+/** A published post or page by its slug (any language), in the given language; null when there is none. */
+export async function getContent(kind: "Post" | "Page", slug: string, locale: string): Promise<ContentArticle | null> {
+  "use cache";
+  cacheTag(cacheTags.content);
+  cacheLife("minutes");
+  try {
+    return await apiGet<ContentArticle>(`/api/v1/content/${kind}/${encodeURIComponent(slug)}?locale=${encodeURIComponent(locale)}`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  }
+}
+
+/** The pages listed in the footer, in a language. */
+export async function getFooterPages(locale: string): Promise<FooterPage[]> {
+  "use cache";
+  cacheTag(cacheTags.content);
+  cacheLife("hours");
+  return apiGet<FooterPage[]>(`/api/v1/content/footer?locale=${encodeURIComponent(locale)}`);
 }

@@ -78,7 +78,7 @@ public sealed class SitemapServiceTests : DemoCatalogTestBase
     {
         await SeedDemoAsync();
         await using var db = Database.CreateContext();
-        var sitemap = new SitemapService(db, Options.Create(Store));
+        var sitemap = new SitemapService(db, Options.Create(Store), Database.Clock);
 
         var products = await sitemap.ListAsync(SitemapKind.Products);
         Assert.Equal(await db.Products.CountAsync(p => p.IsPublished), products.Count);
