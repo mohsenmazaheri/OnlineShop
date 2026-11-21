@@ -63,8 +63,14 @@ async function Categories({ locale, dict }: { locale: Locale; dict: Dictionary }
 /** A product rail from the API (only real products from the database); nothing when the API is down or the list is empty. */
 async function Products({ list, locale, dict, variant }: { list: ProductListName; locale: Locale; dict: Dictionary; variant: "deals" | "grid" }) {
   const store = await loadStore();
-  const [products, { money }] = await Promise.all([getProducts(list, locale, 12).catch(() => []), loadDisplayCurrency(locale, store.currency)]);
-  const heading = list === "Discounted" ? dict.home.deals : dict.home.newest;
+  const [listed, offers, { money }] = await Promise.all([
+    getProducts(list, locale, 12).catch(() => []),
+    // The deals band shows running special offers (with their countdown) when there are any.
+    list === "Discounted" ? getProducts("SpecialOffers", locale, 12).catch(() => []) : Promise.resolve([]),
+    loadDisplayCurrency(locale, store.currency),
+  ]);
+  const products = offers.length > 0 ? offers : listed;
+  const heading = offers.length > 0 ? dict.home.specialOffers : list === "Discounted" ? dict.home.deals : dict.home.newest;
   return (
     <ProductRail
       id={list.toLowerCase()}
@@ -80,8 +86,8 @@ async function Products({ list, locale, dict, variant }: { list: ProductListName
 
 /**
  * Home page laid out after the "home page design" canvas (Digikala-style structure, our own palette and texts):
- * banner, shortcuts, special offers, categories, new arrivals, benefits. Best sellers wait for real orders (phase 7);
- * a deals countdown waits for offer end dates. The order of the sections follows the layout template chosen in the
+ * banner, shortcuts, special offers (with their countdown), categories, new arrivals, benefits. Best sellers wait for
+ * real orders (phase 7). The order of the sections follows the layout template chosen in the
  * admin panel (Classic, Catalog, Showcase), read per request.
  */
 async function HomeSections({ locale, dict }: { locale: Locale; dict: Dictionary }) {

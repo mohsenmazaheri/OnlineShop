@@ -29,6 +29,7 @@ describe("locale redirects", () => {
     "/sw.js",
     "/robots.txt",
     "/sitemap.xml",
+    "/sitemaps/sitemap/products.xml",
     "/manifest.webmanifest",
     "/icon/192",
     "/logo.png",

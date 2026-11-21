@@ -7,9 +7,10 @@ import { imageVariant } from "@/lib/media/image";
 import type { DisplayCurrency } from "@/lib/currency/display";
 import { Stars } from "@/components/ui/Stars";
 import { formatNumber } from "@/lib/i18n/format-money";
+import { Countdown, type CountdownTexts } from "./Countdown";
 import { Price, type PriceTexts } from "./Price";
 
-export type ProductCardTexts = PriceTexts & CompareButtonTexts & { outOfStock: string; ratingLabel: string };
+export type ProductCardTexts = PriceTexts & CompareButtonTexts & CountdownTexts & { outOfStock: string; ratingLabel: string };
 
 type Props = {
   product: ProductCardData;
@@ -49,7 +50,8 @@ export function ProductCard({ product, locale, money, texts, priority = false }:
         </span>
         <span className="line-clamp-2 min-h-[2.8em] text-sm leading-snug">{product.name}</span>
         {product.ratingCount > 0 && <RatingLine average={product.ratingAverage} count={product.ratingCount} locale={locale} label={texts.ratingLabel} />}
-        <span className="mt-auto">
+        <span className="mt-auto flex flex-col gap-1">
+          {product.saleEndsUtc && <Countdown endsUtc={product.saleEndsUtc} locale={locale} texts={texts} className="text-danger" />}
           <Price price={product.price} compareAtPrice={product.compareAtPrice} money={money} locale={locale} texts={texts} />
         </span>
       </Link>

@@ -119,6 +119,7 @@ app.MapStoreEndpoints();
 app.MapProductEndpoints();
 app.MapCompareEndpoints();
 app.MapReviewEndpoints();
+app.MapStorefrontSeoEndpoints();
 app.MapCurrencyEndpoints();
 app.MapBrandingEndpoints();
 app.MapCatalogAdminEndpoints();

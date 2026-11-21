@@ -24,7 +24,8 @@
     "benefitDeliveryTitle": "التوصيل إلى عنوانك",
     "benefitDeliveryText": "احفظ عناوينك مرة واحدة",
     "deals": "عروض خاصة",
-    "newest": "وصل حديثًا"
+    "newest": "وصل حديثًا",
+    "specialOffers": "عروض خاصة"
   },
   "offline": {
     "title": "أنت غير متصل بالإنترنت",
@@ -468,7 +469,11 @@
       "gtin_invalid": "الباركود غير صالح (8 أو 12 أو 13 أو 14 رقمًا برقم تحقق صحيح).",
       "weight_invalid": "يجب أن يكون الوزن بين 0 و1,000,000 غرام.",
       "too_many_videos": "للمنتج 3 مقاطع كحد أقصى.",
-      "videos_mismatch": "تغيّرت قائمة المقاطع؛ أعد تحميل الصفحة."
+      "videos_mismatch": "تغيّرت قائمة المقاطع؛ أعد تحميل الصفحة.",
+      "sale_needs_old_price": "يحتاج موعد انتهاء العرض إلى سعر سابق (يعود السعر إليه).",
+      "landing_query_invalid": "الصق عنوان فئة أو علامة تجارية أو بحث من هذا المتجر.",
+      "landing_slug_taken": "صفحة هبوط أخرى تستخدم هذا العنوان.",
+      "landing_not_found": "صفحة الهبوط هذه لم تعد موجودة."
     },
     "imagesTitle": "الصور",
     "imageUpload": "إضافة صور",
@@ -691,7 +696,8 @@
       "suppliers": "الموردون وبيانات الاتصال",
       "purchases": "إيصالات الشراء بتكلفة الوحدة ومتوسط التكلفة",
       "reservations": "وحدات محجوزة لعمليات دفع غير مكتملة",
-      "reviews": "الموافقة على تقييمات العملاء أو رفضها"
+      "reviews": "الموافقة على تقييمات العملاء أو رفضها",
+      "landing": "صفحات مفهرسة لتركيبات كثيرة البحث من الفئة والعلامة والمرشحات"
     },
     "navInventory": "المخزون",
     "navMovements": "حركات المخزون",
@@ -924,7 +930,24 @@
     "reviewReject": "رفض",
     "reviewVerified": "مشترٍ موثّق",
     "reviewAnonymous": "أحد العملاء",
-    "reviewOn": "عن {product}"
+    "reviewOn": "عن {product}",
+    "productSaleEnds": "ينتهي العرض",
+    "productSaleEndsHint": "مع سعر سابق: في هذا الوقت يعود السعر السابق سعرًا للمنتج.",
+    "navLanding": "صفحات الهبوط",
+    "landingTitle": "صفحات الهبوط",
+    "landingIntro": "تعرض صفحة الهبوط منتجات قائمة مصفّاة بعنوان ونص خاصين بها، وتفهرسها محركات البحث (القوائم المصفّاة لا تُفهرس). استخدمها لتركيبات يبحث عنها الناس، مثل علامة تجارية ضمن فئة.",
+    "landingNew": "صفحة هبوط جديدة",
+    "landingQuery": "المنتجات",
+    "landingQueryHint": "افتح فئة أو علامة تجارية أو بحثًا، واختر المرشحات، والصق العنوان هنا. الأسعار بالعملة الأساسية.",
+    "landingPublished": "منشورة",
+    "landingMetaTitle": "عنوان البحث",
+    "landingMetaDescription": "وصف البحث",
+    "landingSave": "حفظ",
+    "landingDelete": "حذف",
+    "landingConfirmDelete": "حذف صفحة الهبوط هذه؟ سيتوقف عنوانها عن العمل.",
+    "landingOpen": "فتح",
+    "landingEmpty": "لا توجد صفحات هبوط بعد.",
+    "landingDraft": "غير منشورة"
   },
   "footer": {
     "shopping": "التسوق",
@@ -981,7 +1004,10 @@
     "compareAdded": "في قائمة المقارنة",
     "wishlistAdd": "أضف إلى المفضلة",
     "wishlistAdded": "في المفضلة",
-    "ratingLabel": "{average} من 5 ({count} تقييم)"
+    "ratingLabel": "{average} من 5 ({count} تقييم)",
+    "offerEndsIn": "ينتهي العرض خلال",
+    "offerEnded": "انتهى هذا العرض",
+    "offerDays": "{n} يوم"
   },
   "listing": {
     "home": "الرئيسية",

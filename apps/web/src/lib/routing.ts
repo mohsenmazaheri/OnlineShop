@@ -2,7 +2,7 @@ import { isLocale } from "@/lib/i18n/config";
 import type { StoreSettings } from "@/lib/store/settings";
 
 /** Paths served without a locale prefix (assets, metadata routes, API proxy). */
-const unlocalizedPrefixes = ["/api/", "/_next/", "/sw.js", "/manifest.webmanifest", "/robots.txt", "/sitemap.xml", "/icon", "/apple-icon"];
+const unlocalizedPrefixes = ["/api/", "/_next/", "/sw.js", "/manifest.webmanifest", "/robots.txt", "/sitemap.xml", "/sitemaps/", "/icon", "/apple-icon"];
 
 /**
  * Where to redirect a request whose path has no locale, or a locale this store does not offer; null to leave it.

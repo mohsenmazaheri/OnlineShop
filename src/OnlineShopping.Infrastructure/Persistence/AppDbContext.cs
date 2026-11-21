@@ -54,6 +54,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<CompareItem> CompareItems => Set<CompareItem>();
     public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
     public DbSet<ProductReview> ProductReviews => Set<ProductReview>();
+    public DbSet<LandingPage> LandingPages => Set<LandingPage>();
     public DbSet<StaffInvitation> StaffInvitations => Set<StaffInvitation>();
     public DbSet<StaffAuditEntry> StaffAuditEntries => Set<StaffAuditEntry>();
     public DbSet<Currency> Currencies => Set<Currency>();
@@ -190,6 +191,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.Property(x => x.SKU).HasMaxLength(64);
             e.HasIndex(x => x.SKU).IsUnique().HasFilter(NotDeletedFilter);
             e.HasIndex(x => x.Name);
+            // Special offers: the ones still running, and the expiry job.
+            e.HasIndex(x => x.SaleEndsUtc);
             e.HasOne(p => p.ProductGroup)
                 .WithMany(pg => pg.Products)
                 .HasForeignKey(p => p.ProductGroupId)
@@ -220,6 +223,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.OwnsMany(x => x.Translations, t => ConfigureTranslation(t, "category_translations", "CategoryId"));
         });
         b.Entity<SubCategory>().OwnsMany(x => x.Translations, t => ConfigureTranslation(t, "sub_category_translations", "SubCategoryId"));
+
+        b.Entity<LandingPage>(e =>
+        {
+            e.ToTable("landing_pages");
+            e.Property(x => x.Title).HasMaxLength(300);
+            e.Property(x => x.Slug).HasMaxLength(200);
+            e.Property(x => x.Intro).HasMaxLength(10_000);
+            e.Property(x => x.MetaTitle).HasMaxLength(MetaTitleLength);
+            e.Property(x => x.MetaDescription).HasMaxLength(MetaDescriptionLength);
+            e.Property(x => x.Query).HasMaxLength(2000);
+            e.HasIndex(x => x.Slug).IsUnique().HasFilter(NotDeletedFilter);
+            e.OwnsMany(x => x.Translations, t => ConfigureTranslation(t, "landing_page_translations", "LandingPageId"));
+        });
         b.Entity<ProductGroup>().OwnsMany(x => x.Translations, t => ConfigureTranslation(t, "product_group_translations", "ProductGroupId"));
         b.Entity<Brand>(e =>
         {

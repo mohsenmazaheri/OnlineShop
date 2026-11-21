@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CompareButton } from "@/components/compare/CompareButton";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { productPath } from "@/lib/catalog/product-path";
+import { Countdown } from "./Countdown";
 import { RatingLine } from "./ProductCard";
 import { Button } from "@/components/ui/Button";
 import type { ProductDetail } from "@/lib/api/storefront";
@@ -101,6 +102,7 @@ export function ProductView({ product, locale, money, baseName, texts }: Props) 
               </p>
             </>
           )}
+          {product.saleEndsUtc && <Countdown endsUtc={product.saleEndsUtc} locale={locale} texts={texts} className="text-danger" />}
           {!money.isBase && <p className="text-xs text-muted">{texts.approximate.replace("{base}", baseName)}</p>}
           {/* Checkout arrives in phase 7: the button is shown, honestly disabled. */}
           <Button size="lg" disabled aria-describedby="cart-soon">

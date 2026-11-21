@@ -72,6 +72,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/catalog/sitemap/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The pages of one sitemap (Products, Categories, Brands, Landing) with their address in every translated language. */
+        get: operations["GetSitemapEntries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/catalog/landing/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A published landing page by its slug (any language), in the requested language, with its fixed browse query. */
+        get: operations["GetLandingPage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/currencies": {
         parameters: {
             query?: never;
@@ -326,6 +360,42 @@ export interface paths {
         post?: never;
         /** Take a product off the wishlist. */
         delete: operations["RemoveFromWishlist"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/landing-pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every landing page with its texts in each shop language. */
+        get: operations["ListLandingPages"];
+        put?: never;
+        /** Create a landing page (the query may be a listing's address). */
+        post: operations["CreateLandingPage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/landing-pages/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change a landing page. */
+        put: operations["UpdateLandingPage"];
+        post?: never;
+        /** Delete a landing page (its address then answers 404; add a redirect if it was popular). */
+        delete: operations["DeleteLandingPage"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2597,6 +2667,34 @@ export interface components {
             /** Format: double */
             averageCost: null | number;
         };
+        LandingAlternate: {
+            locale: string;
+            slug: string;
+        };
+        LandingPageContent: {
+            title: string;
+            slug: string;
+            intro: null | string;
+            metaTitle: null | string;
+            metaDescription: null | string;
+            query: string;
+            alternates: components["schemas"]["LandingAlternate"][];
+            /** Format: date-time */
+            modifiedUtc: string;
+        };
+        LandingPageList: {
+            defaultLocale: string;
+            locales: string[];
+            pages: components["schemas"]["LandingPageView"][];
+        };
+        LandingPageView: {
+            /** Format: uuid */
+            id: string;
+            texts: components["schemas"]["LocalizedText"][];
+            seo: components["schemas"]["SeoText"][];
+            query: string;
+            isPublished: boolean;
+        };
         LocaleCurrencyView: {
             locale: string;
             currencyCode: string;
@@ -2773,6 +2871,8 @@ export interface components {
             ratingAverage: number;
             /** Format: int32 */
             ratingCount: number;
+            /** Format: date-time */
+            saleEndsUtc: null | string;
         };
         ProductComparison: {
             products: components["schemas"]["CompareProduct"][];
@@ -2812,6 +2912,8 @@ export interface components {
             ratingAverage: number;
             /** Format: int32 */
             ratingCount: number;
+            /** Format: date-time */
+            saleEndsUtc: null | string;
         };
         ProductEditView: {
             /** Format: int64 */
@@ -2838,6 +2940,8 @@ export interface components {
             weightGrams: null | number;
             seo: components["schemas"]["SeoText"][];
             videos: components["schemas"]["ProductVideoView"][];
+            /** Format: date-time */
+            saleEndsUtc?: null | string;
         };
         ProductImageInfo: {
             url: string;
@@ -2859,7 +2963,7 @@ export interface components {
             alts: components["schemas"]["ImageAltText"][];
         };
         /** @enum {unknown} */
-        ProductList: "Discounted" | "Newest";
+        ProductList: "Discounted" | "Newest" | "SpecialOffers";
         ProductListItem: {
             /** Format: int64 */
             number: number;
@@ -3176,6 +3280,12 @@ export interface components {
             /** Format: double */
             averageCost: null | number;
         };
+        SaveLandingPageRequest: {
+            texts: components["schemas"]["LocalizedText"][];
+            seo: null | components["schemas"]["SeoText"][];
+            query: string;
+            isPublished: boolean;
+        };
         SaveProductImagesRequest: {
             images: components["schemas"]["ProductImageInput"][];
         };
@@ -3199,6 +3309,8 @@ export interface components {
             /** Format: int32 */
             weightGrams?: null | number;
             seo?: null | components["schemas"]["SeoText"][];
+            /** Format: date-time */
+            saleEndsUtc?: null | string;
         };
         SaveProductVideosRequest: {
             videos: components["schemas"]["ProductVideoInput"][];
@@ -3306,6 +3418,27 @@ export interface components {
         SignUpMethods: {
             email: boolean;
             phone: boolean;
+        };
+        SitemapEntry: {
+            links: components["schemas"]["SitemapLink"][];
+            /** Format: date-time */
+            modifiedUtc: string;
+            images: string[];
+            videos: components["schemas"]["SitemapVideo"][];
+        };
+        /** @enum {unknown} */
+        SitemapKind: "Products" | "Categories" | "Brands" | "Landing";
+        SitemapLink: {
+            locale: string;
+            path: string;
+        };
+        SitemapVideo: {
+            url: string;
+            posterUrl: null | string;
+            title: string;
+            description: null | string;
+            /** Format: double */
+            durationSeconds: null | number;
         };
         /** @enum {unknown} */
         SpecBetter: "None" | "Higher" | "Lower";
@@ -3811,6 +3944,61 @@ export interface operations {
             };
         };
     };
+    GetSitemapEntries: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: components["schemas"]["SitemapKind"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SitemapEntry"][];
+                };
+            };
+        };
+    };
+    GetLandingPage: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LandingPageContent"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     GetCurrencies: {
         parameters: {
             query?: never;
@@ -4293,6 +4481,114 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["WishlistIds"];
                 };
+            };
+        };
+    };
+    ListLandingPages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LandingPageList"];
+                };
+            };
+        };
+    };
+    CreateLandingPage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveLandingPageRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LandingPageView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    UpdateLandingPage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveLandingPageRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LandingPageView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    DeleteLandingPage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

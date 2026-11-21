@@ -211,6 +211,7 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
         product.SKU = sku;
         product.Price = request.Price;
         product.CompareAtPrice = request.CompareAtPrice;
+        product.SaleEndsUtc = request.CompareAtPrice is null ? null : request.SaleEndsUtc?.ToUniversalTime();
         product.BrandId = request.BrandId;
         product.IsPublished = request.IsPublished;
         product.ProductGroupId = request.ProductGroupId;
@@ -333,7 +334,8 @@ public sealed class ProductAdminService(IApplicationDbContext db, IOptions<Store
         p.Mpn,
         p.WeightGrams,
         ReadSeo(p),
-        p.Videos.Where(v => !v.IsDeleted).OrderBy(v => v.SortOrder).Select(v => CatalogVideoService.ToView(v, Store)).ToList());
+        p.Videos.Where(v => !v.IsDeleted).OrderBy(v => v.SortOrder).Select(v => CatalogVideoService.ToView(v, Store)).ToList(),
+        p.SaleEndsUtc);
 
     private static AppError NotFound() => AppError.NotFound(CatalogErrors.NotFound, "No such product.");
 }

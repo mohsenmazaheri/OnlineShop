@@ -36,6 +36,7 @@ const product: ProductDetail = {
   videos: [],
   ratingAverage: 0,
   ratingCount: 0,
+  saleEndsUtc: null,
 };
 
 const offers = (data: ReturnType<typeof productJsonLd>) => ("offers" in data ? data.offers : undefined);
@@ -149,6 +150,12 @@ describe("productJsonLd", () => {
     const plain = productJsonLd(product, "u", "EUR", site);
     expect("aggregateRating" in plain).toBe(false);
     expect("review" in plain).toBe(false);
+  });
+
+  it("gives a special offer's price a validity date", () => {
+    const offer = productJsonLd({ ...product, saleEndsUtc: "2026-11-30T18:00:00Z" }, "u", "EUR", site) as { offers: { priceValidUntil?: string } };
+    expect(offer.offers.priceValidUntil).toBe("2026-11-30");
+    expect((productJsonLd(product, "u", "EUR", site) as { offers: object }).offers).not.toHaveProperty("priceValidUntil");
   });
 
   it("is safe to embed in a script tag", () => {

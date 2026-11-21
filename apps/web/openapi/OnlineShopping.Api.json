@@ -169,6 +169,88 @@
         }
       }
     },
+    "/api/v1/catalog/sitemap/{kind}": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "The pages of one sitemap (Products, Categories, Brands, Landing) with their address in every translated language.",
+        "operationId": "GetSitemapEntries",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/SitemapKind"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SitemapEntry"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/landing/{slug}": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "A published landing page by its slug (any language), in the requested language, with its fixed browse query.",
+        "operationId": "GetLandingPage",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LandingPageContent"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/currencies": {
       "get": {
         "tags": [
@@ -834,6 +916,141 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/landing-pages": {
+      "get": {
+        "tags": [
+          "Admin: content"
+        ],
+        "summary": "Every landing page with its texts in each shop language.",
+        "operationId": "ListLandingPages",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LandingPageList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin: content"
+        ],
+        "summary": "Create a landing page (the query may be a listing's address).",
+        "operationId": "CreateLandingPage",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveLandingPageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LandingPageView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/landing-pages/{id}": {
+      "put": {
+        "tags": [
+          "Admin: content"
+        ],
+        "summary": "Change a landing page.",
+        "operationId": "UpdateLandingPage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveLandingPageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LandingPageView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin: content"
+        ],
+        "summary": "Delete a landing page (its address then answers 404; add a redirect if it was popular).",
+        "operationId": "DeleteLandingPage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -7483,6 +7700,132 @@
           }
         }
       },
+      "LandingAlternate": {
+        "required": [
+          "locale",
+          "slug"
+        ],
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          }
+        }
+      },
+      "LandingPageContent": {
+        "required": [
+          "title",
+          "slug",
+          "intro",
+          "metaTitle",
+          "metaDescription",
+          "query",
+          "alternates",
+          "modifiedUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "intro": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "metaTitle": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "metaDescription": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "query": {
+            "type": "string"
+          },
+          "alternates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LandingAlternate"
+            }
+          },
+          "modifiedUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "LandingPageList": {
+        "required": [
+          "defaultLocale",
+          "locales",
+          "pages"
+        ],
+        "type": "object",
+        "properties": {
+          "defaultLocale": {
+            "type": "string"
+          },
+          "locales": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LandingPageView"
+            }
+          }
+        }
+      },
+      "LandingPageView": {
+        "required": [
+          "id",
+          "texts",
+          "seo",
+          "query",
+          "isPublished"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "texts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LocalizedText"
+            }
+          },
+          "seo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeoText"
+            }
+          },
+          "query": {
+            "type": "string"
+          },
+          "isPublished": {
+            "type": "boolean"
+          }
+        }
+      },
       "LocaleCurrencyView": {
         "required": [
           "locale",
@@ -8101,7 +8444,8 @@
           "inStock",
           "categorySlug",
           "ratingAverage",
-          "ratingCount"
+          "ratingCount",
+          "saleEndsUtc"
         ],
         "type": "object",
         "properties": {
@@ -8145,6 +8489,13 @@
           "ratingCount": {
             "type": "integer",
             "format": "int32"
+          },
+          "saleEndsUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           }
         }
       },
@@ -8199,7 +8550,8 @@
           "metaDescription",
           "videos",
           "ratingAverage",
-          "ratingCount"
+          "ratingCount",
+          "saleEndsUtc"
         ],
         "type": "object",
         "properties": {
@@ -8330,6 +8682,13 @@
           "ratingCount": {
             "type": "integer",
             "format": "int32"
+          },
+          "saleEndsUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           }
         }
       },
@@ -8442,6 +8801,13 @@
             "items": {
               "$ref": "#/components/schemas/ProductVideoView"
             }
+          },
+          "saleEndsUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           }
         }
       },
@@ -8524,7 +8890,8 @@
       "ProductList": {
         "enum": [
           "Discounted",
-          "Newest"
+          "Newest",
+          "SpecialOffers"
         ]
       },
       "ProductListItem": {
@@ -9707,6 +10074,38 @@
           }
         }
       },
+      "SaveLandingPageRequest": {
+        "required": [
+          "texts",
+          "seo",
+          "query",
+          "isPublished"
+        ],
+        "type": "object",
+        "properties": {
+          "texts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LocalizedText"
+            }
+          },
+          "seo": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/SeoText"
+            }
+          },
+          "query": {
+            "type": "string"
+          },
+          "isPublished": {
+            "type": "boolean"
+          }
+        }
+      },
       "SaveProductImagesRequest": {
         "required": [
           "images"
@@ -9805,6 +10204,13 @@
             "items": {
               "$ref": "#/components/schemas/SeoText"
             }
+          },
+          "saleEndsUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           }
         }
       },
@@ -10283,6 +10689,99 @@
           }
         },
         "description": "Sign-up methods currently available (phone needs a configured SMS provider)."
+      },
+      "SitemapEntry": {
+        "required": [
+          "links",
+          "modifiedUtc",
+          "images",
+          "videos"
+        ],
+        "type": "object",
+        "properties": {
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SitemapLink"
+            }
+          },
+          "modifiedUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "videos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SitemapVideo"
+            }
+          }
+        }
+      },
+      "SitemapKind": {
+        "enum": [
+          "Products",
+          "Categories",
+          "Brands",
+          "Landing"
+        ]
+      },
+      "SitemapLink": {
+        "required": [
+          "locale",
+          "path"
+        ],
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        }
+      },
+      "SitemapVideo": {
+        "required": [
+          "url",
+          "posterUrl",
+          "title",
+          "description",
+          "durationSeconds"
+        ],
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "posterUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "durationSeconds": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          }
+        }
       },
       "SpecBetter": {
         "enum": [
@@ -11817,6 +12316,9 @@
     },
     {
       "name": "Admin: reviews"
+    },
+    {
+      "name": "Admin: content"
     },
     {
       "name": "Admin: currencies"

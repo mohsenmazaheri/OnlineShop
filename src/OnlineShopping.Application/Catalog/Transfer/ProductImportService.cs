@@ -448,6 +448,7 @@ public sealed class ProductImportService(
         public string Sku { get; set; } = "";
         public decimal Price { get; set; }
         public decimal? CompareAtPrice { get; set; }
+        public DateTime? SaleEndsUtc { get; set; }
         public int Stock { get; set; }
         public bool IsPublished { get; set; }
         public Guid GroupId { get; set; }
@@ -479,6 +480,7 @@ public sealed class ProductImportService(
                 Texts = [.. view.Texts],
                 Seo = [.. view.Seo],
                 Specs = [.. view.Specs],
+                SaleEndsUtc = view.SaleEndsUtc,
             };
 
         /// <summary>Changes the texts of one language from the columns the row has (<paramref name="cell"/> is null for the others).</summary>
@@ -506,6 +508,6 @@ public sealed class ProductImportService(
         }
 
         public SaveProductRequest ToRequest() =>
-            new(Sku, Price, CompareAtPrice, Stock, IsPublished, GroupId, Texts, Specs, BrandId, Gtin, Mpn, WeightGrams, Seo);
+            new(Sku, Price, CompareAtPrice, Stock, IsPublished, GroupId, Texts, Specs, BrandId, Gtin, Mpn, WeightGrams, Seo, SaleEndsUtc);
     }
 }

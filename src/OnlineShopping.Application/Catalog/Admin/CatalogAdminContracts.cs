@@ -18,6 +18,10 @@ public static class CatalogErrors
     public const string SkuTaken = "catalog.sku_taken";
     public const string PriceInvalid = "catalog.price_invalid";
     public const string CompareAtInvalid = "catalog.compare_at_invalid";
+    public const string SaleNeedsOldPrice = "catalog.sale_needs_old_price";
+    public const string LandingQueryInvalid = "catalog.landing_query_invalid";
+    public const string LandingSlugTaken = "catalog.landing_slug_taken";
+    public const string LandingNotFound = "catalog.landing_not_found";
     public const string StockInvalid = "catalog.stock_invalid";
     public const string GroupRequired = "catalog.group_required";
     public const string SpecNotFound = "catalog.spec_not_found";
@@ -85,7 +89,8 @@ public sealed record SaveProductRequest(
     string? Gtin = null,
     string? Mpn = null,
     int? WeightGrams = null,
-    IReadOnlyList<SeoText>? Seo = null);
+    IReadOnlyList<SeoText>? Seo = null,
+    DateTime? SaleEndsUtc = null);
 
 /// <summary>A product row of the admin list. <see cref="MissingLocales"/>: shop languages without a translation.</summary>
 public sealed record ProductListItem(
@@ -118,7 +123,8 @@ public sealed record ProductEditView(
     string? Mpn,
     int? WeightGrams,
     IReadOnlyList<SeoText> Seo,
-    IReadOnlyList<ProductVideoView> Videos);
+    IReadOnlyList<ProductVideoView> Videos,
+    DateTime? SaleEndsUtc = null);
 
 /// <summary>An image's alternative text in one language (empty: not translated).</summary>
 public sealed record ImageAltText(string Locale, string Alt);
@@ -160,6 +166,8 @@ public sealed class SaveProductRequestValidator : AbstractValidator<SaveProductR
         // An "old price" only makes sense above the price (it shows a discount).
         RuleFor(r => r.CompareAtPrice).Must((r, compareAt) => compareAt is null || compareAt > r.Price)
             .WithErrorCode(CatalogErrors.CompareAtInvalid);
+        // A special offer ends by going back to the old price, so it needs one.
+        RuleFor(r => r.SaleEndsUtc).Must((r, end) => end is null || r.CompareAtPrice is not null).WithErrorCode(CatalogErrors.SaleNeedsOldPrice);
         RuleFor(r => r.Stock).InclusiveBetween(0, 1_000_000_000).WithErrorCode(CatalogErrors.StockInvalid);
         RuleFor(r => r.ProductGroupId).NotEmpty().WithErrorCode(CatalogErrors.GroupRequired);
         RuleFor(r => r.Texts).NotEmpty().WithErrorCode(CatalogErrors.DefaultTextRequired);

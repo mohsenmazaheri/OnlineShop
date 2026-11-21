@@ -24,7 +24,8 @@
     "benefitDeliveryTitle": "Delivered to you",
     "benefitDeliveryText": "Save your addresses once",
     "deals": "Special offers",
-    "newest": "New arrivals"
+    "newest": "New arrivals",
+    "specialOffers": "Special offers"
   },
   "offline": {
     "title": "You are offline",
@@ -468,7 +469,11 @@
       "gtin_invalid": "The barcode is not valid (8, 12, 13 or 14 digits with a correct check digit).",
       "weight_invalid": "The weight must be between 0 and 1,000,000 grams.",
       "too_many_videos": "A product has at most 3 videos.",
-      "videos_mismatch": "The list of videos has changed; reload the page."
+      "videos_mismatch": "The list of videos has changed; reload the page.",
+      "sale_needs_old_price": "An offer end time needs an old price (the price goes back to it).",
+      "landing_query_invalid": "Paste the address of a category, brand or search of this shop.",
+      "landing_slug_taken": "Another landing page already uses this address.",
+      "landing_not_found": "This landing page no longer exists."
     },
     "imagesTitle": "Images",
     "imageUpload": "Add images",
@@ -691,7 +696,8 @@
       "suppliers": "Suppliers and their contact details",
       "purchases": "Purchase receipts with unit costs and average cost",
       "reservations": "Units held for unpaid checkouts",
-      "reviews": "Approve or reject customer reviews"
+      "reviews": "Approve or reject customer reviews",
+      "landing": "Indexed pages for much-searched combinations of category, brand and filters"
     },
     "navInventory": "Stock",
     "navMovements": "Stock movements",
@@ -924,7 +930,24 @@
     "reviewReject": "Reject",
     "reviewVerified": "Verified buyer",
     "reviewAnonymous": "A customer",
-    "reviewOn": "On {product}"
+    "reviewOn": "On {product}",
+    "productSaleEnds": "Offer ends",
+    "productSaleEndsHint": "With an old price: at this time the old price becomes the price again.",
+    "navLanding": "Landing pages",
+    "landingTitle": "Landing pages",
+    "landingIntro": "A landing page lists the products of a filtered listing under its own address, title and text, and is indexed by search engines (filtered listings are not). Use it for combinations people search for, such as a brand within a category.",
+    "landingNew": "New landing page",
+    "landingQuery": "Products",
+    "landingQueryHint": "Open a category, brand or search, choose the filters, and paste the address here. Prices are in the base currency.",
+    "landingPublished": "Published",
+    "landingMetaTitle": "Search title",
+    "landingMetaDescription": "Search description",
+    "landingSave": "Save",
+    "landingDelete": "Delete",
+    "landingConfirmDelete": "Delete this landing page? Its address will stop working.",
+    "landingOpen": "Open",
+    "landingEmpty": "No landing pages yet.",
+    "landingDraft": "Not published"
   },
   "footer": {
     "shopping": "Shopping",
@@ -981,7 +1004,10 @@
     "compareAdded": "In comparison",
     "wishlistAdd": "Add to wishlist",
     "wishlistAdded": "In your wishlist",
-    "ratingLabel": "{average} out of 5 ({count} reviews)"
+    "ratingLabel": "{average} out of 5 ({count} reviews)",
+    "offerEndsIn": "Offer ends in",
+    "offerEnded": "This offer has ended",
+    "offerDays": "{n} d"
   },
   "listing": {
     "home": "Home",

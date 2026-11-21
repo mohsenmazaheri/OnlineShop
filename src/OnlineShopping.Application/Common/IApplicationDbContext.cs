@@ -42,6 +42,7 @@ public interface IApplicationDbContext
     DbSet<CompareItem> CompareItems { get; }
     DbSet<WishlistItem> WishlistItems { get; }
     DbSet<ProductReview> ProductReviews { get; }
+    DbSet<LandingPage> LandingPages { get; }
     DbSet<StaffInvitation> StaffInvitations { get; }
     DbSet<StaffAuditEntry> StaffAuditEntries { get; }
     DbSet<Currency> Currencies { get; }
