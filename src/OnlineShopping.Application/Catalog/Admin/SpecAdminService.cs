@@ -111,6 +111,8 @@ public sealed partial class SpecAdminService(IApplicationDbContext db, IOptions<
         spec.Unit = Clean(main.Unit);
         spec.IsFilterable = request.IsFilterable;
         spec.IsComparable = request.IsComparable;
+        // Only numbers have a better direction.
+        spec.Better = kind == SpecKind.Number ? request.Better : SpecBetter.None;
         spec.ShowInSummary = request.ShowInSummary;
         foreach (var text in request.Texts.Where(t => t.Locale != Store.DefaultLocale))
         {
@@ -277,7 +279,8 @@ public sealed partial class SpecAdminService(IApplicationDbContext db, IOptions<
                     .ToList(),
                 usage.OfOption(o.Id)))
             .ToList(),
-        usage.Of(s));
+        usage.Of(s),
+        s.Better);
 
     private static AppError NotFound() => AppError.NotFound(CatalogErrors.SpecNotFound, "No such spec.");
 }

@@ -152,7 +152,8 @@
       "address_line1_required": "Enter the street address.",
       "address_too_long": "This text is too long.",
       "address_country_not_supported": "The shop does not ship to this country.",
-      "address_postal_code_invalid": "This postal code is not valid for the country."
+      "address_postal_code_invalid": "This postal code is not valid for the country.",
+      "compare_too_many": "You can compare up to 4 products."
     },
     "withCode": "With an SMS code",
     "withPassword": "With a password",
@@ -515,6 +516,12 @@
       "isFilterable": "Filterable",
       "isComparable": "In comparisons",
       "showInSummary": "In the key features"
+    },
+    "specBetter": "Better value in comparisons",
+    "specBetters": {
+      "None": "Neither (nothing marked)",
+      "Higher": "Higher is better",
+      "Lower": "Lower is better"
     },
     "specGroup": "Group (heading)",
     "specUnit": "Unit",
@@ -947,7 +954,9 @@
     "images": "Product images",
     "brand": "Brand",
     "soldOutOption": "This combination is sold out",
-    "video": "Video"
+    "video": "Video",
+    "compare": "Compare",
+    "compareAdded": "In comparison"
   },
   "listing": {
     "home": "Home",
@@ -989,5 +998,30 @@
     "relaxTitle": "Removing one filter finds products:",
     "relaxFilter": "Without “{filter}” ({count} products)",
     "newestTitle": "You might like these"
+  },
+  "compare": {
+    "title": "Compare products",
+    "metaDescription": "Compare products side by side: prices, stock and specifications.",
+    "bar": "Compare ({count})",
+    "barLabel": "Products to compare",
+    "clear": "Clear the list",
+    "remove": "Remove {name}",
+    "full": "You can compare up to 4 products. Remove one first.",
+    "otherCategory": "This product is from another category. Start a new comparison with it?",
+    "startNew": "Start a new comparison",
+    "cancel": "Cancel",
+    "empty": "Nothing to compare yet. Use the Compare button on products to add them here.",
+    "onlyDifferences": "Only differences",
+    "showAll": "All specifications",
+    "mixed": "These products are from different categories, so some specifications are not shared.",
+    "best": "Best value",
+    "noValue": "—",
+    "price": "Price",
+    "availability": "Availability",
+    "brand": "Brand",
+    "category": "Category",
+    "viewProduct": "View product",
+    "product": "Product",
+    "backHome": "Back to the shop"
   }
 }

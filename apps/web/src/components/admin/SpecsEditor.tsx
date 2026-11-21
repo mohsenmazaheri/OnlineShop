@@ -19,7 +19,19 @@ type Texts = Dictionary["admin"];
 export const specKinds = ["Text", "Number", "Boolean", "Option"] as const;
 
 type OptionDraft = { key: string; code: string | null; texts: OptionText[]; usageCount: number };
-type SpecDraft = { code: string; kind: string; isFilterable: boolean; isComparable: boolean; showInSummary: boolean; texts: SpecText[]; options: OptionDraft[] };
+export const specBetters = ["None", "Higher", "Lower"] as const;
+type Better = (typeof specBetters)[number];
+
+type SpecDraft = {
+  code: string;
+  kind: string;
+  isFilterable: boolean;
+  isComparable: boolean;
+  showInSummary: boolean;
+  better: Better;
+  texts: SpecText[];
+  options: OptionDraft[];
+};
 
 /** An editable copy of a spec with a text entry for every shop language (empty where not translated). */
 export function toDraft(spec: SpecView | undefined, locales: string[]): SpecDraft {
@@ -30,6 +42,7 @@ export function toDraft(spec: SpecView | undefined, locales: string[]): SpecDraf
     isFilterable: spec?.isFilterable ?? false,
     isComparable: spec?.isComparable ?? true,
     showInSummary: spec?.showInSummary ?? false,
+    better: spec?.better ?? "None",
     texts: locales.map(text),
     options: (spec?.options ?? []).map((o) => ({
       key: o.code,
@@ -48,6 +61,8 @@ export function toRequest(draft: SpecDraft) {
     isFilterable: draft.isFilterable,
     isComparable: draft.isComparable,
     showInSummary: draft.showInSummary,
+    // Only numbers have a better direction (the API ignores it for other kinds too).
+    better: draft.kind === "Number" ? draft.better : "None",
     texts: draft.texts.map((t) => ({ locale: t.locale, name: t.name.trim(), groupName: t.groupName?.trim() || null, unit: t.unit?.trim() || null })),
     options: draft.kind === "Option" ? draft.options.map((o) => ({ code: o.code, texts: o.texts.map((t) => ({ locale: t.locale, value: t.value.trim() })) })) : [],
   };
@@ -150,6 +165,18 @@ function SpecForm({ spec, ...shared }: Shared & { spec?: SpecView }) {
           </label>
         ))}
       </div>
+      {draft.kind === "Number" && draft.isComparable && (
+        <label className="flex flex-col gap-1 text-sm sm:max-w-xs">
+          <span>{texts.specBetter}</span>
+          <select value={draft.better} onChange={(e) => setDraft({ ...draft, better: e.target.value as Better })} className={input}>
+            {specBetters.map((b) => (
+              <option key={b} value={b}>
+                {texts.specBetters[b]}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
 
       {draft.texts.map((t, i) => (
         <fieldset key={t.locale} lang={t.locale} className="grid gap-2 rounded-xl border border-border p-3 sm:grid-cols-3">

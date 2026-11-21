@@ -136,6 +136,18 @@ public sealed class SpecAdminServiceTests : DemoCatalogTestBase
         Assert.Equal(0, spec.UsageCount);
     }
 
+    [Fact]
+    public async Task Only_number_specs_keep_a_better_direction()
+    {
+        await using var db = Database.CreateContext();
+
+        var weight = (await Service(db).CreateAsync(Spec("وزن", "Weight", kind: "Number") with { Better = SpecBetter.Lower })).Value;
+        var colour = (await Service(db).CreateAsync(Spec("رنگ", "Colour", kind: "Text") with { Better = SpecBetter.Higher })).Value;
+
+        Assert.Equal(SpecBetter.Lower, weight.Better);
+        Assert.Equal(SpecBetter.None, colour.Better);
+    }
+
     [Theory]
     [InlineData("Screen size", null, "screen_size")]
     [InlineData("اندازه", "Bad Code!", null)]

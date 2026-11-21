@@ -18,7 +18,7 @@ export function indexingAllowed(env: Env = process.env): boolean {
 
 /** Paths that must never be crawled (see docs/SEO-MARKETING.md §6). */
 // Pages live under /{locale}/…, so the rules need the locale wildcard ("/account" alone would never match).
-export const privatePaths = ["/api/", "/*/account", "/*/cart", "/*/checkout", "/*/admin", "/*/search", "/*/currency"];
+export const privatePaths = ["/api/", "/*/account", "/*/cart", "/*/checkout", "/*/admin", "/*/search", "/*/compare", "/*/currency"];
 
 export function buildRobots(env: Env = process.env): MetadataRoute.Robots {
   if (!indexingAllowed(env)) {

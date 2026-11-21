@@ -173,6 +173,14 @@ const paths = {
       <path d="M9 8h6M9 12h6M9 16h3" />
     </>
   ),
+  compare: (
+    <>
+      <rect x="3" y="4" width="7" height="16" rx="1.5" />
+      <rect x="14" y="4" width="7" height="16" rx="1.5" />
+      <path d="M6.5 9v6M17.5 11v4" />
+    </>
+  ),
+  close: <path d="M6 6l12 12M18 6L6 18" />,
 } as const;
 
 export type IconName = keyof typeof paths;

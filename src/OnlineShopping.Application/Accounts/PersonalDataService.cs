@@ -38,12 +38,19 @@ public sealed class PersonalDataService(
             .Select(i => new CartItemData(i.Product.Name, i.Quantity))
             .ToListAsync(cancellationToken);
 
+        var compare = await db.CompareItems.AsNoTracking()
+            .Where(c => c.CustomerId == userId)
+            .OrderBy(c => c.SortOrder)
+            .Join(db.Products.IgnoreQueryFilters(), c => c.ProductId, p => p.Id, (c, p) => new CompareItemData(p.PublicNumber, p.Name, c.AddedUtc))
+            .ToListAsync(cancellationToken);
+
         return new PersonalDataExport(
             clock.GetUtcNow().UtcDateTime,
             account,
             await addresses.ListAsync(userId, cancellationToken),
             orders.Select(o => new OrderData(o.Id, o.OrderedUtc, o.Status.ToString(), o.Subtotal, o.Tax, o.Shipping, o.Total, o.Items)).ToList(),
-            cart);
+            cart,
+            compare);
     }
 
     /// <param name="signedInAt">When this session's sign-in happened (<see cref="AccountClaims.AuthTime"/>), if known.</param>
@@ -72,6 +79,7 @@ public sealed class PersonalDataService(
         await db.CustomerAddresses.IgnoreQueryFilters().Where(a => a.CustomerId == userId).ExecuteDeleteAsync(cancellationToken);
         await db.CartItems.IgnoreQueryFilters().Where(i => i.Cart.CustomerId == userId).ExecuteDeleteAsync(cancellationToken);
         await db.Carts.IgnoreQueryFilters().Where(c => c.CustomerId == userId).ExecuteDeleteAsync(cancellationToken);
+        await db.CompareItems.Where(c => c.CustomerId == userId).ExecuteDeleteAsync(cancellationToken);
         await db.PhoneVerificationCodes
             .Where(c => c.UserId == userId || (user.PhoneNumber != null && c.PhoneNumber == user.PhoneNumber))
             .ExecuteDeleteAsync(cancellationToken);

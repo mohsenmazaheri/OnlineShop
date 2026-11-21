@@ -208,6 +208,7 @@ public sealed partial class DemoCatalogSeeder(
                     SortOrder = sortOrder++,
                     IsFilterable = demo.Filterable,
                     IsComparable = true,
+                    Better = demo.Better,
                     ShowInSummary = demo.Summary,
                 };
                 foreach (var locale in DemoText.Locales.Where(l => l != baseLocale))

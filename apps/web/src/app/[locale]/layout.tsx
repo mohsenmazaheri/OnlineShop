@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
+import { CompareBar } from "@/components/compare/CompareBar";
 import { BottomNav, BottomNavBar } from "@/components/layout/BottomNav";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -98,6 +99,9 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
         {children}
         <Suspense fallback={null}>
           <StoreFooter locale={locale} dict={dict} />
+        </Suspense>
+        <Suspense fallback={null}>
+          <CompareBar locale={locale} texts={dict.compare} />
         </Suspense>
         {/* The bar reads the URL to mark the current tab: inside Suspense, with the unmarked bar as the fallback. */}
         <Suspense fallback={<BottomNavBar locale={locale} texts={dict.header} active={null} />}>

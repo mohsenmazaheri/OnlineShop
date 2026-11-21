@@ -97,6 +97,9 @@ describe("SpecsEditor", () => {
 
     expect(toRequest({ ...draft, code: " " }).code).toBeNull();
     expect(toRequest({ ...draft, kind: "Number" }).options).toEqual([]);
+    // A better direction only for numbers.
+    expect(toRequest({ ...draft, kind: "Number", better: "Higher" }).better).toBe("Higher");
+    expect(toRequest({ ...draft, better: "Higher" }).better).toBe("None");
     expect(toRequest(draft).texts[2]).toEqual({ locale: "de", name: "", groupName: null, unit: null });
     expect(specName(color.texts, "de")).toBe("رنگ");
   });

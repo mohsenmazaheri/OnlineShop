@@ -53,6 +53,7 @@ public sealed class PersonalDataServiceTests : IDisposable
         await _addresses.CreateAsync(userId, new AddressInput(null, "Ali", "09121234567", "IR", null, "Tehran", "Valiasr St", null, null, false));
         var product = await TestData.SaveProductAsync(_db, sku: $"SKU-{userId[..8]}");
         _db.Carts.Add(new Cart { CustomerId = userId, Items = { new CartItem { ProductId = product.Id, Quantity = 2 } } });
+        _db.CompareItems.Add(new OnlineShopping.Domain.Customers.CompareItem { CustomerId = userId, ProductId = product.Id, AddedUtc = Now.UtcDateTime });
         _db.Orders.Add(new Order
         {
             CustomerId = userId, OrderedUtc = Now.UtcDateTime, Subtotal = 10, Total = 10, Status = OrderStatus.Pending,
@@ -80,6 +81,8 @@ public sealed class PersonalDataServiceTests : IDisposable
         Assert.Equal("Pending", order.Status);
         Assert.Equal(new OrderItemData("Phone X", 5, 2), Assert.Single(order.Items));
         Assert.Equal(new CartItemData("Phone X", 2), Assert.Single(export.Cart));
+        var compared = Assert.Single(export.Compare);
+        Assert.Equal(Now.UtcDateTime, compared.AddedUtc);
     }
 
     [Fact]
@@ -92,6 +95,7 @@ public sealed class PersonalDataServiceTests : IDisposable
         Assert.Empty(export.Addresses);
         Assert.Empty(export.Orders);
         Assert.Empty(export.Cart);
+        Assert.Empty(export.Compare);
     }
 
     [Fact]
@@ -107,6 +111,7 @@ public sealed class PersonalDataServiceTests : IDisposable
         Assert.False(await check.CustomerAddresses.IgnoreQueryFilters().AnyAsync());
         Assert.False(await check.Carts.IgnoreQueryFilters().AnyAsync());
         Assert.False(await check.CartItems.IgnoreQueryFilters().AnyAsync());
+        Assert.False(await check.CompareItems.AnyAsync());
         Assert.False(await check.PhoneVerificationCodes.AnyAsync());
         Assert.Equal(1, await check.Orders.CountAsync(o => o.CustomerId == _password));
     }

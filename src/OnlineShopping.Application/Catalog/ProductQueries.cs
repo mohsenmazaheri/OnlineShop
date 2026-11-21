@@ -15,7 +15,7 @@ public enum ProductList
     Newest,
 }
 
-/// <summary>A product as product cards show it (lists, rails, search results).</summary>
+/// <summary>A product as product cards show it (lists, rails, search results); the category lets comparison warn about mixing.</summary>
 public sealed record ProductCard(
     long Number,
     string Name,
@@ -23,7 +23,8 @@ public sealed record ProductCard(
     string? ImageUrl,
     decimal Price,
     decimal? CompareAtPrice,
-    bool InStock);
+    bool InStock,
+    string CategorySlug);
 
 public sealed record CategoryLink(string Name, string Slug);
 
@@ -122,7 +123,8 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
         p.Images.OrderBy(i => i.SortOrder).Select(i => i.Url).FirstOrDefault(),
         p.Price,
         p.CompareAtPrice,
-        p.Stock - p.Reserved > 0);
+        p.Stock - p.Reserved > 0,
+        p.ProductGroup.SubCategory.Category.Slug);
 
     public async Task<IReadOnlyList<ProductCard>> CardsAsync(IReadOnlyList<Guid> ids, string locale, CancellationToken cancellationToken = default)
     {

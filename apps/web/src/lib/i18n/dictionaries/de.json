@@ -152,7 +152,8 @@
       "address_line1_required": "Geben Sie Straße und Hausnummer ein.",
       "address_too_long": "Dieser Text ist zu lang.",
       "address_country_not_supported": "Der Shop liefert nicht in dieses Land.",
-      "address_postal_code_invalid": "Diese Postleitzahl ist für das Land nicht gültig."
+      "address_postal_code_invalid": "Diese Postleitzahl ist für das Land nicht gültig.",
+      "compare_too_many": "Sie können bis zu 4 Produkte vergleichen."
     },
     "withCode": "Mit SMS-Code",
     "withPassword": "Mit Passwort",
@@ -515,6 +516,12 @@
       "isFilterable": "Filterbar",
       "isComparable": "Im Vergleich",
       "showInSummary": "In den Hauptmerkmalen"
+    },
+    "specBetter": "Besserer Wert im Vergleich",
+    "specBetters": {
+      "None": "Keiner (nichts markiert)",
+      "Higher": "Höher ist besser",
+      "Lower": "Niedriger ist besser"
     },
     "specGroup": "Gruppe (Überschrift)",
     "specUnit": "Einheit",
@@ -947,7 +954,9 @@
     "images": "Produktbilder",
     "brand": "Marke",
     "soldOutOption": "Diese Kombination ist ausverkauft",
-    "video": "Video"
+    "video": "Video",
+    "compare": "Vergleichen",
+    "compareAdded": "Im Vergleich"
   },
   "listing": {
     "home": "Startseite",
@@ -989,5 +998,30 @@
     "relaxTitle": "Ohne einen Filter gibt es Treffer:",
     "relaxFilter": "Ohne „{filter}“ ({count} Produkte)",
     "newestTitle": "Vielleicht gefällt Ihnen das"
+  },
+  "compare": {
+    "title": "Produkte vergleichen",
+    "metaDescription": "Produkte nebeneinander vergleichen: Preise, Verfügbarkeit und technische Daten.",
+    "bar": "Vergleichen ({count})",
+    "barLabel": "Produkte zum Vergleich",
+    "clear": "Liste leeren",
+    "remove": "{name} entfernen",
+    "full": "Sie können bis zu 4 Produkte vergleichen. Entfernen Sie zuerst eines.",
+    "otherCategory": "Dieses Produkt gehört zu einer anderen Kategorie. Einen neuen Vergleich damit beginnen?",
+    "startNew": "Neuen Vergleich beginnen",
+    "cancel": "Abbrechen",
+    "empty": "Noch nichts zu vergleichen. Fügen Sie Produkte mit der Schaltfläche „Vergleichen“ hinzu.",
+    "onlyDifferences": "Nur Unterschiede",
+    "showAll": "Alle Daten",
+    "mixed": "Diese Produkte stammen aus verschiedenen Kategorien, daher sind manche Daten nicht gemeinsam.",
+    "best": "Bester Wert",
+    "noValue": "—",
+    "price": "Preis",
+    "availability": "Verfügbarkeit",
+    "brand": "Marke",
+    "category": "Kategorie",
+    "viewProduct": "Zum Produkt",
+    "product": "Produkt",
+    "backHome": "Zurück zum Shop"
   }
 }

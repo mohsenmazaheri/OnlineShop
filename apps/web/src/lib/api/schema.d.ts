@@ -38,6 +38,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/catalog/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Up to four published products (numbers=12,15) side by side: current price and stock, and their comparable specs by group. */
+        get: operations["CompareProducts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/currencies": {
         parameters: {
             query?: never;
@@ -167,6 +184,24 @@ export interface paths {
         /** The product's slug in the requested locale, for redirecting old or wrong product addresses. */
         get: operations["GetProductSlug"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The signed-in customer's comparison list (product numbers in the order they were added); signedIn=false for a guest. */
+        get: operations["GetCompareList"];
+        /** Replace the signed-in customer's comparison list (published products only, at most four). */
+        put: operations["SaveCompareList"];
         post?: never;
         delete?: never;
         options?: never;
@@ -2234,6 +2269,52 @@ export interface components {
             guest: boolean;
             shippingCountries: string[];
         };
+        CompareGroup: {
+            name: string;
+            rows: components["schemas"]["CompareRow"][];
+        };
+        CompareItemData: {
+            /** Format: int64 */
+            number: number;
+            productName: string;
+            /** Format: date-time */
+            addedUtc: string;
+        };
+        CompareListView: {
+            numbers: number[];
+            /** @default true */
+            signedIn: boolean;
+        };
+        CompareProduct: {
+            /** Format: int64 */
+            number: number;
+            name: string;
+            slug: string;
+            imageUrl: null | string;
+            /** Format: double */
+            price: number;
+            /** Format: double */
+            compareAtPrice: null | number;
+            inStock: boolean;
+            category: components["schemas"]["CategoryLink"];
+            brand: null | string;
+        };
+        CompareRow: {
+            code: string;
+            name: string;
+            kind: components["schemas"]["SpecKind"];
+            unit: null | string;
+            better: components["schemas"]["SpecBetter"];
+            values: components["schemas"]["CompareValue"][];
+            best: number[];
+            differs: boolean;
+        };
+        CompareValue: {
+            /** Format: double */
+            number: null | number;
+            boolean: null | boolean;
+            texts: string[];
+        };
         ConfirmEmailRequest: {
             userId: string;
             token: string;
@@ -2491,6 +2572,7 @@ export interface components {
             addresses: components["schemas"]["AddressView"][];
             orders: components["schemas"]["OrderData"][];
             cart: components["schemas"]["CartItemData"][];
+            compare: components["schemas"]["CompareItemData"][];
         };
         PhoneCodeSent: {
             /** Format: int32 */
@@ -2548,6 +2630,12 @@ export interface components {
             /** Format: double */
             compareAtPrice: null | number;
             inStock: boolean;
+            categorySlug: string;
+        };
+        ProductComparison: {
+            products: components["schemas"]["CompareProduct"][];
+            groups: components["schemas"]["CompareGroup"][];
+            mixedCategories: boolean;
         };
         ProductDetail: {
             /** Format: int64 */
@@ -2833,6 +2921,9 @@ export interface components {
         SaveCatalogNodeRequest: {
             texts: components["schemas"]["LocalizedText"][];
         };
+        SaveCompareListRequest: {
+            numbers: number[];
+        };
         SaveCurrencyRequest: {
             code: string;
             symbol: null | string;
@@ -2903,6 +2994,7 @@ export interface components {
             showInSummary: boolean;
             texts: components["schemas"]["SpecText"][];
             options: components["schemas"]["SpecOptionInput"][];
+            better?: components["schemas"]["SpecBetter"];
         };
         SaveSupplierRequest: {
             name: string;
@@ -2984,6 +3076,8 @@ export interface components {
             email: boolean;
             phone: boolean;
         };
+        /** @enum {unknown} */
+        SpecBetter: "None" | "Higher" | "Lower";
         SpecChoice: {
             code: string;
             name: string;
@@ -3050,6 +3144,7 @@ export interface components {
             options: components["schemas"]["SpecOptionView"][];
             /** Format: int32 */
             usageCount: number;
+            better?: components["schemas"]["SpecBetter"];
         };
         /** @enum {unknown} */
         StaffAuditAction: "Invited" | "InvitationRevoked" | "InvitationAccepted" | "RolesChanged" | "Suspended" | "Reactivated" | "RemovedFromStaff";
@@ -3424,6 +3519,29 @@ export interface operations {
             };
         };
     };
+    CompareProducts: {
+        parameters: {
+            query?: {
+                numbers?: string;
+                locale?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductComparison"];
+                };
+            };
+        };
+    };
     GetCurrencies: {
         parameters: {
             query?: never;
@@ -3640,6 +3758,59 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetCompareList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompareListView"];
+                };
+            };
+        };
+    };
+    SaveCompareList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCompareListRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompareListView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
                 };
             };
         };

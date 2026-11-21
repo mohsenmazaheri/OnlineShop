@@ -78,3 +78,13 @@ export async function browseProducts(query: string): Promise<BrowseResult | null
     throw error;
   }
 }
+
+export type ProductComparison = components["schemas"]["ProductComparison"];
+
+/**
+ * Products side by side. Not cached: the table shows the current price and stock. The numbers are already parsed
+ * (digits only, at most four).
+ */
+export async function getComparison(numbers: readonly number[], locale: string): Promise<ProductComparison> {
+  return apiGet<ProductComparison>(`/api/v1/catalog/compare?numbers=${numbers.join(",")}&locale=${encodeURIComponent(locale)}`);
+}

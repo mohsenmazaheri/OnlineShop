@@ -39,6 +39,7 @@ public interface IApplicationDbContext
     DbSet<OrderItem> OrderItems { get; }
     DbSet<PhoneVerificationCode> PhoneVerificationCodes { get; }
     DbSet<CustomerAddress> CustomerAddresses { get; }
+    DbSet<CompareItem> CompareItems { get; }
     DbSet<StaffInvitation> StaffInvitations { get; }
     DbSet<StaffAuditEntry> StaffAuditEntries { get; }
     DbSet<Currency> Currencies { get; }

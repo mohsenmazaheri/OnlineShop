@@ -51,6 +51,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<PhoneVerificationCode> PhoneVerificationCodes => Set<PhoneVerificationCode>();
     public DbSet<CustomerAddress> CustomerAddresses => Set<CustomerAddress>();
+    public DbSet<CompareItem> CompareItems => Set<CompareItem>();
     public DbSet<StaffInvitation> StaffInvitations => Set<StaffInvitation>();
     public DbSet<StaffAuditEntry> StaffAuditEntries => Set<StaffAuditEntry>();
     public DbSet<Currency> Currencies => Set<Currency>();
@@ -359,6 +360,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.Property(x => x.GroupName).HasMaxLength(200);
             e.Property(x => x.Unit).HasMaxLength(32);
             e.Property(x => x.Kind).HasConversion<string>().HasMaxLength(16);
+            e.Property(x => x.Better).HasConversion<string>().HasMaxLength(8);
             e.HasIndex(x => x.Code).IsUnique().HasFilter(NotDeletedFilter);
             e.OwnsMany(x => x.Translations, t =>
             {
@@ -503,6 +505,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 .WithMany()
                 .HasForeignKey(a => a.CustomerId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<CompareItem>(e =>
+        {
+            e.ToTable("compare_items");
+            e.HasKey(c => new { c.CustomerId, c.ProductId });
+            e.Property(c => c.CustomerId).HasMaxLength(450);
+            e.HasOne<AppUser>().WithMany().HasForeignKey(c => c.CustomerId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<Product>().WithMany().HasForeignKey(c => c.ProductId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 

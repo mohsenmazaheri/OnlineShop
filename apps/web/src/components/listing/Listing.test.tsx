@@ -14,7 +14,7 @@ import { ProductListing } from "./ProductListing";
 afterEach(cleanup);
 
 const money = { code: "EUR", symbol: null, decimals: 2, roundingStep: 0.01, rate: 1, isBase: true, base: "EUR" };
-const product = (number: number, name: string) => ({ number, name, slug: name.toLowerCase(), imageUrl: null, price: 10, compareAtPrice: null, inStock: true });
+const product = (number: number, name: string) => ({ number, name, slug: name.toLowerCase(), imageUrl: null, price: 10, compareAtPrice: null, inStock: true, categorySlug: "phones" });
 
 function result(over: Partial<BrowseResult> = {}): BrowseResult {
   return {
