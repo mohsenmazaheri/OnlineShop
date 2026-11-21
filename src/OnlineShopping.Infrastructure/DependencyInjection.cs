@@ -299,6 +299,7 @@ public static class DependencyInjection
                 : new NoExchangeRateSource()));
         services.AddHostedService<ExchangeRateSyncWorker>();
         services.AddHostedService<Inventory.ReservationExpiryWorker>();
+        services.AddHostedService<Catalog.SaleExpiryWorker>();
         services.AddHostedService<Search.SearchIndexWorker>();
         AddSearchEngine(services);
     }

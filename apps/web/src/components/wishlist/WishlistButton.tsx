@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { sendJson } from "@/lib/account/client";
 import { buttonClass } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
-import { useHydrated } from "@/components/compare/useCompare";
+import { useHydrated } from "@/components/ui/useHydrated";
 
 type Ids = { numbers: number[]; signedIn: boolean };
 

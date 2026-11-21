@@ -24,7 +24,8 @@
     "benefitDeliveryTitle": "Lieferung zu Ihnen",
     "benefitDeliveryText": "Adressen einmal speichern",
     "deals": "Sonderangebote",
-    "newest": "Neu eingetroffen"
+    "newest": "Neu eingetroffen",
+    "specialOffers": "Sonderangebote"
   },
   "offline": {
     "title": "Sie sind offline",
@@ -468,7 +469,11 @@
       "gtin_invalid": "Der Barcode ist ungültig (8, 12, 13 oder 14 Ziffern mit korrekter Prüfziffer).",
       "weight_invalid": "Das Gewicht muss zwischen 0 und 1.000.000 Gramm liegen.",
       "too_many_videos": "Ein Produkt hat höchstens 3 Videos.",
-      "videos_mismatch": "Die Liste der Videos hat sich geändert; laden Sie die Seite neu."
+      "videos_mismatch": "Die Liste der Videos hat sich geändert; laden Sie die Seite neu.",
+      "sale_needs_old_price": "Ein Angebotsende braucht einen alten Preis (auf den der Preis zurückgeht).",
+      "landing_query_invalid": "Fügen Sie die Adresse einer Kategorie, Marke oder Suche dieses Shops ein.",
+      "landing_slug_taken": "Eine andere Landingpage verwendet diese Adresse bereits.",
+      "landing_not_found": "Diese Landingpage gibt es nicht mehr."
     },
     "imagesTitle": "Bilder",
     "imageUpload": "Bilder hinzufügen",
@@ -691,7 +696,9 @@
       "suppliers": "Lieferanten und ihre Kontaktdaten",
       "purchases": "Wareneingänge mit Stückpreisen und Durchschnittspreis",
       "reservations": "Für unbezahlte Bestellungen zurückgehaltene Stücke",
-      "reviews": "Kundenbewertungen freigeben oder ablehnen"
+      "reviews": "Kundenbewertungen freigeben oder ablehnen",
+      "landing": "Indexierte Seiten für oft gesuchte Kombinationen aus Kategorie, Marke und Filtern",
+      "content": "Blogbeiträge und Seiten wie „Über uns“ in jeder Sprache"
     },
     "navInventory": "Bestand",
     "navMovements": "Lagerbewegungen",
@@ -924,7 +931,56 @@
     "reviewReject": "Ablehnen",
     "reviewVerified": "Verifizierter Kauf",
     "reviewAnonymous": "Ein Kunde",
-    "reviewOn": "Zu {product}"
+    "reviewOn": "Zu {product}",
+    "productSaleEnds": "Angebot endet",
+    "productSaleEndsHint": "Mit altem Preis: zu diesem Zeitpunkt wird der alte Preis wieder der Preis.",
+    "navLanding": "Landingpages",
+    "landingTitle": "Landingpages",
+    "landingIntro": "Eine Landingpage zeigt die Produkte einer gefilterten Liste unter eigener Adresse, mit Titel und Text, und wird von Suchmaschinen indexiert (gefilterte Listen nicht). Nutzen Sie sie für gesuchte Kombinationen, etwa eine Marke in einer Kategorie.",
+    "landingNew": "Neue Landingpage",
+    "landingQuery": "Produkte",
+    "landingQueryHint": "Öffnen Sie eine Kategorie, Marke oder Suche, wählen Sie die Filter und fügen Sie die Adresse hier ein. Preise in der Basiswährung.",
+    "landingPublished": "Veröffentlicht",
+    "landingMetaTitle": "Suchtitel",
+    "landingMetaDescription": "Suchbeschreibung",
+    "landingSave": "Speichern",
+    "landingDelete": "Löschen",
+    "landingConfirmDelete": "Diese Landingpage löschen? Ihre Adresse funktioniert dann nicht mehr.",
+    "landingOpen": "Öffnen",
+    "landingEmpty": "Noch keine Landingpages.",
+    "landingDraft": "Nicht veröffentlicht",
+    "navContent": "Blog & Seiten",
+    "contentTitle": "Blog & Seiten",
+    "contentIntro": "Beiträge erscheinen im Blog, die neuesten zuerst; Seiten bekommen eine eigene Adresse (/about) und können im Fußbereich verlinkt werden. Texte werden je Sprache von Hand geschrieben; eine leere Sprache zeigt die Hauptsprache und wird nicht indexiert.",
+    "contentNew": "Neuer Beitrag oder neue Seite",
+    "contentEmpty": "Noch keine Beiträge oder Seiten.",
+    "contentKind": "Art",
+    "contentKinds": {
+      "Post": "Blogbeitrag",
+      "Page": "Seite"
+    },
+    "contentSummary": "Zusammenfassung",
+    "contentBody": "Text",
+    "contentBodyHint": "Leerzeile = neuer Absatz · ## Überschrift · - Listenpunkt · **fett** · [Linktext](/de/c/…)",
+    "contentTags": "Schlagwörter (durch Komma getrennt)",
+    "contentAuthor": "Autor",
+    "contentProducts": "Produktnummern in diesem Beitrag",
+    "contentPublishedAt": "Veröffentlicht ab (leer: jetzt)",
+    "contentPublished": "Veröffentlicht",
+    "contentDraft": "Entwurf",
+    "contentInFooter": "Im Fußbereich verlinken",
+    "contentCover": "Titelbild",
+    "contentConfirmDelete": "Diesen Beitrag oder diese Seite löschen? Die Adresse funktioniert dann nicht mehr.",
+    "contentTitleLabel": "Titel",
+    "contentErrors": {
+      "not_found": "Dieser Beitrag oder diese Seite existiert nicht mehr.",
+      "title_required": "Ein Titel in der Hauptsprache des Shops ist nötig.",
+      "body_required": "Der Text ist nötig.",
+      "too_long": "Ein Text ist zu lang.",
+      "locale_invalid": "Ein Text ist in einer Sprache, die der Shop nicht anbietet.",
+      "slug_taken": "Ein anderer Beitrag oder eine andere Seite verwendet diese Adresse bereits.",
+      "slug_reserved": "Diese Adresse gehört dem Shop selbst (etwa account oder blog). Wählen Sie eine andere."
+    }
   },
   "footer": {
     "shopping": "Einkaufen",
@@ -942,7 +998,9 @@
     "installText": "Schneller Zugriff vom Startbildschirm, ohne App-Store.",
     "installButton": "Installieren",
     "installIos": "Tippen Sie in Safari auf „Teilen“ und dann auf „Zum Home-Bildschirm“.",
-    "installDismiss": "Schließen"
+    "installDismiss": "Schließen",
+    "blog": "Blog",
+    "aboutShop": "Über den Shop"
   },
   "search": {
     "title": "Suche",
@@ -981,7 +1039,10 @@
     "compareAdded": "Im Vergleich",
     "wishlistAdd": "Auf die Wunschliste",
     "wishlistAdded": "Auf Ihrer Wunschliste",
-    "ratingLabel": "{average} von 5 ({count} Bewertungen)"
+    "ratingLabel": "{average} von 5 ({count} Bewertungen)",
+    "offerEndsIn": "Angebot endet in",
+    "offerEnded": "Dieses Angebot ist beendet",
+    "offerDays": "{n} T."
   },
   "listing": {
     "home": "Startseite",
@@ -1091,5 +1152,16 @@
       "title_too_long": "Der Titel ist zu lang (höchstens 120 Zeichen).",
       "status_invalid": "Geben Sie die Bewertung frei oder lehnen Sie sie ab."
     }
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "Neuigkeiten, Kaufratgeber und Tipps.",
+    "tagTitle": "Beiträge zu „{tag}“",
+    "allPosts": "Alle Beiträge",
+    "empty": "Noch keine Beiträge.",
+    "by": "Von {author}",
+    "related": "Produkte in diesem Beitrag",
+    "tags": "Schlagwörter",
+    "pages": "Blogseiten"
   }
 }

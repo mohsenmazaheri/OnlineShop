@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using OnlineShopping.Domain.Accounts;
 using OnlineShopping.Domain.Catalog;
+using OnlineShopping.Domain.Content;
 using OnlineShopping.Domain.Customers;
 using OnlineShopping.Domain.Inventory;
 using OnlineShopping.Domain.Pricing;
@@ -42,6 +43,8 @@ public interface IApplicationDbContext
     DbSet<CompareItem> CompareItems { get; }
     DbSet<WishlistItem> WishlistItems { get; }
     DbSet<ProductReview> ProductReviews { get; }
+    DbSet<LandingPage> LandingPages { get; }
+    DbSet<ContentPage> ContentPages { get; }
     DbSet<StaffInvitation> StaffInvitations { get; }
     DbSet<StaffAuditEntry> StaffAuditEntries { get; }
     DbSet<Currency> Currencies { get; }

@@ -1,6 +1,6 @@
 import type { IconName } from "@/components/ui/Icon";
 
-export type AdminSection = "home" | "products" | "import" | "catalog" | "brands" | "specs" | "seo" | "reviews" | "staff" | "currencies" | "branding" | "inventory" | "movements" | "purchases" | "reservations" | "stocktakes" | "suppliers" | "warehouses";
+export type AdminSection = "home" | "products" | "import" | "catalog" | "brands" | "specs" | "seo" | "landing" | "content" | "reviews" | "staff" | "currencies" | "branding" | "inventory" | "movements" | "purchases" | "reservations" | "stocktakes" | "suppliers" | "warehouses";
 export type AdminGroup = "catalog" | "inventory" | "store" | "team";
 
 type SectionDefinition = {
@@ -22,6 +22,8 @@ export const adminSections: readonly SectionDefinition[] = [
   { section: "specs", path: "/specs", label: "navSpecs", icon: "list", group: "catalog", permission: "catalog.manage" },
   { section: "import", path: "/import", label: "navImport", icon: "upload", group: "catalog", permission: "catalog.manage" },
   { section: "seo", path: "/seo", label: "navSeo", icon: "search", group: "catalog", permission: "catalog.manage" },
+  { section: "landing", path: "/landing", label: "navLanding", icon: "globe", group: "catalog", permission: "content.manage" },
+  { section: "content", path: "/content", label: "navContent", icon: "list", group: "catalog", permission: "content.manage" },
   { section: "reviews", path: "/reviews", label: "navReviews", icon: "star", group: "catalog", permission: "reviews.moderate" },
   { section: "inventory", path: "/inventory", label: "navInventory", icon: "stock", group: "inventory", permission: "inventory.view" },
   { section: "movements", path: "/inventory/movements", label: "navMovements", icon: "history", group: "inventory", permission: "inventory.view" },

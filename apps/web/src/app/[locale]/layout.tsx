@@ -12,6 +12,7 @@ import { formatYear } from "@/lib/i18n/format-date";
 import { brandingCss } from "@/lib/branding/style";
 import { indexingAllowed, siteUrl } from "@/lib/seo/config";
 import { fontVariables } from "@/lib/fonts";
+import { getFooterPages } from "@/lib/api/storefront";
 import { loadStore } from "@/lib/store/load";
 import { themeScript } from "@/lib/theme";
 import "../globals.css";
@@ -64,9 +65,11 @@ async function StoreBrandingStyle() {
 /** Store name, languages and the current year are per request (after loadStore's connection()). */
 async function StoreFooter({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const store = await loadStore();
+  const pages = await getFooterPages(locale).catch(() => []);
   return (
     <SiteFooter
       locale={locale}
+      pages={pages}
       storeName={store.name}
       logoUrl={store.branding.logoUrl}
       locales={store.locales}

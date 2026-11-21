@@ -244,3 +244,17 @@ export function getReviewsForModeration(status: ReviewStatusName | null, page: n
   if (status) query.set("status", status);
   return getForUser<ReviewAdminList>(`/api/v1/admin/reviews?${query}`, fetchImpl);
 }
+
+export type LandingPageList = components["schemas"]["LandingPageList"];
+
+/** Every landing page with its texts (content.manage), or null without the permission. */
+export function getLandingPages(fetchImpl: typeof fetch = fetch): Promise<LandingPageList | null> {
+  return getForUser<LandingPageList>("/api/v1/admin/landing-pages", fetchImpl);
+}
+
+export type ContentList = components["schemas"]["ContentList"];
+
+/** Every blog post and content page (content.manage), or null without the permission. */
+export function getContentList(fetchImpl: typeof fetch = fetch): Promise<ContentList | null> {
+  return getForUser<ContentList>("/api/v1/admin/content", fetchImpl);
+}

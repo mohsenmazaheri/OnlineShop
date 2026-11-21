@@ -8,6 +8,7 @@ using OnlineShopping.Application.Common;
 using OnlineShopping.Domain.Accounts;
 using OnlineShopping.Domain.Catalog;
 using OnlineShopping.Domain.Common;
+using OnlineShopping.Domain.Content;
 using OnlineShopping.Domain.Customers;
 using OnlineShopping.Domain.Inventory;
 using OnlineShopping.Domain.Pricing;
@@ -54,6 +55,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<CompareItem> CompareItems => Set<CompareItem>();
     public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
     public DbSet<ProductReview> ProductReviews => Set<ProductReview>();
+    public DbSet<LandingPage> LandingPages => Set<LandingPage>();
+    public DbSet<ContentPage> ContentPages => Set<ContentPage>();
     public DbSet<StaffInvitation> StaffInvitations => Set<StaffInvitation>();
     public DbSet<StaffAuditEntry> StaffAuditEntries => Set<StaffAuditEntry>();
     public DbSet<Currency> Currencies => Set<Currency>();
@@ -101,6 +104,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         ConfigurePurchasing(builder);
         ConfigureReservations(builder);
         ConfigureSearch(builder);
+        ConfigureContent(builder);
         ApplySoftDeleteQueryFilters(builder);
     }
 
@@ -190,6 +194,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.Property(x => x.SKU).HasMaxLength(64);
             e.HasIndex(x => x.SKU).IsUnique().HasFilter(NotDeletedFilter);
             e.HasIndex(x => x.Name);
+            // Special offers: the ones still running, and the expiry job.
+            e.HasIndex(x => x.SaleEndsUtc);
             e.HasOne(p => p.ProductGroup)
                 .WithMany(pg => pg.Products)
                 .HasForeignKey(p => p.ProductGroupId)
@@ -220,6 +226,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.OwnsMany(x => x.Translations, t => ConfigureTranslation(t, "category_translations", "CategoryId"));
         });
         b.Entity<SubCategory>().OwnsMany(x => x.Translations, t => ConfigureTranslation(t, "sub_category_translations", "SubCategoryId"));
+
+        b.Entity<LandingPage>(e =>
+        {
+            e.ToTable("landing_pages");
+            e.Property(x => x.Title).HasMaxLength(300);
+            e.Property(x => x.Slug).HasMaxLength(200);
+            e.Property(x => x.Intro).HasMaxLength(10_000);
+            e.Property(x => x.MetaTitle).HasMaxLength(MetaTitleLength);
+            e.Property(x => x.MetaDescription).HasMaxLength(MetaDescriptionLength);
+            e.Property(x => x.Query).HasMaxLength(2000);
+            e.HasIndex(x => x.Slug).IsUnique().HasFilter(NotDeletedFilter);
+            e.OwnsMany(x => x.Translations, t => ConfigureTranslation(t, "landing_page_translations", "LandingPageId"));
+        });
         b.Entity<ProductGroup>().OwnsMany(x => x.Translations, t => ConfigureTranslation(t, "product_group_translations", "ProductGroupId"));
         b.Entity<Brand>(e =>
         {
@@ -709,6 +728,42 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.HasIndex(i => i.ProductId);
             e.HasOne<Product>().WithMany().HasForeignKey(i => i.ProductId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne<ProductVariant>().WithMany().HasForeignKey(i => i.VariantId).OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private static void ConfigureContent(ModelBuilder b)
+    {
+        b.Entity<ContentPage>(e =>
+        {
+            e.ToTable("content_pages");
+            e.Property(x => x.Kind).HasConversion<string>().HasMaxLength(8);
+            e.Property(x => x.Slug).HasMaxLength(200);
+            e.Property(x => x.Title).HasMaxLength(300);
+            e.Property(x => x.Summary).HasMaxLength(1000);
+            e.Property(x => x.Body).HasMaxLength(100_000);
+            e.Property(x => x.MetaTitle).HasMaxLength(MetaTitleLength);
+            e.Property(x => x.MetaDescription).HasMaxLength(MetaDescriptionLength);
+            e.Property(x => x.Tags).HasMaxLength(TagsLength);
+            e.Property(x => x.CoverImageUrl).HasMaxLength(2048);
+            e.Property(x => x.AuthorName).HasMaxLength(100);
+            e.Property(x => x.RelatedProducts).HasMaxLength(500);
+            e.HasIndex(x => new { x.Kind, x.Slug }).IsUnique().HasFilter(NotDeletedFilter);
+            // The blog lists published posts, newest first.
+            e.HasIndex(x => new { x.Kind, x.IsPublished, x.PublishedUtc });
+            e.OwnsMany(x => x.Translations, t =>
+            {
+                t.ToTable("content_page_translations");
+                t.WithOwner().HasForeignKey("ContentPageId");
+                t.HasKey("ContentPageId", nameof(ContentTranslation.Locale));
+                t.Property(x => x.Locale).HasMaxLength(8);
+                t.Property(x => x.Title).HasMaxLength(300);
+                t.Property(x => x.Slug).HasMaxLength(200);
+                t.Property(x => x.Summary).HasMaxLength(1000);
+                t.Property(x => x.Body).HasMaxLength(100_000);
+                t.Property(x => x.MetaTitle).HasMaxLength(MetaTitleLength);
+                t.Property(x => x.MetaDescription).HasMaxLength(MetaDescriptionLength);
+                t.Property(x => x.Tags).HasMaxLength(TagsLength);
+            });
         });
     }
 

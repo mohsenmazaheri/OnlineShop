@@ -3,7 +3,8 @@
 import { Icon } from "@/components/ui/Icon";
 import { buttonClass } from "@/components/ui/Button";
 import { comparePath } from "@/lib/compare/list";
-import { useCompare, useHydrated } from "./useCompare";
+import { useHydrated } from "@/components/ui/useHydrated";
+import { useCompare } from "./useCompare";
 
 export type CompareButtonTexts = { compare: string; compareAdded: string };
 

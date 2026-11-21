@@ -65,6 +65,8 @@ export function productJsonLd(
     priceCurrency: currency,
     availability: inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
     itemCondition: "https://schema.org/NewCondition",
+    // A special offer: the price is valid until the offer ends.
+    ...(product.saleEndsUtc ? { priceValidUntil: product.saleEndsUtc.slice(0, 10) } : {}),
   });
   // Each video as a VideoObject about this product (thumbnail: its poster, else the main image).
   const videos = product.videos.map((video) => {

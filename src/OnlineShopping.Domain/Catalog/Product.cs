@@ -42,6 +42,12 @@ public class Product : BaseEntity
     /// <summary>Units held for checkouts that are not paid yet (active reservations). Available = Stock − Reserved.</summary>
     public int Reserved { get; set; }
 
+    /// <summary>
+    /// When the special offer ends (the storefront counts down to it): then the old price becomes the price again
+    /// (<c>SaleExpiryService</c>). Only with a <see cref="CompareAtPrice"/>.
+    /// </summary>
+    public DateTime? SaleEndsUtc { get; set; }
+
     /// <summary>Average stars of the approved reviews (0 without any), kept by the review service.</summary>
     public decimal RatingAverage { get; set; }
 

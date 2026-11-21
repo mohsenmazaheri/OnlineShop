@@ -13,6 +13,9 @@ public enum ProductList
 
     /// <summary>The most recently added products first.</summary>
     Newest,
+
+    /// <summary>Running special offers (an old price and an end time), the soonest ending first.</summary>
+    SpecialOffers,
 }
 
 /// <summary>A product as product cards show it (lists, rails, search results); the category lets comparison warn about mixing.</summary>
@@ -26,7 +29,8 @@ public sealed record ProductCard(
     bool InStock,
     string CategorySlug,
     decimal RatingAverage,
-    int RatingCount);
+    int RatingCount,
+    DateTime? SaleEndsUtc);
 
 public sealed record CategoryLink(string Name, string Slug);
 
@@ -93,7 +97,8 @@ public sealed record ProductDetail(
     string? MetaDescription,
     IReadOnlyList<ProductVideoInfo> Videos,
     decimal RatingAverage,
-    int RatingCount);
+    int RatingCount,
+    DateTime? SaleEndsUtc);
 
 public interface IProductQueries
 {
@@ -130,7 +135,8 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
         p.Stock - p.Reserved > 0,
         p.ProductGroup.SubCategory.Category.Slug,
         p.RatingAverage,
-        p.RatingCount);
+        p.RatingCount,
+        p.SaleEndsUtc);
 
     public async Task<IReadOnlyList<ProductCard>> CardsAsync(IReadOnlyList<Guid> ids, string locale, CancellationToken cancellationToken = default)
     {
@@ -152,6 +158,11 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
             ProductList.Discounted => Published
                 .Where(p => p.CompareAtPrice != null && p.CompareAtPrice > p.Price)
                 .OrderByDescending(p => (p.CompareAtPrice!.Value - p.Price) / p.CompareAtPrice.Value)
+                .ThenByDescending(p => p.PublicNumber),
+            // Ended offers are cleared by the expiry job within a minute.
+            ProductList.SpecialOffers => Published
+                .Where(p => p.SaleEndsUtc != null && p.CompareAtPrice != null)
+                .OrderBy(p => p.SaleEndsUtc)
                 .ThenByDescending(p => p.PublicNumber),
             _ => Published.OrderByDescending(p => p.CreatedUtc).ThenByDescending(p => p.PublicNumber),
         };
@@ -189,6 +200,7 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
                 p.WeightGrams,
                 p.RatingAverage,
                 p.RatingCount,
+                p.SaleEndsUtc,
                 // Search texts only from a real translation (or the default language), never mixed with another language.
                 MetaTitle = p.Translations.Any(t => t.Locale == locale)
                     ? p.Translations.Where(t => t.Locale == locale).Select(t => t.MetaTitle).FirstOrDefault()
@@ -256,7 +268,7 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
             product.PublicNumber, product.Name, product.Slug, product.Description, product.SKU, product.Price,
             product.CompareAtPrice, Math.Max(0, product.Stock), product.Stock > 0, images, product.Category, product.SubCategory,
             specs, alternates, product.Brand, axes, variants, product.Gtin, product.Mpn, product.WeightGrams, product.MetaTitle, product.MetaDescription, videos,
-            product.RatingAverage, product.RatingCount);
+            product.RatingAverage, product.RatingCount, product.SaleEndsUtc);
     }
 
     /// <summary>The variants with their effective prices, and the axes with only the options they use.</summary>

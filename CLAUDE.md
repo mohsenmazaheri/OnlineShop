@@ -8,7 +8,7 @@ Application / Infrastructure / Api) + **Next.js 16** storefront in `apps/web`. O
 images serve every shop.
 
 **Plan and all recorded decisions: [docs/ROADMAP.md](docs/ROADMAP.md)** (Persian). Read it before starting, work on
-one step at a time, mark the status there when a step is done. Done: phases 0, 2–5, 6a–6e; phase 1 has a "remaining"
+one step at a time, mark the status there when a step is done. Done: phases 0, 2–6; phase 1 has a "remaining"
 list. SEO/marketing design: [docs/SEO-MARKETING.md](docs/SEO-MARKETING.md) (acceptance checklist at its end).
 
 Key decisions (details in the roadmap):
@@ -176,6 +176,18 @@ After a model change: migration + `has-pending-model-changes` reports none. Afte
   JSON-LD `aggregateRating` + `review` from the visible ones, `/admin/reviews`; cache tag `reviews` (refreshable).
 - **Wishlist** (`Customers/WishlistService`, `wishlist_items`, personal data): `WishlistButton` on the product page
   (`GET /account/wishlist/ids` answers guests 200 `signedIn:false`), page `/{locale}/account/wishlist`.
+- **Sitemaps**: `/sitemap.xml` is an index route (`app/sitemap.xml/route.ts`) of `/sitemaps/sitemap/{id}.xml`
+  (`app/sitemaps/sitemap.ts`, `generateSitemaps`; `/sitemaps/` is unlocalized in `routing.ts`), data from
+  `SitemapService` (translated languages only, product images/videos). Add a new kind of public page there.
+- **Landing pages** (`LandingPage`, `LandingPageService`, content.manage): `/{locale}/l/{slug}` lists a fixed browse
+  query (`LandingQuery.Normalize` turns a pasted listing address into it; prices in base currency) and is indexed.
+- **Special offers**: `Product.SaleEndsUtc` (only with `CompareAtPrice`); `SaleExpiryService`/`SaleExpiryWorker`
+  restore the old price after the end. Web fetchers holding offer times cache with `cacheForOffers`/`saleAwareLife`
+  so no page shows an ended offer; `Countdown` renders only a label on the server (the clock is browser time).
+- **Blog & content pages** (`Domain/Content/ContentPage`, `ContentService`, content.manage, codes `content.*` →
+  `admin.contentErrors`): posts at `/{locale}/blog/{slug}`, pages at `/{locale}/{slug}` (`app/[locale]/[page]`); a
+  new top-level route must be added to `ContentService.ReservedSlugs`. Bodies use the safe marks of
+  `lib/content/markdown.tsx` (never HTML). Cache tag `content` (refreshable); footer pages via `getFooterPages`.
 - Redirects (`RedirectService`): decoded paths, no trailing slash, never `/`, `/api`, `/_next`, one hop, no loops.
 
 ## Accounts and authorization

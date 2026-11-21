@@ -42,6 +42,7 @@ const card = (over: Partial<ProductCardData> = {}): ProductCardData => ({
   categorySlug: "phones",
   ratingAverage: 4.5,
   ratingCount: 2,
+  saleEndsUtc: null,
   ...over,
 });
 
@@ -70,6 +71,7 @@ const detail: ProductDetail = {
   videos: [],
   ratingAverage: 0,
   ratingCount: 0,
+  saleEndsUtc: null,
 };
 
 describe("Price", () => {

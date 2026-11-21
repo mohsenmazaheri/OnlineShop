@@ -24,7 +24,8 @@
     "benefitDeliveryTitle": "التوصيل إلى عنوانك",
     "benefitDeliveryText": "احفظ عناوينك مرة واحدة",
     "deals": "عروض خاصة",
-    "newest": "وصل حديثًا"
+    "newest": "وصل حديثًا",
+    "specialOffers": "عروض خاصة"
   },
   "offline": {
     "title": "أنت غير متصل بالإنترنت",
@@ -468,7 +469,11 @@
       "gtin_invalid": "الباركود غير صالح (8 أو 12 أو 13 أو 14 رقمًا برقم تحقق صحيح).",
       "weight_invalid": "يجب أن يكون الوزن بين 0 و1,000,000 غرام.",
       "too_many_videos": "للمنتج 3 مقاطع كحد أقصى.",
-      "videos_mismatch": "تغيّرت قائمة المقاطع؛ أعد تحميل الصفحة."
+      "videos_mismatch": "تغيّرت قائمة المقاطع؛ أعد تحميل الصفحة.",
+      "sale_needs_old_price": "يحتاج موعد انتهاء العرض إلى سعر سابق (يعود السعر إليه).",
+      "landing_query_invalid": "الصق عنوان فئة أو علامة تجارية أو بحث من هذا المتجر.",
+      "landing_slug_taken": "صفحة هبوط أخرى تستخدم هذا العنوان.",
+      "landing_not_found": "صفحة الهبوط هذه لم تعد موجودة."
     },
     "imagesTitle": "الصور",
     "imageUpload": "إضافة صور",
@@ -691,7 +696,9 @@
       "suppliers": "الموردون وبيانات الاتصال",
       "purchases": "إيصالات الشراء بتكلفة الوحدة ومتوسط التكلفة",
       "reservations": "وحدات محجوزة لعمليات دفع غير مكتملة",
-      "reviews": "الموافقة على تقييمات العملاء أو رفضها"
+      "reviews": "الموافقة على تقييمات العملاء أو رفضها",
+      "landing": "صفحات مفهرسة لتركيبات كثيرة البحث من الفئة والعلامة والمرشحات",
+      "content": "مقالات المدونة وصفحات مثل «من نحن» بكل لغة"
     },
     "navInventory": "المخزون",
     "navMovements": "حركات المخزون",
@@ -924,7 +931,56 @@
     "reviewReject": "رفض",
     "reviewVerified": "مشترٍ موثّق",
     "reviewAnonymous": "أحد العملاء",
-    "reviewOn": "عن {product}"
+    "reviewOn": "عن {product}",
+    "productSaleEnds": "ينتهي العرض",
+    "productSaleEndsHint": "مع سعر سابق: في هذا الوقت يعود السعر السابق سعرًا للمنتج.",
+    "navLanding": "صفحات الهبوط",
+    "landingTitle": "صفحات الهبوط",
+    "landingIntro": "تعرض صفحة الهبوط منتجات قائمة مصفّاة بعنوان ونص خاصين بها، وتفهرسها محركات البحث (القوائم المصفّاة لا تُفهرس). استخدمها لتركيبات يبحث عنها الناس، مثل علامة تجارية ضمن فئة.",
+    "landingNew": "صفحة هبوط جديدة",
+    "landingQuery": "المنتجات",
+    "landingQueryHint": "افتح فئة أو علامة تجارية أو بحثًا، واختر المرشحات، والصق العنوان هنا. الأسعار بالعملة الأساسية.",
+    "landingPublished": "منشورة",
+    "landingMetaTitle": "عنوان البحث",
+    "landingMetaDescription": "وصف البحث",
+    "landingSave": "حفظ",
+    "landingDelete": "حذف",
+    "landingConfirmDelete": "حذف صفحة الهبوط هذه؟ سيتوقف عنوانها عن العمل.",
+    "landingOpen": "فتح",
+    "landingEmpty": "لا توجد صفحات هبوط بعد.",
+    "landingDraft": "غير منشورة",
+    "navContent": "المدونة والصفحات",
+    "contentTitle": "المدونة والصفحات",
+    "contentIntro": "تظهر المقالات في المدونة من الأحدث؛ وللصفحات عنوانها الخاص (/about) ويمكن ربطها في تذييل الموقع. تُكتب النصوص يدويًا لكل لغة؛ اللغة الفارغة تعرض اللغة الرئيسية ولا تُفهرس.",
+    "contentNew": "مقال أو صفحة جديدة",
+    "contentEmpty": "لا توجد مقالات أو صفحات بعد.",
+    "contentKind": "النوع",
+    "contentKinds": {
+      "Post": "مقال مدونة",
+      "Page": "صفحة"
+    },
+    "contentSummary": "الملخص",
+    "contentBody": "النص",
+    "contentBodyHint": "سطر فارغ = فقرة جديدة · ## عنوان · - عنصر قائمة · **غامق** · [نص الرابط](/ar/c/…)",
+    "contentTags": "الوسوم (مفصولة بفواصل)",
+    "contentAuthor": "الكاتب",
+    "contentProducts": "أرقام المنتجات في هذا المقال",
+    "contentPublishedAt": "النشر من (فارغ: الآن)",
+    "contentPublished": "منشور",
+    "contentDraft": "مسودة",
+    "contentInFooter": "رابط في التذييل",
+    "contentCover": "صورة الغلاف",
+    "contentConfirmDelete": "حذف هذا المقال أو هذه الصفحة؟ سيتوقف عنوانه عن العمل.",
+    "contentTitleLabel": "العنوان",
+    "contentErrors": {
+      "not_found": "هذا المقال أو هذه الصفحة لم يعد موجودًا.",
+      "title_required": "العنوان باللغة الرئيسية للمتجر مطلوب.",
+      "body_required": "النص مطلوب.",
+      "too_long": "أحد النصوص طويل جدًا.",
+      "locale_invalid": "أحد النصوص بلغة لا يقدمها المتجر.",
+      "slug_taken": "مقال أو صفحة أخرى تستخدم هذا العنوان.",
+      "slug_reserved": "هذا العنوان خاص بالمتجر نفسه (مثل account أو blog). اختر عنوانًا آخر."
+    }
   },
   "footer": {
     "shopping": "التسوق",
@@ -942,7 +998,9 @@
     "installText": "وصول سريع من الشاشة الرئيسية دون متجر تطبيقات.",
     "installButton": "تثبيت",
     "installIos": "في Safari اضغط «مشاركة» ثم «إضافة إلى الشاشة الرئيسية».",
-    "installDismiss": "إغلاق"
+    "installDismiss": "إغلاق",
+    "blog": "المدونة",
+    "aboutShop": "عن المتجر"
   },
   "search": {
     "title": "البحث",
@@ -981,7 +1039,10 @@
     "compareAdded": "في قائمة المقارنة",
     "wishlistAdd": "أضف إلى المفضلة",
     "wishlistAdded": "في المفضلة",
-    "ratingLabel": "{average} من 5 ({count} تقييم)"
+    "ratingLabel": "{average} من 5 ({count} تقييم)",
+    "offerEndsIn": "ينتهي العرض خلال",
+    "offerEnded": "انتهى هذا العرض",
+    "offerDays": "{n} يوم"
   },
   "listing": {
     "home": "الرئيسية",
@@ -1091,5 +1152,16 @@
       "title_too_long": "العنوان طويل جدًا (120 حرفًا كحد أقصى).",
       "status_invalid": "وافق على التقييم أو ارفضه."
     }
+  },
+  "blog": {
+    "title": "المدونة",
+    "description": "أخبار وأدلة شراء ونصائح.",
+    "tagTitle": "مقالات «{tag}»",
+    "allPosts": "كل المقالات",
+    "empty": "لا توجد مقالات بعد.",
+    "by": "بقلم {author}",
+    "related": "منتجات هذا المقال",
+    "tags": "الوسوم",
+    "pages": "صفحات المدونة"
   }
 }

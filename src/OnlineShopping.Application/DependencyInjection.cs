@@ -54,6 +54,10 @@ public static class DependencyInjection
         services.AddScoped<Catalog.Browse.IProductBrowse, Catalog.Browse.ProductBrowseService>();
         AddSearch(services, configuration);
         services.AddScoped<Catalog.Compare.ProductComparisonService>();
+        services.AddScoped<Catalog.SaleExpiryService>();
+        services.AddScoped<Catalog.LandingPageService>();
+        services.AddScoped<Catalog.SitemapService>();
+        services.AddScoped<Content.ContentService>();
         services.AddScoped<Catalog.Compare.CompareListService>();
         services.AddScoped<Catalog.Reviews.ReviewService>();
         services.AddScoped<Customers.WishlistService>();

@@ -368,6 +368,73 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.ToTable("categories", (string)null);
                 });
 
+            modelBuilder.Entity("OnlineShopping.Domain.Catalog.LandingPage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<string>("Intro")
+                        .HasMaxLength(10000)
+                        .HasColumnType("character varying(10000)")
+                        .HasColumnName("intro");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_published");
+
+                    b.Property<string>("MetaDescription")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)")
+                        .HasColumnName("meta_description");
+
+                    b.Property<string>("MetaTitle")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("meta_title");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<string>("Query")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("query");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("slug");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("title");
+
+                    b.HasKey("Id")
+                        .HasName("pk_landing_pages");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_landing_pages_slug")
+                        .HasFilter("is_deleted = false");
+
+                    b.ToTable("landing_pages", (string)null);
+                });
+
             modelBuilder.Entity("OnlineShopping.Domain.Catalog.Product", b =>
                 {
                     b.Property<Guid>("Id")
@@ -462,6 +529,10 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasColumnType("character varying(64)")
                         .HasColumnName("sku");
 
+                    b.Property<DateTime?>("SaleEndsUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sale_ends_utc");
+
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -504,6 +575,9 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_products_sku")
                         .HasFilter("is_deleted = false");
+
+                    b.HasIndex("SaleEndsUtc")
+                        .HasDatabaseName("ix_products_sale_ends_utc");
 
                     b.ToTable("products", null, t =>
                         {
@@ -1082,6 +1156,110 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasFilter("is_deleted = false");
 
                     b.ToTable("sub_categories", (string)null);
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Content.ContentPage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AuthorName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("author_name");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(100000)
+                        .HasColumnType("character varying(100000)")
+                        .HasColumnName("body");
+
+                    b.Property<string>("CoverImageUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)")
+                        .HasColumnName("cover_image_url");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_published");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("MetaDescription")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)")
+                        .HasColumnName("meta_description");
+
+                    b.Property<string>("MetaTitle")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("meta_title");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<DateTime?>("PublishedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_utc");
+
+                    b.Property<string>("RelatedProducts")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("related_products");
+
+                    b.Property<bool>("ShowInFooter")
+                        .HasColumnType("boolean")
+                        .HasColumnName("show_in_footer");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("slug");
+
+                    b.Property<string>("Summary")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("summary");
+
+                    b.Property<string>("Tags")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("tags");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("title");
+
+                    b.HasKey("Id")
+                        .HasName("pk_content_pages");
+
+                    b.HasIndex("Kind", "Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_content_pages_kind_slug")
+                        .HasFilter("is_deleted = false");
+
+                    b.HasIndex("Kind", "IsPublished", "PublishedUtc")
+                        .HasDatabaseName("ix_content_pages_kind_is_published_published_utc");
+
+                    b.ToTable("content_pages", (string)null);
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Customers.CompareItem", b =>
@@ -2895,6 +3073,62 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.Navigation("Translations");
                 });
 
+            modelBuilder.Entity("OnlineShopping.Domain.Catalog.LandingPage", b =>
+                {
+                    b.OwnsMany("OnlineShopping.Domain.Catalog.CatalogTranslation", "Translations", b1 =>
+                        {
+                            b1.Property<Guid>("LandingPageId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("landing_page_id");
+
+                            b1.Property<string>("Locale")
+                                .HasMaxLength(8)
+                                .HasColumnType("character varying(8)")
+                                .HasColumnName("locale");
+
+                            b1.Property<string>("Description")
+                                .HasColumnType("text")
+                                .HasColumnName("description");
+
+                            b1.Property<string>("MetaDescription")
+                                .HasMaxLength(400)
+                                .HasColumnType("character varying(400)")
+                                .HasColumnName("meta_description");
+
+                            b1.Property<string>("MetaTitle")
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("meta_title");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasMaxLength(300)
+                                .HasColumnType("character varying(300)")
+                                .HasColumnName("name");
+
+                            b1.Property<string>("Slug")
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("slug");
+
+                            b1.Property<string>("Tags")
+                                .HasMaxLength(500)
+                                .HasColumnType("character varying(500)")
+                                .HasColumnName("tags");
+
+                            b1.HasKey("LandingPageId", "Locale")
+                                .HasName("pk_landing_page_translations");
+
+                            b1.ToTable("landing_page_translations", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("LandingPageId")
+                                .HasConstraintName("fk_landing_page_translations_landing_pages_landing_page_id");
+                        });
+
+                    b.Navigation("Translations");
+                });
+
             modelBuilder.Entity("OnlineShopping.Domain.Catalog.Product", b =>
                 {
                     b.HasOne("OnlineShopping.Domain.Catalog.Brand", "Brand")
@@ -3395,6 +3629,70 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.Navigation("Category");
 
                     b.Navigation("TemplateSpecs");
+
+                    b.Navigation("Translations");
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Content.ContentPage", b =>
+                {
+                    b.OwnsMany("OnlineShopping.Domain.Content.ContentTranslation", "Translations", b1 =>
+                        {
+                            b1.Property<Guid>("ContentPageId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("content_page_id");
+
+                            b1.Property<string>("Locale")
+                                .HasMaxLength(8)
+                                .HasColumnType("character varying(8)")
+                                .HasColumnName("locale");
+
+                            b1.Property<string>("Body")
+                                .IsRequired()
+                                .HasMaxLength(100000)
+                                .HasColumnType("character varying(100000)")
+                                .HasColumnName("body");
+
+                            b1.Property<string>("MetaDescription")
+                                .HasMaxLength(400)
+                                .HasColumnType("character varying(400)")
+                                .HasColumnName("meta_description");
+
+                            b1.Property<string>("MetaTitle")
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("meta_title");
+
+                            b1.Property<string>("Slug")
+                                .IsRequired()
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("slug");
+
+                            b1.Property<string>("Summary")
+                                .HasMaxLength(1000)
+                                .HasColumnType("character varying(1000)")
+                                .HasColumnName("summary");
+
+                            b1.Property<string>("Tags")
+                                .HasMaxLength(500)
+                                .HasColumnType("character varying(500)")
+                                .HasColumnName("tags");
+
+                            b1.Property<string>("Title")
+                                .IsRequired()
+                                .HasMaxLength(300)
+                                .HasColumnType("character varying(300)")
+                                .HasColumnName("title");
+
+                            b1.HasKey("ContentPageId", "Locale")
+                                .HasName("pk_content_page_translations");
+
+                            b1.ToTable("content_page_translations", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("ContentPageId")
+                                .HasConstraintName("fk_content_page_translations_content_pages_content_page_id");
+                        });
 
                     b.Navigation("Translations");
                 });

@@ -10,6 +10,8 @@ import type { ErrorTexts } from "@/lib/account/problems";
 import { refreshStorefront } from "@/lib/admin/refresh";
 import type { components } from "@/lib/api/schema";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
+import { useHydrated } from "@/components/ui/useHydrated";
+import { fromLocalInput, toLocalInput } from "@/lib/catalog/sale";
 import { displayName } from "./CatalogTreeEditor";
 import { LocalizedFields, readLocalizedFields } from "./LocalizedFields";
 import { SeoFields, readSeoFields, type SeoText } from "./SeoFields";
@@ -136,6 +138,7 @@ export function applyLiveInput(live: Live, field: string, value: string): Live {
 
 export function ProductEditor({ locale, texts, tree, specs, brands, languageNames, product, shopName, siteUrl }: Props) {
   const router = useRouter();
+  const hydrated = useHydrated();
   const { busy, submit, formError } = useApiForm({ ...texts.errors, ...texts.catalogErrors } as ErrorTexts);
   const [saved, setSaved] = useState(false);
   // Specs the variants vary by belong to each variant, not to the product.
@@ -157,6 +160,7 @@ export function ProductEditor({ locale, texts, tree, specs, brands, languageName
       sku: String(form.get("sku") ?? "").trim(),
       price: parseNumber(form.get("price")) ?? -1,
       compareAtPrice: parseNumber(form.get("compareAtPrice")),
+      saleEndsUtc: fromLocalInput(String(form.get("saleEnds") ?? "")),
       stock: parseNumber(form.get("stock")) ?? -1,
       isPublished: form.get("isPublished") === "on",
       productGroupId: String(form.get("productGroupId") ?? ""),
@@ -205,6 +209,16 @@ export function ProductEditor({ locale, texts, tree, specs, brands, languageName
         <FormField label={texts.productSku} name="sku" defaultValue={product?.sku ?? ""} required maxLength={64} dir="ltr" />
         <FormField label={texts.productPrice} name="price" inputMode="decimal" defaultValue={product?.price ?? ""} required dir="ltr" />
         <FormField label={texts.productCompareAt} name="compareAtPrice" inputMode="decimal" defaultValue={product?.compareAtPrice ?? ""} hint={texts.productCompareAtHint} dir="ltr" />
+        {/* The browser's time zone: filled in once hydrated (the server's zone would differ). */}
+        <FormField
+          key={hydrated ? "local" : "server"}
+          label={texts.productSaleEnds}
+          name="saleEnds"
+          type="datetime-local"
+          defaultValue={hydrated ? toLocalInput(product?.saleEndsUtc) : ""}
+          hint={texts.productSaleEndsHint}
+          dir="ltr"
+        />
         <FormField
           label={texts.productStock}
           name="stock"

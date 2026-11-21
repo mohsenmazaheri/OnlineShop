@@ -1,5 +1,5 @@
 /** Storefront caches an admin page may clear after a save, and the permission each one needs. */
-export const refreshableTags = { store: "settings.manage", currencies: "settings.manage", catalog: "catalog.manage", reviews: "reviews.moderate" } as const;
+export const refreshableTags = { store: "settings.manage", currencies: "settings.manage", catalog: "catalog.manage", reviews: "reviews.moderate", content: "content.manage" } as const;
 
 export type RefreshableTag = keyof typeof refreshableTags;
 
