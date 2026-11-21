@@ -40,6 +40,8 @@ public interface IApplicationDbContext
     DbSet<PhoneVerificationCode> PhoneVerificationCodes { get; }
     DbSet<CustomerAddress> CustomerAddresses { get; }
     DbSet<CompareItem> CompareItems { get; }
+    DbSet<WishlistItem> WishlistItems { get; }
+    DbSet<ProductReview> ProductReviews { get; }
     DbSet<StaffInvitation> StaffInvitations { get; }
     DbSet<StaffAuditEntry> StaffAuditEntries { get; }
     DbSet<Currency> Currencies { get; }

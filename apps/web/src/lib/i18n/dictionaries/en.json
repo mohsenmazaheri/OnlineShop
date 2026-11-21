@@ -153,7 +153,8 @@
       "address_too_long": "This text is too long.",
       "address_country_not_supported": "The shop does not ship to this country.",
       "address_postal_code_invalid": "This postal code is not valid for the country.",
-      "compare_too_many": "You can compare up to 4 products."
+      "compare_too_many": "You can compare up to 4 products.",
+      "wishlist_product_not_found": "That product is no longer available."
     },
     "withCode": "With an SMS code",
     "withPassword": "With a password",
@@ -248,7 +249,11 @@
     "staffInvitationText": "You are invited to work in the admin panel with these roles: {roles}. Valid until {date}.",
     "acceptInvitation": "Accept invitation",
     "invitationAccepted": "Invitation accepted. You now have access to the admin panel.",
-    "adminPanel": "Admin panel"
+    "adminPanel": "Admin panel",
+    "navWishlist": "Wishlist",
+    "wishlistTitle": "My wishlist",
+    "wishlistEmpty": "Your wishlist is empty. Use the heart button on a product to save it here.",
+    "wishlistRemove": "Remove {name}"
   },
   "admin": {
     "title": "Admin panel",
@@ -685,7 +690,8 @@
       "stocktakes": "Count a warehouse, see the differences and post adjustments",
       "suppliers": "Suppliers and their contact details",
       "purchases": "Purchase receipts with unit costs and average cost",
-      "reservations": "Units held for unpaid checkouts"
+      "reservations": "Units held for unpaid checkouts",
+      "reviews": "Approve or reject customer reviews"
     },
     "navInventory": "Stock",
     "navMovements": "Stock movements",
@@ -902,7 +908,23 @@
     "searchIndexRebuild": "Rebuild the index",
     "searchIndexQueued": "The rebuild is queued and runs within seconds.",
     "searchEngineServing": "Search engine: {engine}, answering searches. {pending} products waiting to reach it.",
-    "searchEngineFallback": "Search engine: {engine} is not answering right now, so the database answers searches. {pending} products waiting to reach it."
+    "searchEngineFallback": "Search engine: {engine} is not answering right now, so the database answers searches. {pending} products waiting to reach it.",
+    "navReviews": "Reviews",
+    "reviewsTitle": "Reviews",
+    "reviewsIntro": "Customer reviews appear on the product page only after approval. Approved reviews make up the product's rating.",
+    "reviewsWaiting": "{count} waiting for approval",
+    "reviewsEmpty": "No reviews here.",
+    "reviewFilterAll": "All",
+    "reviewStatuses": {
+      "Pending": "Waiting",
+      "Approved": "Approved",
+      "Rejected": "Rejected"
+    },
+    "reviewApprove": "Approve",
+    "reviewReject": "Reject",
+    "reviewVerified": "Verified buyer",
+    "reviewAnonymous": "A customer",
+    "reviewOn": "On {product}"
   },
   "footer": {
     "shopping": "Shopping",
@@ -956,7 +978,10 @@
     "soldOutOption": "This combination is sold out",
     "video": "Video",
     "compare": "Compare",
-    "compareAdded": "In comparison"
+    "compareAdded": "In comparison",
+    "wishlistAdd": "Add to wishlist",
+    "wishlistAdded": "In your wishlist",
+    "ratingLabel": "{average} out of 5 ({count} reviews)"
   },
   "listing": {
     "home": "Home",
@@ -967,7 +992,8 @@
       "newest": "Newest",
       "price_asc": "Lowest price",
       "price_desc": "Highest price",
-      "discount": "Biggest discount"
+      "discount": "Biggest discount",
+      "rating": "Top rated"
     },
     "filters": "Filters",
     "clearAll": "Clear all filters",
@@ -1022,6 +1048,48 @@
     "category": "Category",
     "viewProduct": "View product",
     "product": "Product",
-    "backHome": "Back to the shop"
+    "backHome": "Back to the shop",
+    "rating": "Rating",
+    "noRating": "No reviews yet"
+  },
+  "reviews": {
+    "title": "Reviews",
+    "outOf": "out of 5",
+    "count": "{count} reviews",
+    "none": "No reviews yet. Be the first to write one.",
+    "stars": "{rating} out of 5 stars",
+    "starRow": "{stars} stars",
+    "verified": "Verified buyer",
+    "anonymous": "A customer",
+    "write": "Write a review",
+    "edit": "Edit your review",
+    "yourRating": "Your rating",
+    "titleLabel": "Title (optional)",
+    "bodyLabel": "Your review",
+    "bodyHint": "At least 10 characters. Links are not allowed.",
+    "submit": "Send review",
+    "cancel": "Cancel",
+    "delete": "Delete my review",
+    "pending": "Your review is waiting for approval.",
+    "rejected": "Your review was not approved. You can edit it and send it again.",
+    "approved": "Your review is published.",
+    "thanks": "Thank you! Your review appears after approval.",
+    "deleted": "Your review was deleted.",
+    "signIn": "Sign in to write a review",
+    "unverified": "Confirm your email address or mobile number in your account to write a review.",
+    "pages": "Review pages",
+    "previous": "Newer reviews",
+    "next": "Older reviews",
+    "errors": {
+      "not_found": "This product cannot be reviewed.",
+      "unverified_account": "Confirm your email address or mobile number first.",
+      "links_not_allowed": "Please remove the links from your review.",
+      "too_many": "You wrote several reviews just now. Please try again later.",
+      "rating_invalid": "Choose from 1 to 5 stars.",
+      "body_required": "Write at least 10 characters.",
+      "body_too_long": "The review is too long (2000 characters at most).",
+      "title_too_long": "The title is too long (120 characters at most).",
+      "status_invalid": "Approve or reject the review."
+    }
   }
 }

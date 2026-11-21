@@ -83,8 +83,8 @@ describe("compare button and bar", () => {
 
 const comparison: ProductComparison = {
   products: [
-    { number: 1, name: "Orvia X1", slug: "orvia-x1", imageUrl: null, price: 300, compareAtPrice: null, inStock: true, category: { name: "Phones", slug: "phones" }, brand: "Orvia" },
-    { number: 2, name: "Orvia X2", slug: "orvia-x2", imageUrl: null, price: 400, compareAtPrice: null, inStock: false, category: { name: "Phones", slug: "phones" }, brand: null },
+    { number: 1, name: "Orvia X1", slug: "orvia-x1", imageUrl: null, price: 300, compareAtPrice: null, inStock: true, category: { name: "Phones", slug: "phones" }, brand: "Orvia", ratingAverage: 4.5, ratingCount: 2 },
+    { number: 2, name: "Orvia X2", slug: "orvia-x2", imageUrl: null, price: 400, compareAtPrice: null, inStock: false, category: { name: "Phones", slug: "phones" }, brand: null, ratingAverage: 0, ratingCount: 0 },
   ],
   groups: [
     {

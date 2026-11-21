@@ -55,6 +55,8 @@ public static class DependencyInjection
         AddSearch(services, configuration);
         services.AddScoped<Catalog.Compare.ProductComparisonService>();
         services.AddScoped<Catalog.Compare.CompareListService>();
+        services.AddScoped<Catalog.Reviews.ReviewService>();
+        services.AddScoped<Customers.WishlistService>();
         services.AddScoped<Search.ProductTextSearch>();
         services.AddScoped<Search.SearchTermLog>();
         services.AddScoped<Search.SearchIndexService>();

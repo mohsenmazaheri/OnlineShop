@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Price } from "@/components/product/Price";
+import { RatingLine } from "@/components/product/ProductCard";
 import { ButtonLink } from "@/components/ui/Button";
 import type { ProductComparison } from "@/lib/api/storefront";
 import { productPath } from "@/lib/catalog/product-path";
@@ -105,6 +106,18 @@ export function CompareTable({ comparison, locale, money, onlyDifferences, texts
               {products.map((p) => (
                 <td key={p.number} headers={`cmp-stock ${productId(p.number)}`} className={`p-2 align-top font-medium ${p.inStock ? "text-success" : "text-danger"}`}>
                   {p.inStock ? texts.product.inStock : texts.product.outOfStock}
+                </td>
+              ))}
+            </tr>
+            <LabelRow id="cmp-rating" span={span} label={t.rating} />
+            <tr>
+              {products.map((p) => (
+                <td key={p.number} headers={`cmp-rating ${productId(p.number)}`} className="p-2 align-top">
+                  {p.ratingCount > 0 ? (
+                    <RatingLine average={p.ratingAverage} count={p.ratingCount} locale={locale} label={texts.product.ratingLabel} />
+                  ) : (
+                    <span className="text-xs text-muted">{t.noRating}</span>
+                  )}
                 </td>
               ))}
             </tr>

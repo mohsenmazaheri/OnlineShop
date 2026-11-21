@@ -119,6 +119,56 @@
         }
       }
     },
+    "/api/v1/catalog/products/{number}/reviews": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "A page of the product's approved reviews (newest first) with its rating summary.",
+        "operationId": "ListProductReviews",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductReviews"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/currencies": {
       "get": {
         "tags": [
@@ -480,6 +530,307 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/account/reviews/{number}": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Whether the visitor may review the product, and their own review if any.",
+        "operationId": "GetMyReview",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyReviewState"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Write or replace the customer's review of the product (it waits for moderation).",
+        "operationId": "SubmitReview",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyReview"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Remove the customer's own review of the product.",
+        "operationId": "DeleteMyReview",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/reviews": {
+      "get": {
+        "tags": [
+          "Admin: reviews"
+        ],
+        "summary": "Reviews of one status (all when empty) for moderation, with the number waiting.",
+        "operationId": "ListReviewsForModeration",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ReviewStatus"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewAdminList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/reviews/{id}": {
+      "put": {
+        "tags": [
+          "Admin: reviews"
+        ],
+        "summary": "Approve or reject a review; the product's rating follows.",
+        "operationId": "ModerateReview",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModerateReviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewAdminRow"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/account/wishlist/ids": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Numbers of the products on the visitor's wishlist (signedIn=false for a guest).",
+        "operationId": "GetWishlistIds",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WishlistIds"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/account/wishlist": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "The signed-in customer's wishlist as product cards, the most recently added first.",
+        "operationId": "ListWishlist",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductCard"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/account/wishlist/{number}": {
+      "put": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Add a product to the wishlist (no change when it is there already).",
+        "operationId": "AddToWishlist",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Take a product off the wishlist.",
+        "operationId": "RemoveFromWishlist",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WishlistIds"
                 }
               }
             }
@@ -6134,7 +6485,8 @@
           "Newest",
           "PriceAsc",
           "PriceDesc",
-          "Discount"
+          "Discount",
+          "Rating"
         ]
       },
       "CartItemData": {
@@ -6352,27 +6704,6 @@
           }
         }
       },
-      "CompareItemData": {
-        "required": [
-          "number",
-          "productName",
-          "addedUtc"
-        ],
-        "type": "object",
-        "properties": {
-          "number": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "productName": {
-            "type": "string"
-          },
-          "addedUtc": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
       "CompareListView": {
         "required": [
           "numbers"
@@ -6402,7 +6733,9 @@
           "compareAtPrice",
           "inStock",
           "category",
-          "brand"
+          "brand",
+          "ratingAverage",
+          "ratingCount"
         ],
         "type": "object",
         "properties": {
@@ -6444,6 +6777,14 @@
               "null",
               "string"
             ]
+          },
+          "ratingAverage": {
+            "type": "number",
+            "format": "double"
+          },
+          "ratingCount": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -7205,6 +7546,17 @@
           }
         }
       },
+      "ModerateReviewRequest": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ReviewStatus"
+          }
+        }
+      },
       "MovementPage": {
         "required": [
           "items",
@@ -7319,6 +7671,64 @@
             "type": [
               "null",
               "string"
+            ]
+          }
+        }
+      },
+      "MyReview": {
+        "required": [
+          "rating",
+          "title",
+          "body",
+          "status",
+          "writtenUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "rating": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "body": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReviewStatus"
+          },
+          "writtenUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "MyReviewState": {
+        "required": [
+          "signedIn",
+          "canReview",
+          "review"
+        ],
+        "type": "object",
+        "properties": {
+          "signedIn": {
+            "type": "boolean"
+          },
+          "canReview": {
+            "type": "boolean"
+          },
+          "review": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/MyReview"
+              }
             ]
           }
         }
@@ -7457,7 +7867,9 @@
           "addresses",
           "orders",
           "cart",
-          "compare"
+          "compare",
+          "wishlist",
+          "reviews"
         ],
         "type": "object",
         "properties": {
@@ -7489,7 +7901,19 @@
           "compare": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CompareItemData"
+              "$ref": "#/components/schemas/SavedProductData"
+            }
+          },
+          "wishlist": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SavedProductData"
+            }
+          },
+          "reviews": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewData"
             }
           }
         }
@@ -7675,7 +8099,9 @@
           "price",
           "compareAtPrice",
           "inStock",
-          "categorySlug"
+          "categorySlug",
+          "ratingAverage",
+          "ratingCount"
         ],
         "type": "object",
         "properties": {
@@ -7711,6 +8137,14 @@
           },
           "categorySlug": {
             "type": "string"
+          },
+          "ratingAverage": {
+            "type": "number",
+            "format": "double"
+          },
+          "ratingCount": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -7763,7 +8197,9 @@
           "weightGrams",
           "metaTitle",
           "metaDescription",
-          "videos"
+          "videos",
+          "ratingAverage",
+          "ratingCount"
         ],
         "type": "object",
         "properties": {
@@ -7886,6 +8322,14 @@
             "items": {
               "$ref": "#/components/schemas/ProductVideoInfo"
             }
+          },
+          "ratingAverage": {
+            "type": "number",
+            "format": "double"
+          },
+          "ratingCount": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -8159,6 +8603,39 @@
             "format": "int32"
           },
           "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ProductReviews": {
+        "required": [
+          "summary",
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "summary": {
+            "$ref": "#/components/schemas/RatingSummary"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewView"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
             "type": "integer",
             "format": "int32"
           }
@@ -8450,6 +8927,31 @@
               "string"
             ],
             "format": "date-time"
+          }
+        }
+      },
+      "RatingSummary": {
+        "required": [
+          "average",
+          "count",
+          "stars"
+        ],
+        "type": "object",
+        "properties": {
+          "average": {
+            "type": "number",
+            "format": "double"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "stars": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
           }
         }
       },
@@ -8831,6 +9333,220 @@
           }
         }
       },
+      "ReviewAdminList": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total",
+          "pendingCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewAdminRow"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pendingCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ReviewAdminRow": {
+        "required": [
+          "id",
+          "productNumber",
+          "productName",
+          "authorName",
+          "rating",
+          "title",
+          "body",
+          "locale",
+          "status",
+          "verifiedBuyer",
+          "createdUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "productNumber": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "authorName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "rating": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "body": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReviewStatus"
+          },
+          "verifiedBuyer": {
+            "type": "boolean"
+          },
+          "createdUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ReviewData": {
+        "required": [
+          "productNumber",
+          "productName",
+          "rating",
+          "title",
+          "body",
+          "status",
+          "writtenUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "productNumber": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "body": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "writtenUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ReviewInput": {
+        "required": [
+          "rating",
+          "title",
+          "body"
+        ],
+        "type": "object",
+        "properties": {
+          "rating": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "body": {
+            "type": "string"
+          }
+        }
+      },
+      "ReviewStatus": {
+        "enum": [
+          "Pending",
+          "Approved",
+          "Rejected"
+        ]
+      },
+      "ReviewView": {
+        "required": [
+          "id",
+          "authorName",
+          "rating",
+          "title",
+          "body",
+          "locale",
+          "verifiedBuyer",
+          "createdUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "authorName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "rating": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "body": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "verifiedBuyer": {
+            "type": "boolean"
+          },
+          "createdUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
       "SaveBrandingRequest": {
         "required": [
           "primaryColor",
@@ -8940,6 +9656,27 @@
           "sortOrder": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "SavedProductData": {
+        "required": [
+          "number",
+          "productName",
+          "addedUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "addedUtc": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -11049,6 +11786,25 @@
             "type": "boolean"
           }
         }
+      },
+      "WishlistIds": {
+        "required": [
+          "numbers"
+        ],
+        "type": "object",
+        "properties": {
+          "numbers": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "signedIn": {
+            "type": "boolean",
+            "default": true
+          }
+        }
       }
     }
   },
@@ -11058,6 +11814,9 @@
     },
     {
       "name": "Account"
+    },
+    {
+      "name": "Admin: reviews"
     },
     {
       "name": "Admin: currencies"

@@ -62,6 +62,17 @@ builder.Services.AddRateLimiter(options =>
                 Window = TimeSpan.FromSeconds(builder.Configuration.GetValue("RateLimiting:WindowSeconds", 60)),
                 QueueLimit = 0
             }));
+
+    // Writing reviews (per address; the review service also caps reviews per customer and hour).
+    options.AddPolicy(ReviewEndpoints.ReviewRateLimitPolicy, context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = builder.Configuration.GetValue("RateLimiting:ReviewPermitPerWindow", 10),
+                Window = TimeSpan.FromSeconds(builder.Configuration.GetValue("RateLimiting:WindowSeconds", 60)),
+                QueueLimit = 0
+            }));
 });
 
 builder.Services.AddHsts(options =>
@@ -107,6 +118,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 app.MapStoreEndpoints();
 app.MapProductEndpoints();
 app.MapCompareEndpoints();
+app.MapReviewEndpoints();
 app.MapCurrencyEndpoints();
 app.MapBrandingEndpoints();
 app.MapCatalogAdminEndpoints();

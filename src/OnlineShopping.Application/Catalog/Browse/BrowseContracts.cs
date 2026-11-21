@@ -10,7 +10,9 @@ public enum BrowseSort
     PriceAsc,
     PriceDesc,
     /// <summary>The largest discount (share of the old price) first.</summary>
-    Discount
+    Discount,
+    /// <summary>The best rated first (average stars, then the number of reviews).</summary>
+    Rating
 }
 
 /// <summary>A closed or open number range: "5-7", "5-", "-7".</summary>
@@ -52,7 +54,7 @@ public sealed record BrowseQuery
 /// <summary>
 /// Reads a browse query from the address bar's parameters (the web app writes the same ones):
 /// c, s (category and sub-category slug), b (brand page), q (text); brand=a,b; group=id,id; min, max (base currency);
-/// stock=1; sale=1; o.{spec}=option,option; n.{spec}=min-max; y.{spec}=1; sort=newest|price_asc|price_desc|discount;
+/// stock=1; sale=1; o.{spec}=option,option; n.{spec}=min-max; y.{spec}=1; sort=newest|price_asc|price_desc|discount|rating;
 /// page. Anything unknown or malformed is ignored, so an edited address never fails.
 /// </summary>
 public static class BrowseQueryParser
@@ -103,6 +105,7 @@ public static class BrowseQueryParser
                 "price_asc" => BrowseSort.PriceAsc,
                 "price_desc" => BrowseSort.PriceDesc,
                 "discount" => BrowseSort.Discount,
+                "rating" => BrowseSort.Rating,
                 "relevance" => BrowseSort.Relevance,
                 _ => null,
             },

@@ -8,7 +8,7 @@ export type StoreInfo = components["schemas"]["StoreInfoResponse"];
 export type CategorySummary = components["schemas"]["CategorySummary"];
 
 /** Cache tags; the API (or admin panel) revalidates them when the data changes (POST /api/revalidate). */
-export const cacheTags = { store: "store", catalog: "catalog", currencies: "currencies" } as const;
+export const cacheTags = { store: "store", catalog: "catalog", currencies: "currencies", reviews: "reviews" } as const;
 
 export async function getStoreInfo(): Promise<StoreInfo> {
   "use cache";
@@ -35,7 +35,7 @@ export const productTag = (number: number) => `product-${number}`;
 /** Published products for a home-page rail, named in the given language. */
 export async function getProducts(list: ProductListName, locale: string, take = 12): Promise<ProductCard[]> {
   "use cache";
-  cacheTag(cacheTags.catalog);
+  cacheTag(cacheTags.catalog, cacheTags.reviews);
   cacheLife("hours");
   return apiGet<ProductCard[]>(`/api/v1/catalog/products?list=${list}&locale=${encodeURIComponent(locale)}&take=${take}`);
 }
@@ -43,7 +43,7 @@ export async function getProducts(list: ProductListName, locale: string, take = 
 /** One published product, or null when there is none with this number (unpublished, deleted, never existed). */
 export async function getProduct(number: number, locale: string): Promise<ProductDetail | null> {
   "use cache";
-  cacheTag(cacheTags.catalog, productTag(number));
+  cacheTag(cacheTags.catalog, cacheTags.reviews, productTag(number));
   cacheLife("hours");
   try {
     return await apiGet<ProductDetail>(`/api/v1/catalog/products/${number}?locale=${encodeURIComponent(locale)}`);
@@ -69,7 +69,7 @@ export type BrowseResult = components["schemas"]["BrowseResult"];
  */
 export async function browseProducts(query: string): Promise<BrowseResult | null> {
   "use cache";
-  cacheTag(cacheTags.catalog);
+  cacheTag(cacheTags.catalog, cacheTags.reviews);
   cacheLife("minutes");
   try {
     return await apiGet<BrowseResult>(`/api/v1/catalog/browse?${query}`);
@@ -87,4 +87,19 @@ export type ProductComparison = components["schemas"]["ProductComparison"];
  */
 export async function getComparison(numbers: readonly number[], locale: string): Promise<ProductComparison> {
   return apiGet<ProductComparison>(`/api/v1/catalog/compare?numbers=${numbers.join(",")}&locale=${encodeURIComponent(locale)}`);
+}
+
+export type ProductReviews = components["schemas"]["ProductReviews"];
+
+/** A page of a product's approved reviews (moderation clears the "reviews" tag). Null for an unknown product. */
+export async function getProductReviews(number: number, page: number): Promise<ProductReviews | null> {
+  "use cache";
+  cacheTag(cacheTags.reviews, productTag(number));
+  cacheLife("minutes");
+  try {
+    return await apiGet<ProductReviews>(`/api/v1/catalog/products/${number}/reviews?page=${page}`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  }
 }

@@ -24,7 +24,9 @@ public sealed record ProductCard(
     decimal Price,
     decimal? CompareAtPrice,
     bool InStock,
-    string CategorySlug);
+    string CategorySlug,
+    decimal RatingAverage,
+    int RatingCount);
 
 public sealed record CategoryLink(string Name, string Slug);
 
@@ -89,7 +91,9 @@ public sealed record ProductDetail(
     int? WeightGrams,
     string? MetaTitle,
     string? MetaDescription,
-    IReadOnlyList<ProductVideoInfo> Videos);
+    IReadOnlyList<ProductVideoInfo> Videos,
+    decimal RatingAverage,
+    int RatingCount);
 
 public interface IProductQueries
 {
@@ -124,7 +128,9 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
         p.Price,
         p.CompareAtPrice,
         p.Stock - p.Reserved > 0,
-        p.ProductGroup.SubCategory.Category.Slug);
+        p.ProductGroup.SubCategory.Category.Slug,
+        p.RatingAverage,
+        p.RatingCount);
 
     public async Task<IReadOnlyList<ProductCard>> CardsAsync(IReadOnlyList<Guid> ids, string locale, CancellationToken cancellationToken = default)
     {
@@ -181,6 +187,8 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
                 p.Gtin,
                 p.Mpn,
                 p.WeightGrams,
+                p.RatingAverage,
+                p.RatingCount,
                 // Search texts only from a real translation (or the default language), never mixed with another language.
                 MetaTitle = p.Translations.Any(t => t.Locale == locale)
                     ? p.Translations.Where(t => t.Locale == locale).Select(t => t.MetaTitle).FirstOrDefault()
@@ -247,7 +255,8 @@ public sealed class ProductQueries(IApplicationDbContext db) : IProductQueries
         return new ProductDetail(
             product.PublicNumber, product.Name, product.Slug, product.Description, product.SKU, product.Price,
             product.CompareAtPrice, Math.Max(0, product.Stock), product.Stock > 0, images, product.Category, product.SubCategory,
-            specs, alternates, product.Brand, axes, variants, product.Gtin, product.Mpn, product.WeightGrams, product.MetaTitle, product.MetaDescription, videos);
+            specs, alternates, product.Brand, axes, variants, product.Gtin, product.Mpn, product.WeightGrams, product.MetaTitle, product.MetaDescription, videos,
+            product.RatingAverage, product.RatingCount);
     }
 
     /// <summary>The variants with their effective prices, and the axes with only the options they use.</summary>

@@ -153,7 +153,8 @@
       "address_too_long": "هذا النص طويل جدًا.",
       "address_country_not_supported": "لا يشحن المتجر إلى هذه الدولة.",
       "address_postal_code_invalid": "هذا الرمز البريدي غير صالح لهذه الدولة.",
-      "compare_too_many": "يمكن مقارنة 4 منتجات كحد أقصى."
+      "compare_too_many": "يمكن مقارنة 4 منتجات كحد أقصى.",
+      "wishlist_product_not_found": "هذا المنتج لم يعد متاحًا."
     },
     "withCode": "برمز SMS",
     "withPassword": "بكلمة المرور",
@@ -248,7 +249,11 @@
     "staffInvitationText": "تمت دعوتك للعمل في لوحة الإدارة بهذه الأدوار: {roles}. صالحة حتى {date}.",
     "acceptInvitation": "قبول الدعوة",
     "invitationAccepted": "تم قبول الدعوة. يمكنك الآن الوصول إلى لوحة الإدارة.",
-    "adminPanel": "لوحة الإدارة"
+    "adminPanel": "لوحة الإدارة",
+    "navWishlist": "المفضلة",
+    "wishlistTitle": "قائمتي المفضلة",
+    "wishlistEmpty": "قائمتك المفضلة فارغة. احفظ المنتجات بزر القلب في صفحة المنتج.",
+    "wishlistRemove": "إزالة {name}"
   },
   "admin": {
     "title": "لوحة الإدارة",
@@ -685,7 +690,8 @@
       "stocktakes": "عدّ المستودع وعرض الفروقات وترحيل التسويات",
       "suppliers": "الموردون وبيانات الاتصال",
       "purchases": "إيصالات الشراء بتكلفة الوحدة ومتوسط التكلفة",
-      "reservations": "وحدات محجوزة لعمليات دفع غير مكتملة"
+      "reservations": "وحدات محجوزة لعمليات دفع غير مكتملة",
+      "reviews": "الموافقة على تقييمات العملاء أو رفضها"
     },
     "navInventory": "المخزون",
     "navMovements": "حركات المخزون",
@@ -902,7 +908,23 @@
     "searchIndexRebuild": "إعادة بناء الفهرس",
     "searchIndexQueued": "أُضيفت إعادة البناء إلى الانتظار وتتم خلال ثوانٍ.",
     "searchEngineServing": "محرك البحث: {engine}، يجيب عن عمليات البحث. {pending} منتجات بانتظار الوصول إليه.",
-    "searchEngineFallback": "محرك البحث: {engine} لا يجيب الآن، لذا تجيب قاعدة البيانات عن عمليات البحث. {pending} منتجات بانتظار الوصول إليه."
+    "searchEngineFallback": "محرك البحث: {engine} لا يجيب الآن، لذا تجيب قاعدة البيانات عن عمليات البحث. {pending} منتجات بانتظار الوصول إليه.",
+    "navReviews": "التقييمات",
+    "reviewsTitle": "التقييمات",
+    "reviewsIntro": "تظهر تقييمات العملاء في صفحة المنتج بعد الموافقة فقط. التقييمات الموافق عليها تشكّل تقييم المنتج.",
+    "reviewsWaiting": "{count} بانتظار الموافقة",
+    "reviewsEmpty": "لا توجد تقييمات هنا.",
+    "reviewFilterAll": "الكل",
+    "reviewStatuses": {
+      "Pending": "بانتظار",
+      "Approved": "موافق عليه",
+      "Rejected": "مرفوض"
+    },
+    "reviewApprove": "موافقة",
+    "reviewReject": "رفض",
+    "reviewVerified": "مشترٍ موثّق",
+    "reviewAnonymous": "أحد العملاء",
+    "reviewOn": "عن {product}"
   },
   "footer": {
     "shopping": "التسوق",
@@ -956,7 +978,10 @@
     "soldOutOption": "هذه التركيبة نفدت",
     "video": "فيديو",
     "compare": "مقارنة",
-    "compareAdded": "في قائمة المقارنة"
+    "compareAdded": "في قائمة المقارنة",
+    "wishlistAdd": "أضف إلى المفضلة",
+    "wishlistAdded": "في المفضلة",
+    "ratingLabel": "{average} من 5 ({count} تقييم)"
   },
   "listing": {
     "home": "الرئيسية",
@@ -967,7 +992,8 @@
       "newest": "الأحدث",
       "price_asc": "الأرخص",
       "price_desc": "الأغلى",
-      "discount": "أكبر خصم"
+      "discount": "أكبر خصم",
+      "rating": "الأعلى تقييمًا"
     },
     "filters": "الفلاتر",
     "clearAll": "إزالة كل الفلاتر",
@@ -1022,6 +1048,48 @@
     "category": "الفئة",
     "viewProduct": "عرض المنتج",
     "product": "المنتج",
-    "backHome": "العودة إلى المتجر"
+    "backHome": "العودة إلى المتجر",
+    "rating": "التقييم",
+    "noRating": "لا توجد تقييمات بعد"
+  },
+  "reviews": {
+    "title": "التقييمات",
+    "outOf": "من 5",
+    "count": "{count} تقييم",
+    "none": "لا توجد تقييمات بعد. كن أول من يكتب تقييمًا.",
+    "stars": "{rating} من 5 نجوم",
+    "starRow": "{stars} نجوم",
+    "verified": "مشترٍ موثّق",
+    "anonymous": "أحد العملاء",
+    "write": "اكتب تقييمًا",
+    "edit": "عدّل تقييمك",
+    "yourRating": "تقييمك",
+    "titleLabel": "العنوان (اختياري)",
+    "bodyLabel": "تقييمك",
+    "bodyHint": "10 أحرف على الأقل. الروابط غير مسموح بها.",
+    "submit": "إرسال التقييم",
+    "cancel": "إلغاء",
+    "delete": "احذف تقييمي",
+    "pending": "تقييمك بانتظار الموافقة.",
+    "rejected": "لم تتم الموافقة على تقييمك. يمكنك تعديله وإرساله مجددًا.",
+    "approved": "تم نشر تقييمك.",
+    "thanks": "شكرًا! سيظهر تقييمك بعد الموافقة.",
+    "deleted": "تم حذف تقييمك.",
+    "signIn": "سجّل الدخول لكتابة تقييم",
+    "unverified": "أكّد بريدك الإلكتروني أو رقم جوالك في حسابك لكتابة تقييم.",
+    "pages": "صفحات التقييمات",
+    "previous": "تقييمات أحدث",
+    "next": "تقييمات أقدم",
+    "errors": {
+      "not_found": "لا يمكن تقييم هذا المنتج.",
+      "unverified_account": "أكّد بريدك الإلكتروني أو رقم جوالك أولًا.",
+      "links_not_allowed": "يرجى إزالة الروابط من تقييمك.",
+      "too_many": "كتبت عدة تقييمات للتو. يرجى المحاولة لاحقًا.",
+      "rating_invalid": "اختر من 1 إلى 5 نجوم.",
+      "body_required": "اكتب 10 أحرف على الأقل.",
+      "body_too_long": "التقييم طويل جدًا (2000 حرف كحد أقصى).",
+      "title_too_long": "العنوان طويل جدًا (120 حرفًا كحد أقصى).",
+      "status_invalid": "وافق على التقييم أو ارفضه."
+    }
   }
 }

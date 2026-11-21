@@ -12,6 +12,9 @@ vi.mock("next/link", () => ({
     </a>
   ),
 }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+// The wishlist button asks once per page; a guest here.
+vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ numbers: [], signedIn: false }), { status: 200 })));
 vi.mock("next/image", () => ({
   // eslint-disable-next-line @next/next/no-img-element
   default: ({ src, alt, className }: { src: string; alt: string; className?: string }) => <img src={src} alt={alt} className={className} />,
@@ -37,6 +40,8 @@ const card = (over: Partial<ProductCardData> = {}): ProductCardData => ({
   compareAtPrice: 399,
   inStock: true,
   categorySlug: "phones",
+  ratingAverage: 4.5,
+  ratingCount: 2,
   ...over,
 });
 
@@ -63,6 +68,8 @@ const detail: ProductDetail = {
   metaTitle: null,
   metaDescription: null,
   videos: [],
+  ratingAverage: 0,
+  ratingCount: 0,
 };
 
 describe("Price", () => {

@@ -443,6 +443,15 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("public_number");
 
+                    b.Property<decimal>("RatingAverage")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("rating_average");
+
+                    b.Property<int>("RatingCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("rating_count");
+
                     b.Property<int>("Reserved")
                         .HasColumnType("integer")
                         .HasColumnName("reserved");
@@ -597,6 +606,105 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasDatabaseName("ix_product_images_product_id");
 
                     b.ToTable("product_images", (string)null);
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Catalog.ProductReview", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AuthorName")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("author_name");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("body");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)")
+                        .HasColumnName("customer_id");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<string>("Locale")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("locale");
+
+                    b.Property<string>("ModeratedBy")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)")
+                        .HasColumnName("moderated_by");
+
+                    b.Property<DateTime?>("ModeratedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("moderated_utc");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("integer")
+                        .HasColumnName("rating");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("title");
+
+                    b.Property<bool>("VerifiedBuyer")
+                        .HasColumnType("boolean")
+                        .HasColumnName("verified_buyer");
+
+                    b.HasKey("Id")
+                        .HasName("pk_product_reviews");
+
+                    b.HasIndex("CustomerId")
+                        .HasDatabaseName("ix_product_reviews_customer_id");
+
+                    b.HasIndex("ProductId", "CustomerId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_product_reviews_product_id_customer_id")
+                        .HasFilter("is_deleted = false");
+
+                    b.HasIndex("ProductId", "Status")
+                        .HasDatabaseName("ix_product_reviews_product_id_status");
+
+                    b.HasIndex("Status", "CreatedUtc")
+                        .HasDatabaseName("ix_product_reviews_status_created_utc");
+
+                    b.ToTable("product_reviews", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ProductReviews_Rating", "rating BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("CK_ProductReviews_Status", "status IN ('Pending', 'Approved', 'Rejected')");
+                        });
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Catalog.ProductSpec", b =>
@@ -1091,6 +1199,30 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasDatabaseName("ix_customer_addresses_customer_id");
 
                     b.ToTable("customer_addresses", (string)null);
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Customers.WishlistItem", b =>
+                {
+                    b.Property<string>("CustomerId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)")
+                        .HasColumnName("customer_id");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<DateTime>("AddedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("added_utc");
+
+                    b.HasKey("CustomerId", "ProductId")
+                        .HasName("pk_wishlist_items");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_wishlist_items_product_id");
+
+                    b.ToTable("wishlist_items", (string)null);
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Inventory.PurchaseReceipt", b =>
@@ -2942,6 +3074,23 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("OnlineShopping.Domain.Catalog.ProductReview", b =>
+                {
+                    b.HasOne("OnlineShopping.Infrastructure.Identity.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_product_reviews_users_customer_id");
+
+                    b.HasOne("OnlineShopping.Domain.Catalog.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_product_reviews_products_product_id");
+                });
+
             modelBuilder.Entity("OnlineShopping.Domain.Catalog.ProductSpec", b =>
                 {
                     b.OwnsMany("OnlineShopping.Domain.Catalog.SpecTranslation", "Translations", b1 =>
@@ -3275,6 +3424,23 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_customer_addresses_users_customer_id");
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Customers.WishlistItem", b =>
+                {
+                    b.HasOne("OnlineShopping.Infrastructure.Identity.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_wishlist_items_users_customer_id");
+
+                    b.HasOne("OnlineShopping.Domain.Catalog.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_wishlist_items_products_product_id");
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Inventory.PurchaseReceipt", b =>

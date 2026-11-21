@@ -15,7 +15,9 @@ public sealed record CompareProduct(
     decimal? CompareAtPrice,
     bool InStock,
     CategoryLink Category,
-    string? Brand);
+    string? Brand,
+    decimal RatingAverage,
+    int RatingCount);
 
 /// <summary>
 /// One product's value for a spec. Numbers and yes/no stay typed (the storefront formats them for the reader); options
@@ -92,7 +94,9 @@ public sealed class ProductComparisonService(IApplicationDbContext db)
                         p.ProductGroup.SubCategory.Category.Translations.Where(t => t.Locale == locale).Select(t => t.Name).FirstOrDefault()
                             ?? p.ProductGroup.SubCategory.Category.Name,
                         p.ProductGroup.SubCategory.Category.Slug),
-                    p.Brand == null ? null : p.Brand.Translations.Where(t => t.Locale == locale).Select(t => t.Name).FirstOrDefault() ?? p.Brand.Name),
+                    p.Brand == null ? null : p.Brand.Translations.Where(t => t.Locale == locale).Select(t => t.Name).FirstOrDefault() ?? p.Brand.Name,
+                    p.RatingAverage,
+                    p.RatingCount),
             })
             .ToListAsync(cancellationToken);
         var products = rows.OrderBy(r => wanted.IndexOf(r.Product.Number)).ToList();

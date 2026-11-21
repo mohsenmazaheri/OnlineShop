@@ -52,6 +52,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<PhoneVerificationCode> PhoneVerificationCodes => Set<PhoneVerificationCode>();
     public DbSet<CustomerAddress> CustomerAddresses => Set<CustomerAddress>();
     public DbSet<CompareItem> CompareItems => Set<CompareItem>();
+    public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
+    public DbSet<ProductReview> ProductReviews => Set<ProductReview>();
     public DbSet<StaffInvitation> StaffInvitations => Set<StaffInvitation>();
     public DbSet<StaffAuditEntry> StaffAuditEntries => Set<StaffAuditEntry>();
     public DbSet<Currency> Currencies => Set<Currency>();
@@ -117,6 +119,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     /// <summary>The SQL check that keeps the Status column in sync with every <see cref="StockReservationStatus"/> value.</summary>
     internal static string BuildReservationStatusCheckSql() =>
         $"status IN ({string.Join(", ", Enum.GetNames<StockReservationStatus>().Select(n => $"'{n}'"))})";
+
+    /// <summary>The SQL check that keeps the Status column in sync with every <see cref="ReviewStatus"/> value.</summary>
+    internal static string BuildReviewStatusCheckSql() =>
+        $"status IN ({string.Join(", ", Enum.GetNames<ReviewStatus>().Select(n => $"'{n}'"))})";
 
     /// <summary>The SQL check that keeps the Status column in sync with every <see cref="OrderStatus"/> value.</summary>
     internal static string BuildOrderStatusCheckSql() =>
@@ -505,6 +511,39 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 .WithMany()
                 .HasForeignKey(a => a.CustomerId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<WishlistItem>(e =>
+        {
+            e.ToTable("wishlist_items");
+            e.HasKey(w => new { w.CustomerId, w.ProductId });
+            e.Property(w => w.CustomerId).HasMaxLength(450);
+            e.HasOne<AppUser>().WithMany().HasForeignKey(w => w.CustomerId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<Product>().WithMany().HasForeignKey(w => w.ProductId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<ProductReview>(e =>
+        {
+            e.ToTable("product_reviews", tb =>
+            {
+                tb.HasCheckConstraint("CK_ProductReviews_Status", BuildReviewStatusCheckSql());
+                tb.HasCheckConstraint("CK_ProductReviews_Rating", "rating BETWEEN 1 AND 5");
+            });
+            e.Property(r => r.CustomerId).HasMaxLength(450);
+            e.Property(r => r.AuthorName).HasMaxLength(60);
+            e.Property(r => r.Title).HasMaxLength(120);
+            e.Property(r => r.Body).HasMaxLength(2000);
+            e.Property(r => r.Locale).HasMaxLength(8);
+            e.Property(r => r.Status).HasConversion<string>().HasMaxLength(16);
+            e.Property(r => r.ModeratedBy).HasMaxLength(450);
+            // One review per customer and product.
+            e.HasIndex(r => new { r.ProductId, r.CustomerId }).IsUnique().HasFilter(NotDeletedFilter);
+            // The product page lists approved reviews; the moderation queue lists by status.
+            e.HasIndex(r => new { r.ProductId, r.Status });
+            e.HasIndex(r => new { r.Status, r.CreatedUtc });
+            e.HasIndex(r => r.CustomerId);
+            e.HasOne<AppUser>().WithMany().HasForeignKey(r => r.CustomerId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<Product>().WithMany().HasForeignKey(r => r.ProductId).OnDelete(DeleteBehavior.Cascade);
         });
 
         b.Entity<CompareItem>(e =>
