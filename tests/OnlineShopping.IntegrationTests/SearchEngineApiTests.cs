@@ -133,11 +133,11 @@ public static class SearchEngineScenario
         await RunWorkerAsync(factory);
         Assert.Equal([renamed], (await ReadAsync<BrowseResult>(await visitor.GetAsync($"/api/v1/catalog/browse?q={renamed}&locale=en"))).Items.Select(i => i.Name));
 
-        // A full rebuild switches to new indexes without losing anything (the renamed stand no longer contains the
-        // word, so the word finds only the lamp now).
+        // A full rebuild switches to new indexes without losing anything. The renamed stand keeps the word only in its
+        // SKU (ENG-B-{word}, whose parts are indexed), so it now ranks below the lamp, which has the word in its name.
         await ReadAsync<SearchIndexStatus>(await admin.PostAsync("/api/v1/admin/seo/search-index/rebuild", null));
         await RunWorkerAsync(factory);
-        Assert.Equal([$"{word} lamp"], (await ReadAsync<BrowseResult>(await visitor.GetAsync($"/api/v1/catalog/browse?q={word[..7]}&locale=en"))).Items.Select(i => i.Name));
+        Assert.Equal([$"{word} lamp", renamed], (await ReadAsync<BrowseResult>(await visitor.GetAsync($"/api/v1/catalog/browse?q={word[..7]}&locale=en"))).Items.Select(i => i.Name));
         Assert.Equal([renamed], (await ReadAsync<BrowseResult>(await visitor.GetAsync($"/api/v1/catalog/browse?q={renamed}&locale=en"))).Items.Select(i => i.Name));
         Assert.Equal(new SearchEngineStatus(factory.Provider, true, 0), (await ReadAsync<SearchIndexStatus>(await admin.GetAsync("/api/v1/admin/seo/search-index"))).Engine);
     }
