@@ -62,7 +62,7 @@ public sealed class SearchTermsTests
 
 public sealed class SearchIndexTests : DemoCatalogTestBase
 {
-    private SearchIndexService Index(AppDbContext db) => new(db, Database.Clock, Options.Create(Store));
+    private SearchIndexService Index(AppDbContext db) => new(db, Database.Clock, Options.Create(Store), Options.Create(new SearchOptions()));
 
     [Fact]
     public async Task Catalog_changes_queue_their_products_and_the_index_builds_one_document_per_language()
@@ -140,6 +140,7 @@ public sealed class SearchIndexTests : DemoCatalogTestBase
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<AppDbContext>());
         services.AddSingleton<TimeProvider>(Database.Clock);
         services.AddSingleton(Options.Create(Store));
+        services.AddSingleton(Options.Create(new SearchOptions()));
         services.AddScoped<SearchIndexService>();
         await using var provider = services.BuildServiceProvider();
 

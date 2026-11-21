@@ -893,7 +893,9 @@
     "searchIndexIntro": "Die Suche liest einen vorbereiteten Text jedes Produkts je Sprache. Katalogänderungen kommen in Sekunden an. Neu aufbauen, wenn Ergebnisse veraltet wirken.",
     "searchIndexStatus": "{documents} Suchdokumente, {pending} Änderungen in der Warteschlange",
     "searchIndexRebuild": "Index neu aufbauen",
-    "searchIndexQueued": "Der Neuaufbau ist eingeplant und läuft in Sekunden."
+    "searchIndexQueued": "Der Neuaufbau ist eingeplant und läuft in Sekunden.",
+    "searchEngineServing": "Suchmaschine: {engine}, beantwortet die Suchen. {pending} Produkte warten auf die Übertragung.",
+    "searchEngineFallback": "Suchmaschine: {engine} antwortet gerade nicht, daher beantwortet die Datenbank die Suchen. {pending} Produkte warten auf die Übertragung."
   },
   "footer": {
     "shopping": "Einkaufen",

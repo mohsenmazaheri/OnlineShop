@@ -2048,6 +2048,29 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.ToTable("search_documents", (string)null);
                 });
 
+            modelBuilder.Entity("OnlineShopping.Domain.Search.SearchEngineOutboxEntry", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("EnqueuedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("enqueued_utc");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_search_engine_outbox");
+
+                    b.ToTable("search_engine_outbox", (string)null);
+                });
+
             modelBuilder.Entity("OnlineShopping.Domain.Search.SearchOutboxEntry", b =>
                 {
                     b.Property<long>("Id")

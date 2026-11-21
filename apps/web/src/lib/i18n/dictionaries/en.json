@@ -893,7 +893,9 @@
     "searchIndexIntro": "Search reads a prepared text of every product in each language. Catalog changes reach it within seconds. Rebuild it if results look out of date.",
     "searchIndexStatus": "{documents} search documents, {pending} changes waiting",
     "searchIndexRebuild": "Rebuild the index",
-    "searchIndexQueued": "The rebuild is queued and runs within seconds."
+    "searchIndexQueued": "The rebuild is queued and runs within seconds.",
+    "searchEngineServing": "Search engine: {engine}, answering searches. {pending} products waiting to reach it.",
+    "searchEngineFallback": "Search engine: {engine} is not answering right now, so the database answers searches. {pending} products waiting to reach it."
   },
   "footer": {
     "shopping": "Shopping",

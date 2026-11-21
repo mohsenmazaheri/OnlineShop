@@ -1,429 +1,226 @@
 # CLAUDE.md
 
-This file guides Claude Code when working in this repository.
-
 ## Project overview
 
-**OnlineShopping** is a single-store online shop for **small businesses** (few to moderate customers). It must be
-**cross-platform** (Linux and Windows servers), a **mobile-first PWA**, fast, and secure.
+**OnlineShopping**: a single-store online shop for small businesses. Cross-platform (Linux/Windows), mobile-first
+PWA, fast and secure. Monorepo: **ASP.NET Core 10 Web API** on **PostgreSQL 18** (Clean Architecture: Domain /
+Application / Infrastructure / Api) + **Next.js 16** storefront in `apps/web`. One Docker stack per shop; the same
+images serve every shop.
 
-Monorepo: an **ASP.NET Core 10 Web API** on **PostgreSQL 18** (Clean Architecture: Domain / Application /
-Infrastructure / Api) and a **Next.js 16** storefront in `apps/web`. Each shop is one Docker stack; the same images
-serve every shop.
+**Plan and all recorded decisions: [docs/ROADMAP.md](docs/ROADMAP.md)** (Persian). Read it before starting, work on
+one step at a time, mark the status there when a step is done. Done: phases 0, 2–5, 6a–6c; phase 1 has a "remaining"
+list. SEO/marketing design: [docs/SEO-MARKETING.md](docs/SEO-MARKETING.md) (acceptance checklist at its end).
 
-**The phased plan and all recorded decisions live in [docs/ROADMAP.md](docs/ROADMAP.md)** (Persian). Read it before
-starting work, work on one phase at a time, and mark the phase status there when a phase is done. Phase 0 is done;
-phase 1 is nearly done (see its "remaining" list).
-
-Recorded decisions (details in the roadmap):
-- **Database:** code-first EF Core, **separate migrations per provider** (one migrations project each). PostgreSQL
-  first (`snake_case`), then SQL Server and MySQL. Keep provider-specific SQL inside that provider's migrations/config.
-- **Roles:** works both as a **one-person shop** (owner has only `Admin`, which covers everything) and with
-  **divided staff roles** (`Manager`, `Warehouse`, `Accountant`). There is no Seller / multi-vendor role.
-- **Single-tenant:** one stack + one database per shop; no `tenant_id`. All shops run the same versioned images.
-- **Scope:** online B2C sales of physical goods only — no POS, digital products or B2B (backlog).
-- **Currencies & gateways** are configured per deployment by the system admin (Europe: EUR/USD; Armenia: AMD/EUR/USD;
-  Iran: IRR only, with ZarinPal/Sadad/Behpardakht; Stripe/PayPal elsewhere). Paddle is out (digital goods only).
-  Prices are entered in a base currency and converted with admin-set rates + per-currency rounding (manual override
-  allowed); an order stores the currency and rate it was paid with. Money always carries a currency.
-- **Iran deployment:** hosted in Iran, SMS OTP + email login, external logins off. **No runtime dependency on external
-  services in any deployment** — self-host fonts, icons, scripts and images (no CDNs, no Google Fonts, no
-  `next/font/google`). The only exception: marketing tags (GTM/GA4, Meta Pixel, Matomo) that the admin opts into,
-  loaded only after cookie consent; the site must work fully without them. Second exception: the optional background
-  update of display exchange rates (`ExchangeRates:Provider`), never called while rendering; last rates are kept.
-- **SEO & marketing design: [docs/SEO-MARKETING.md](docs/SEO-MARKETING.md).** URLs `/{locale}/p/{number}/{slug}`
-  (every locale prefixed, stable numeric product number, slug mismatch → 301), hreflang only for translated locales,
-  JSON-LD, sitemaps, redirects, blog, product feeds (Google, Meta, Torob, Emalls), UTM attribution on orders.
-- **Search:** behind `IProductSearch`, chosen by `Search:Provider` — PostgreSQL (default, Full-Text + `pg_trgm`),
-  OpenSearch or Elasticsearch (optional, self-hosted). PostgreSQL stays the source of truth: the index is synced via an
-  outbox, can be rebuilt, and search falls back to PostgreSQL when the engine is down. Displayed price/stock always
-  come from PostgreSQL. Design in the roadmap, phases 4 and 6.
-- **SMS is optional**: everything must work with SMS disabled (default `NullSmsSender`).
-- **Tax:** one simple rate per shop, prices incl./excl. tax, PDF invoices with sequential numbers. No e-invoicing
-  integrations (Moadian, e-HDM, EU VAT OSS) in v1.
-- **Branding:** admin-editable logo/colors/fonts/banners plus several ready-made layout templates (no rebuild needed).
-- Languages fa, en, hy, de, ar (RTL for fa/ar); adding a language must be cheap. Product content is translated
-  **manually only** (no external translation service); untranslated fields fall back to the default language.
-- Light and dark theme. v1 ships to all markets at once.
+Key decisions (details in the roadmap):
+- EF Core code-first, **one migrations project per provider** (PostgreSQL now, `snake_case`; SQL Server/MySQL later).
+  Provider-specific SQL stays in that provider's migrations/config.
+- Roles: one-person shop (`Admin` = everything) or staff roles `Manager`, `Warehouse`, `Accountant`. No multi-vendor.
+- Single-tenant (no `tenant_id`). B2C physical goods only (no POS, digital, B2B).
+- Currencies/gateways per deployment (Europe EUR/USD; Armenia AMD/EUR/USD; Iran IRR + ZarinPal/Sadad/Behpardakht;
+  Stripe/PayPal elsewhere; no Paddle). Prices in a base currency, converted with admin rates + per-currency rounding;
+  an order stores its currency and rate. Money always carries a currency.
+- **No runtime dependency on external services**: self-host fonts, icons, scripts, images (no CDN, no Google Fonts,
+  no `next/font/google`). Exceptions: opt-in marketing tags after cookie consent, and the background exchange-rate
+  update (`ExchangeRates:Provider`, never during rendering). Iran: hosted in Iran, SMS OTP + email, no external logins.
+- Search behind `IProductSearch`, chosen by `Search:Provider` (Postgres default; OpenSearch/Elasticsearch optional).
+  PostgreSQL is the source of truth; displayed price/stock always come from it.
+- SMS optional (works with SMS off). Tax: one rate per shop, PDF invoices, no e-invoicing in v1.
+- Branding and layout templates are admin-editable without rebuild. Languages fa, en, hy, de, ar (RTL fa/ar), adding
+  one must be cheap; content is translated manually only, untranslated fields fall back to the default language.
+  Light + dark theme.
 
 ## Non-negotiable rules
 
-1. **Every new class gets a matching unit test** (.NET: `tests/`, xUnit; frontend: Vitest, `*.test.ts(x)` next to
-   the file). Don't finish a task with failing or missing tests.
-2. **SOLID / Clean Code**: thin endpoints, business logic in Application services behind interfaces, no logic in
-   components beyond presentation, small focused classes, constructor injection, `TimeProvider` instead of
-   `DateTime.UtcNow` in logic. Dependencies point inward: Api → Infrastructure → Application → Domain.
-3. **Ownership checks (IDOR)**: any id from the URL, query, or request body must be checked against the current user
-   in the query itself (`x.Id == id && x.CustomerId == userId`), returning 404 for others. Staff roles may bypass.
-   Take the user id from claims, never from input. (This bug was fixed in the sister project BulkyWeb in both the
-   cart and orders.)
-4. **No secrets in Git**: `dotnet user-secrets` (API and integration tests have UserSecretsIds), `deploy/.env` and
-   `.env*` files are git-ignored, environment variables in production. Gateway/SMS keys go under configuration
-   sections bound with the Options pattern.
-5. **Prices and totals are computed on the server**, never taken from the request. Payment success is confirmed only
-   by server-side verify/webhook with signature validation.
-6. **Copyright**: the UI may be *inspired by* Digikala-style layouts, but never copy their logo, name, brand colors,
-   icons, images, texts or CSS. Use our own palette, open-licensed icons and OFL fonts (e.g. Vazirmatn).
-7. **Identity generics always use `AppUser`**, never `IdentityUser` (this broke login/logout in BulkyWeb).
-8. **Every public page is SEO-complete**: server-rendered content (works without client JS), title, description,
-   canonical, hreflang, `lang`/`dir`, valid JSON-LD matching the visible price/stock, no layout shift. Filter/sort
-   URLs canonicalize to the unfiltered page; never change a public URL without a 301. Non-production instances are
-   always `noindex`. Use the acceptance checklist at the end of `docs/SEO-MARKETING.md`.
-9. Keep packages free of known vulnerabilities: `dotnet list package --vulnerable --include-transitive` and
-   `npm audit --omit=dev`; pin a patched version directly when a transitive dependency is vulnerable.
-10. **Nothing shop-specific at build time** (one image for all shops): store settings live in the API
-    (`Store` section); the web app reads them per request (`loadStore()`), and runtime env vars cover the rest.
-    Never read shop settings in `next.config.ts` or at module scope.
+1. **Every new class gets a unit test** (.NET `tests/` xUnit; web Vitest `*.test.ts(x)` next to the file). Never
+   finish with failing or missing tests.
+2. **SOLID / Clean Code**: thin endpoints, logic in Application services behind interfaces, presentation-only
+   components, constructor injection, `TimeProvider` (never `DateTime.UtcNow`). Api → Infrastructure → Application → Domain.
+3. **IDOR**: ids from URL/query/body are checked against the current user in the query itself
+   (`x.Id == id && x.CustomerId == userId`) → 404 for others; staff may bypass. User id only from claims.
+4. **No secrets in Git**: user-secrets, git-ignored `deploy/.env`/`.env*`, env vars in production; keys in Options sections.
+5. **Prices and totals are computed on the server.** Payment success only via server-side verify/webhook with signatures.
+6. **Copyright**: Digikala-*inspired* layout only; never their logo, name, colours, icons, images, texts or CSS.
+7. Identity generics always use **`AppUser`**, never `IdentityUser`.
+8. **Every public page is SEO-complete**: server-rendered (works without JS), title, description, canonical,
+   hreflang, `lang`/`dir`, JSON-LD matching the visible price/stock, no layout shift. Filter/sort URLs canonicalize to
+   the plain page; never change a public URL without a 301; non-production is always `noindex`.
+9. No vulnerable packages: `dotnet list package --vulnerable --include-transitive`, `npm audit --omit=dev`; pin a
+   patched version when a transitive one is vulnerable.
+10. **Nothing shop-specific at build time**: store settings come from the API per request (`loadStore()`) or runtime
+    env vars; never in `next.config.ts` or at module scope.
 
-## Repository layout
+## Layout and commands
 
 ```
-OnlineShopping.sln                  # all .NET projects
-Directory.Build.props               # net10.0, nullable, analyzers, warnings = errors
-Directory.Packages.props            # central NuGet versions (no Version= in csproj files)
-dotnet-tools.json                   # local tools (dotnet-ef 10.0.14)
-src/
-  OnlineShopping.Domain/            # entities: Common/BaseEntity, Catalog/*, Sales/* — no dependencies
-  OnlineShopping.Application/       # use cases (Catalog/CategoryQueries), Common/Result + AppError,
-                                    # IApplicationDbContext, StoreOptions, Authorization/AppRoles, AddApplication()
-  OnlineShopping.Infrastructure/    # Persistence/AppDbContext (+ interceptor, seeding, DatabaseOptions),
-                                    # Identity/AppUser, AddInfrastructure() (EF, Identity, Data Protection, health)
-  OnlineShopping.Infrastructure.Migrations.PostgreSql/   # EF migrations for PostgreSQL
-  OnlineShopping.Api/               # Program.cs, Endpoints/, Security/ (headers, reverse proxy), Common/ResultExtensions
-tests/
-  OnlineShopping.UnitTests/         # xUnit; SQLite in-memory for EF; TestHost for middleware
-  OnlineShopping.IntegrationTests/  # WebApplicationFactory + real PostgreSQL (fresh database per test class)
-apps/web/                           # Next.js 16 (see apps/web/README.md)
-  src/app/[locale]/                 # pages (root layout lives here: lang/dir per locale)
-  src/app/{robots,sitemap,manifest,icon}.ts(x), api/revalidate/route.ts
-  src/proxy.ts                      # runtime: API forwarding, locale redirects, security headers, noindex
-  src/lib/                          # api/ (typed client, `use cache` fetchers), store/, i18n/, seo/, security/, pwa/
-  openapi/OnlineShopping.Api.json   # written by the API build; source of src/lib/api/schema.d.ts
-deploy/                             # api/web Dockerfiles, docker-compose.yml, .env.example, nginx.conf, README
-docs/                               # ROADMAP.md, SEO-MARKETING.md
+src/OnlineShopping.{Domain,Application,Infrastructure,Api}, src/OnlineShopping.Infrastructure.Migrations.PostgreSql
+tests/OnlineShopping.UnitTests (xUnit, SQLite in-memory, TestHost) and .IntegrationTests (real PostgreSQL, db per class)
+apps/web (Next.js: src/app/[locale], src/proxy.ts, src/lib, openapi/OnlineShopping.Api.json → src/lib/api/schema.d.ts)
+deploy/ (Dockerfiles, docker-compose.yml, .env.example, nginx.conf)   docs/ (ROADMAP.md, SEO-MARKETING.md)
+Directory.Build.props (net10.0, warnings = errors), Directory.Packages.props (central versions), dotnet-tools.json
 ```
-
-## Commands
 
 ```bash
-# .NET
-dotnet tool restore
-dotnet build OnlineShopping.sln                 # also regenerates apps/web/openapi/OnlineShopping.Api.json
-dotnet test OnlineShopping.sln
-dotnet test --filter "FullyQualifiedName~CategoryQueriesTests"
-dotnet run --project src/OnlineShopping.Api     # http://localhost:5087 (migrates the dev DB in Development)
-dotnet run --project src/OnlineShopping.Api --launch-profile "API + web"   # API + Next.js dev server (VS: F5, Debug-only SpaProxy)
+dotnet tool restore && dotnet build OnlineShopping.sln     # build also rewrites apps/web/openapi/*.json
+dotnet test OnlineShopping.sln [--filter "FullyQualifiedName~X"]
+dotnet run --project src/OnlineShopping.Api [--launch-profile "API + web"]   # :5087, migrates the dev DB
 dotnet tool run dotnet-ef migrations add <Name> --project src/OnlineShopping.Infrastructure.Migrations.PostgreSql --startup-project src/OnlineShopping.Api
 dotnet tool run dotnet-ef migrations has-pending-model-changes --project src/OnlineShopping.Infrastructure.Migrations.PostgreSql --startup-project src/OnlineShopping.Api
-
-# Next.js (in apps/web; Node is at C:\Program Files\nodejs — add it to PATH in Git Bash)
-npm run dev | npm test | npm run lint | npm run typecheck | npm run build
-npm run gen:api                                 # after any API contract change, then commit both files
-
-# Deploy (Docker)
+# apps/web (Node at C:\Program Files\nodejs; add to PATH in Git Bash)
+npm run dev | test | lint | typecheck | build | gen:api
 docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
 ```
 
-After a model change: add a migration, then `has-pending-model-changes` must report no changes.
-After an API contract change: build the API, run `npm run gen:api`, commit `openapi/*.json` and `schema.d.ts`
-(CI fails if either is stale).
+After a model change: migration + `has-pending-model-changes` reports none. After an API contract change: build,
+`npm run gen:api`, commit `openapi/*.json` and `schema.d.ts` (CI checks both).
 
-## Local environment (this dev machine)
+## Local environment (this machine)
 
-- PostgreSQL 18: service `postgresql-x64-18`, port 5432, `psql` at `C:\Program Files\PostgreSQL\18\bin\psql.exe`.
-  - `onlineshop_dev` is owned by the least-privilege login `onlineshop`; the API never uses the `postgres` superuser.
-  - `onlineshop_test` (CREATEDB) is used by integration tests, which create and drop `onlineshop_it_*` databases.
-- Secrets (never print them, never write them to tracked files):
-  - API user-secrets: `ConnectionStrings:Default`, `Postgres:SuperuserPassword` (admin tasks only),
-    optionally `Database:AdminEmail` / `Database:AdminPassword`.
-- Demo accounts for trying pages: `DemoUserSeeder` creates `customer@shop.localhost` and `admin@shop.localhost`
-  (password in `appsettings.Development.json` → `DemoUsers`) only when the environment is Development **and**
-  `Store:PublicUrl` is local (loopback, `*.localhost`, `*.test`). Keep both guards; never enable it in other files.
-- Demo catalog: `DemoCatalogSeeder` (`Persistence/Seeding/Demo/`) adds ~22 sample products (invented brands, every
-  text in fa/en/hy/de/ar, our own SVG illustrations in `apps/web/public/demo/`, prices written in EUR and converted
-  to `Store:Currency`) when `DemoCatalog:Enabled` is true — on in `appsettings.Development.json`, and on a demo
-  deployment via `DEMO_CATALOG=true`; never on a real shop. Runs once (skips when any `DEMO-*` SKU exists) and reuses
-  existing categories with the same slug or name. Change demo content in `DemoCatalogData` (a test checks every
-  language, spec kind and image file).
-  - Integration-test user-secrets (`tests/OnlineShopping.IntegrationTests`): `IntegrationTests:AdminConnection`
-    (CI uses the `INTEGRATIONTESTS__ADMINCONNECTION` env var).
-- No Docker on this machine yet; Docker images are built by CI.
-- .NET SDK on this machine: 11.0.100 (a Visual Studio update replaced SDK 10 on 1405-08-28); it builds the `net10.0`
-  projects. While an installer runs, `dotnet build` can fail with missing SDK targets — wait for it to finish.
-- Windows (Hyper-V/WSL WinNAT) reserves TCP port ranges that move after reboots; when 2984–3083 is reserved, nothing
-  can listen on 3000 (`listen EACCES`, and the "API + web" profile logs "Couldn't start the SPA development server").
-  Check with `netsh interface ipv4 show excludedportrange protocol=tcp`; fixing it is a Windows setting the user makes.
-  For a check meanwhile, run the web app on a free port and the API with `Store__PublicUrl` set to it.
-- The built-in browser pane does not allow service workers; check PWA behaviour in a real browser. While the pane is
-  hidden, streamed `<Suspense>` content stays unrevealed (React waits for an animation frame); check with `curl` or
-  show the pane. `.claude/launch.json` has `api` (5087) and `web` (3000) for `preview_start`.
-- The Claude desktop app is MSIX-packaged: anything it (or a process it starts) writes under `%APPDATA%` goes to
-  `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\…` and is invisible to Visual Studio and normal
-  terminals. So `dotnet user-secrets set` run from Claude does **not** reach Visual Studio. Ask the user to set
-  secrets in their own terminal (or Visual Studio's), never print them; Claude-started processes still see both.
+- PostgreSQL 18 (`postgresql-x64-18`, :5432, `C:\Program Files\PostgreSQL\18\bin\psql.exe`). `onlineshop_dev` owned by
+  the least-privilege login `onlineshop` (never `postgres`); `onlineshop_test` (CREATEDB) for `onlineshop_it_*` databases.
+- Secrets (never print, never in tracked files): API user-secrets `ConnectionStrings:Default`,
+  `Postgres:SuperuserPassword`, optional `Database:AdminEmail/AdminPassword`; integration tests
+  `IntegrationTests:AdminConnection` (CI: `INTEGRATIONTESTS__ADMINCONNECTION`).
+- The Claude app is MSIX: its `%APPDATA%` writes are virtualized, so `dotnet user-secrets set` from Claude never reaches
+  Visual Studio. The user sets secrets in their own terminal.
+- `DemoUserSeeder` (`customer@`/`admin@shop.localhost`, password in `appsettings.Development.json`) runs only in
+  Development **and** with a local `Store:PublicUrl`; keep both guards. `DemoCatalogSeeder` (~22 products, all five
+  languages, SVGs in `apps/web/public/demo/`, EUR prices converted) only when `DemoCatalog:Enabled` (dev, or
+  `DEMO_CATALOG=true` demo deployments; never a real shop); runs once (`DEMO-*` SKUs); edit `DemoCatalogData`.
+- No Docker locally (CI builds images). .NET SDK 11.0.100 builds the net10.0 projects; builds fail during VS installs.
+- WinNAT may reserve 2984–3083 so port 3000 fails (`listen EACCES`): check `netsh interface ipv4 show
+  excludedportrange protocol=tcp`; meanwhile use another port with `Store__PublicUrl` set to it.
+- Browser pane: no service workers (test PWA in a real browser); while hidden, `<Suspense>` content stays unrevealed
+  (use `curl`). `.claude/launch.json`: `api` (5087), `web` (3000).
 
 ## Backend conventions
 
-- **Naming:** `UseSnakeCaseNamingConvention()`; Identity tables renamed to `users`, `roles`, … Raw SQL fragments
-  (index filters, check constraints) use snake_case and must be valid in PostgreSQL and SQLite (`is_deleted = false`).
-- **BaseEntity**: `Guid Id` (version 7), `CreatedUtc`, `ModifiedUtc?`, `IsDeleted` — stamped by
-  `AuditableEntityInterceptor`; `Remove()` is a soft delete; a global query filter hides deleted rows
-  (`IgnoreQueryFilters()` to see them). Unique indexes use `.HasFilter(NotDeletedFilter)`. The Id is set when the
-  object is created, so EF treats a new child added under an already-loaded parent as an existing row: add new
-  children to their `DbSet` explicitly (`db.Products.Add(product)`), or the save fails with a foreign-key error.
-- **Content translations:** catalog items keep the shop's default language in their own columns and the other
-  languages in owned `*_translations` tables (`CatalogTranslation`: name, slug, description; `SpecTranslation`,
-  `SpecOptionTranslation`), keyed by owner id + locale. Queries pick the requested locale with a fallback to the own
-  column; endpoints take `?locale=` and resolve it with `StoreOptions.ContentLocale()` (unknown → default).
-- **Specs** (the roadmap's attributes; "Attribute" is a reserved suffix for CA1711): `ProductSpec` (code, kind
-  Text/Number/Boolean/Option, unit, group, filterable/comparable/summary flags) → `SpecOption` → `ProductSpecValue`
-  with one typed column per kind. Text values read the same in every language (brand, "A5"); translatable words are
-  options. Products have a stable `PublicNumber` (unique, never reused) and a `Slug` per language for
-  `/{locale}/p/{number}/{slug}`. `Slugs.From()` builds slugs in any script.
-- `Store:Currency` (ISO 4217, default IRR) is the base currency prices are stored in. Display currencies (`Currency`,
-  `LocaleCurrency`; `CurrencyService`): rate = units per 1 base unit (numeric(28,12)), rounding step, decimals,
-  optional symbol (IRT = toman); the base is fixed at rate 1. `CurrencySeeder` adds IRR/USD/EUR/AMD/AED and the language
-  defaults on a new shop. `ExchangeRateSyncWorker` refreshes `AutoUpdate` rates through `IExchangeRateSource`
-  (`CurrencyApiRateSource`, fawazahmed0/exchange-api with fallback URL; `None` in tests).
-- Branding: one `StoreBranding` row (`BrandingService`), returned in `GET /store`; the colour is validated as #rrggbb.
-- Media (`Application/Media`): uploads go through `MediaService.SaveImageAsync` only — type from magic bytes
-  (`ImageSignatures`), size and pixel limits (`Media` options), then `IImageProcessor` (`SkiaImageProcessor`) always
-  re-encodes to WebP 1200/600/300 (EXIF orientation applied, metadata dropped, never enlarged). Files live in
-  `IFileStorage` (`LocalFileStorage`, `Storage:LocalPath`, rejects paths outside the root) as `{key}/{size}.webp` and
-  are served by `GET /api/v1/media/{key}/{size}.webp` with immutable caching — so a key is never overwritten: a new
-  upload gets a new key and the old files are deleted. Store the 1200 URL (category: 600, logo: 300) and pick other
-  sizes with `MediaUrls.For` / web `imageVariant()`. Upload endpoints take multipart field `file` and
-  `.DisableAntiforgery()` (the Origin check still applies). `CatalogImageService`: product images (max 12, order +
-  per-language alt in `product_image_alt_translations`) and the category image. The web app accepts only
-  `isMediaUrl()` addresses as logo/banner.
-- Brands: `Brand` (texts per language like categories, `LogoUrl` 300 px), `Product.BrandId` (Restrict; a used brand
-  cannot be deleted), `BrandAdminService`. The storefront shows `ProductDetail.Brand`; the old "brand" text spec is
-  only a fallback (`brandOf`) for data seeded before brands existed.
-- Spec library: `SpecAdminService` (texts/options per language, codes `^[a-z][a-z0-9_]*$` made from the name when
-  empty, kind fixed while used, used specs/options cannot be deleted, `PUT /admin/specs/order`). Spec templates are
-  owned `TemplateSpec` rows on `Category` and `SubCategory` (a sub-category adds to its category's), set through
-  `CatalogTreeService.Set*TemplateAsync`; the product editor offers the template specs first (`templateFor`).
-- Variants: `ProductVariant` (own SKU, stock, optional price/compare-at; owned `VariantOption` rows keyed by spec)
-  saved as one set by `ProductVariantService` (≤3 option specs, ≤100 variants, unique combinations, SKUs unique across
-  products and variants, a variant spec never also a product-level value). With variants, `Product.Stock` is their
-  sum and the product's price is every variant's default. Storefront: `ProductDetail.VariantAxes`/`Variants`
-  (effective prices), `VariantPicker` (server-rendered default = first in stock), JSON-LD `ProductGroup` + `hasVariant`.
-- SEO fields: `Product.Gtin` (`ProductCodes.NormalizeGtin`: digits, GS1 check digit; variants too), `Mpn`,
-  `WeightGrams`, and per language `MetaTitle`/`MetaDescription`/`Tags` (own columns + `CatalogTranslation`; a language
-  without a translated name stores none). The product page uses them for `<title>`/description and JSON-LD.
-- Search words are compared in one spelling: `SearchText.Normalize` (Persian ی/ک, digits, ZWNJ → space, no
-  diacritics, lower case). Synonyms: `SynonymService` (`search_synonyms`, a word in one group per language).
-- Redirects: `RedirectService` (`redirects`; `RedirectPaths` keeps paths decoded, no trailing slash, query kept; never
-  `/`, `/api`, `/_next`; one hop, no loops; CSV import). `proxy.ts` answers them before the locale redirects from a
-  one-minute in-memory table (`createRedirectCache`, `GET /api/v1/redirects`) and counts hits with
-  `event.waitUntil(POST /api/v1/redirects/hits)`. Error codes `seo.*` → `admin.seoErrors`. Admin: `/{locale}/admin/seo`.
-- Product videos: `CatalogVideoService` (≤3 per product, poster image, titles per language) on
-  `MediaService.SaveVideoAsync`: streamed to `IFileStorage` as `{key}/video.mp4`, then checked by `Mp4Inspector`
-  (ftyp brand, moov, duration from mvhd) and deleted when refused; never re-encoded. `GET /api/v1/media/{key}/video.mp4`
-  serves it with Range (206). Uploads above 10 MB need `experimental.proxyClientMaxBodySize` (next.config, 52mb)
-  and nginx `client_max_body_size`; endpoints set `RequestSizeLimitAttribute(MediaEndpoints.MaxVideoRequestBytes)`.
-- Bulk transfer (`Application/Catalog/Transfer`): `ITableFile` formats (`CsvTableFile` in Application,
-  `XlsxTableFile` in Infrastructure via MiniExcel; `TableFiles.Detect` picks Excel by the ZIP signature).
-  `ProductExportService` writes the columns of `ProductColumns` (per-language `name:fa`…, `spec:{code}`); use flat
-  projection queries there, not one Include chain (the owned translations multiply into a huge join).
-  `ProductImportService` reuses `ProductAdminService`/`CatalogTreeService`/`BrandAdminService` row by row inside one
-  transaction (`IApplicationDbContext.Database`, a savepoint per row, `ChangeTracker.Clear()` after a failed row):
-  any problem or `dryRun` → rollback. Only the columns present change. Error codes `import.*` → `admin.importErrors`.
-  Admin page `/{locale}/admin/import`.
-- Catalog admin (`Application/Catalog/Admin`, permission catalog.manage): `CatalogTreeService` (categories →
-  sub-categories → groups; only empty nodes can be deleted) and `ProductAdminService` (list/search, editor view,
-  create/update/soft delete, spec values checked against the spec kind; a new product gets max(PublicNumber incl.
-  deleted)+1, never reused). Texts travel as `LocalizedText` per shop language; `LocalizedTexts` maps the default
-  language to the item's own columns and the others to translations (empty name = not translated). Error codes
-  `catalog.*` → `admin.catalogErrors`. Web: `/{locale}/admin/catalog`, `/admin/products`, `/admin/products/new|{n}`
-  (`LocalizedFields`, `ProductEditor`); saves call `refreshStorefront(locale, ["catalog"])`.
-- Inventory (`Application/Inventory`, inventory.view / inventory.manage): **never write `Product.Stock` or
-  `ProductVariant.Stock` directly** — they are cached totals. `StockLedger` is the only writer: `PostAsync` adds a
-  `StockMovement` line (immutable) and changes the `StockLevel` (key warehouse + `ItemId` = variant id, else product
-  id; `quantity >= 0`) and both totals with atomic `ExecuteUpdate` ("x = x + n" where the result stays ≥ 0), then
-  syncs tracked copies; `SetTotalAsync` turns "the stock is N" (product editor, variants, import) into adjustment
-  lines (increase → default warehouse; decrease → default first). Run several postings in
-  `db.InTransactionAsync(...)` (joins an open transaction). `OpenUntrackedAsync` (startup, after the demo catalog)
-  writes an opening line for stock without lines; unit tests that seed the demo call it too. One active default
-  `Warehouse` always (`WarehouseService`). Automatic references are `auto:*` (`StockReferences`, web
-  `admin.stockReferences`) — not `inventory.*`, which the error-code test treats as error codes (`admin.inventoryErrors`).
-  The acting user comes from `ICurrentUser` (`HttpCurrentUser` in the API, `NoCurrentUser` elsewhere). Web:
-  `/admin/inventory` (stock + `StockMovementForm`), `/admin/inventory/movements`, `/admin/warehouses`.
-- Stocktakes (`StocktakeService`): one open count per warehouse (filtered unique index), lines snapshot every item
-  at opening; counts by SKU (set or add) store `CountedUtc`, and the difference is counted − the stock at that moment
-  (now minus ledger lines after it), so sales during a count are not differences. Posting writes one adjustment per
-  difference with reference `ST-{n}` (never below zero); uncounted lines are skipped; posted/cancelled are read-only.
-  Count sheets reuse `ProductImportService.ReadTableAsync`/`TableFiles` (columns sku, counted). Names of items in
-  inventory lists come from `ItemNames.LoadAsync`. Web: `/admin/stocktakes` and `/admin/stocktakes/{n}` (the number is
-  read inside `<Suspense>`, or the build fails). Find an item by SKU with `StockItemLookup.FindAsync`.
-- Purchasing: `SupplierService` (deactivate, never delete one with receipts) and `PurchaseService` (draft → post;
-  numbers `PR-{n}`; lines keyed by receipt + item, replaced with ExecuteDelete + insert; totals on the server; costs in
-  `Store:Currency`, kept on the receipt). Posting calls `StockLedger.PostAsync(..., unitCost:)` per line, which moves
-  the weighted average in `StockItemInfo` (`stock_items`: `AverageCost` numeric(18,4), `MinimumStock`) — costs use
-  four decimals, the one exception to numeric(18,2). Every `StockMovement.UnitCost` is the purchase price or the
-  average at that moment (phase 9 values movements with it). Low stock = total ≤ `MinimumStock`
-  (`InventoryService.LowStockCountAsync`, `onlyLow`). Web: `/admin/suppliers`, `/admin/purchases`, `/purchases/new`,
-  `/purchases/{n}` (`ReceiptEditor`), `ItemSettingsForm` on `/admin/inventory`.
-- Reservations (`StockReservationService`): `Product.Reserved` / `ProductVariant.Reserved` are cached sums of active
-  `StockReservation` rows (never set directly). Available = Stock − Reserved; the storefront's `InStock` uses it.
-  `ReserveAsync(reference, items)` holds all or nothing with atomic `ExecuteUpdate` ("reserved + n where stock −
-  reserved ≥ n"); every close (commit / release / expiry) first claims the row with a conditional UPDATE so it happens
-  once. `CommitAsync` sells through `StockLedger.TakeAsync` (default warehouse first). `ReservationExpiryWorker`
-  releases expired ones (`Inventory:ReservationMinutes`, `ExpiryCheckSeconds`). Phase 7's checkout must use it.
-- All `DateTime`s are UTC (`timestamptz`); all `decimal`s are `numeric(18,2)`.
-- User references (`Cart.CustomerId`, `Order.CustomerId`) are FKs to `users` without navigation properties
-  (domain stays free of Identity). Orders `Restrict`, carts cascade.
-- `OrderItem.ProductName`/`UnitPrice` are snapshots. `OrderStatus` is stored as text with a generated check constraint.
-- **Use cases** depend on `IApplicationDbContext`; read queries use `AsNoTracking()` + projection to records.
-- **Errors:** expected failures return `Result<T>` with an `AppError` (`ErrorKind` + stable `code` like
-  `category.not_found`); endpoints map them with `ToHttpResult()` to RFC 9457 problem details carrying `code`.
-- **Endpoints:** minimal APIs grouped under `/api/v1`, with `WithName` (becomes the OpenAPI operationId) and summary.
-  Admin endpoints live under `/api/v1/admin/...` and require a permission. Enums are serialized as their names
-  (`JsonStringEnumConverter`), so the generated TypeScript types are string unions. Numbers are strict JSON numbers
-  (`JsonNumberHandling.Strict`): without it the OpenAPI types for `long`/`decimal` become `number | string`.
-  Nested collections with per-row translation lookups need SQL APPLY (unsupported in SQLite tests): load such
-  collections with separate flat queries (see `ProductQueries.GetAsync`).
-- **Options:** bind + `ValidateDataAnnotations` + `ValidateOnStart`. Configuration lists merge by index across sources,
-  so list-like settings that operators override are comma-separated strings (see `StoreOptions.Locales`).
-- Logging via `[LoggerMessage]` source-generated methods (analyzer CA1848).
-- The projects were renamed from `OnlineShop` to `OnlineShopping`. Some runtime names deliberately keep the old name;
-  never "fix" them: the Data Protection application name `OnlineShop` (changing it invalidates every cookie and
-  token), the lower-case names (`onlineshop_*` databases, `onlineshop` login, `os_session` cookie,
-  `onlineshop-integration-tests` user-secrets id, Docker image and npm package names).
-- Code style: file-scoped namespaces, primary constructors, `sealed` by default, `required`/`= default!`.
+- `UseSnakeCaseNamingConvention()`; Identity tables `users`, `roles`, … Raw SQL fragments are snake_case and valid in
+  PostgreSQL **and** SQLite (`is_deleted = false`).
+- `BaseEntity`: Guid v7 `Id`, `CreatedUtc`, `ModifiedUtc?`, `IsDeleted` (`AuditableEntityInterceptor`). `Remove()` =
+  soft delete + global filter (`IgnoreQueryFilters()`); unique indexes `.HasFilter(NotDeletedFilter)`. Ids exist before
+  saving, so **add new children to their DbSet explicitly** or EF treats them as existing rows (FK error).
+- All `DateTime`s UTC (`timestamptz`); `decimal`s `numeric(18,2)` (costs `numeric(18,4)`, rates `numeric(28,12)`).
+- Use cases depend on `IApplicationDbContext`; reads use `AsNoTracking()` + projection to records. Npgsql cannot
+  project `ValueTuple`s (use records). SQLite has no APPLY: load nested per-row-translated collections with separate
+  flat queries (`ProductQueries.GetAsync`) or the result-selector `SelectMany`. Raw reads use ADO.NET, not `SqlQuery<T>`.
+- Errors: `Result<T>` + `AppError` (`ErrorKind`, stable `code` like `category.not_found`) → `ToHttpResult()` → RFC 9457
+  with `code`. Every code needs a translation in every dictionary (a test scans Application). Groups: `account.*` →
+  `account.errors`; `staff.*` → `admin.errors`; `catalog.*`, `import.*`, `seo.*`, `inventory.*` → `admin.catalogErrors`,
+  `admin.importErrors`, `admin.seoErrors`, `admin.inventoryErrors`. Non-error strings must not look like codes.
+- Endpoints: minimal APIs under `/api/v1` with `WithName` (operationId) + summary; admin under `/api/v1/admin/...`
+  with a permission. `JsonStringEnumConverter` and `JsonNumberHandling.Strict` (keeps OpenAPI types clean).
+- Options: bind + `ValidateDataAnnotations` + `ValidateOnStart`, read through `IOptions` at runtime (never
+  `configuration.Get<T>()` while registering). Operator-overridable lists are comma-separated strings (lists merge by index).
+- Logging with `[LoggerMessage]` (CA1848). Code style: file-scoped namespaces, primary constructors, `sealed`,
+  `required`/`= default!`.
+- Never "fix" the old names: Data Protection app name `OnlineShop` (would invalidate cookies), `onlineshop_*`
+  databases, `onlineshop` login, `os_session`, `onlineshop-integration-tests` secrets id, image and npm names.
+- Time-dependent tests replace `TimeProvider` with `FakeTimeProvider`, never sleep.
+
+### Domain notes
+
+- **Translations**: default language in the item's own columns, others in owned `*_translations` (keyed owner +
+  locale); queries fall back to the own column; endpoints take `?locale=` → `StoreOptions.ContentLocale()`. Admin
+  texts travel as `LocalizedText` per language (`LocalizedTexts`; empty name = not translated).
+- **Specs** ("Attribute" is a reserved suffix): `ProductSpec` (kind Text/Number/Boolean/Option, flags) → `SpecOption`
+  → `ProductSpecValue` (one typed column per kind). Text values are language-neutral; translatable words are options.
+  Templates: owned `TemplateSpec` on `Category`/`SubCategory`. `SpecAdminService`: kind fixed and no delete while used.
+- **Products**: stable `PublicNumber` (max incl. deleted + 1, never reused), slug per language (`Slugs.From`).
+  `ProductVariant` (≤3 option specs, ≤100 variants, SKUs unique across products and variants). `Gtin`
+  (`ProductCodes.NormalizeGtin`), `Mpn`, `WeightGrams`, per-language `MetaTitle/MetaDescription/Tags`. `Brand` (Restrict).
+- **Currency**: `Store:Currency` (ISO 4217, default IRR) is the base; display currencies = rate per base unit,
+  rounding step, decimals, symbol (IRT = toman). `ExchangeRateSyncWorker` + `IExchangeRateSource`.
+- **Media**: only through `MediaService` — images by magic bytes, re-encoded to WebP 1200/600/300 (store the 1200 URL;
+  category 600, logo 300; `MediaUrls.For` / web `imageVariant()`); videos as `{key}/video.mp4` checked by `Mp4Inspector`
+  (Range served). Keys are never overwritten (immutable caching). Uploads: multipart `file`, `.DisableAntiforgery()`.
+  Videos > 10 MB need `proxyClientMaxBodySize`, nginx `client_max_body_size` and `RequestSizeLimitAttribute`.
+- **Import/export** (`Catalog/Transfer`, CSV + XLSX by MiniExcel): export with flat projections (owned translations
+  explode an Include chain); import reuses the admin services in one transaction, a savepoint per row,
+  `ChangeTracker.Clear()` after a failed row, rollback on any problem or `dryRun`; only present columns change.
+- **Inventory**: **never write `Product.Stock`, `ProductVariant.Stock`, `Reserved` or `StockLevel` directly.**
+  `StockLedger` is the only stock writer (immutable `StockMovement` with `UnitCost`, atomic `ExecuteUpdate` that keeps
+  results ≥ 0, then syncs tracked copies); `SetTotalAsync` for "stock is N"; several postings inside
+  `db.InTransactionAsync`. One active default `Warehouse`. References `auto:*`, `ST-{n}` (stocktake), `PR-{n}` (purchase).
+  Acting user from `ICurrentUser`. Purchases move the weighted `AverageCost` (`stock_items`); low stock = total ≤
+  `MinimumStock`. Stocktake differences = counted − stock at `CountedUtc`.
+- **Reservations** (`StockReservationService`): available = Stock − Reserved (storefront `InStock`). Reserve all or
+  nothing ("reserved + n where stock − reserved ≥ n"); commit/release/expiry first claim the row with a conditional
+  UPDATE; commit sells via `StockLedger.TakeAsync`. **Phase 7 checkout must use it.**
+- Orders: `CustomerId` FKs to `users` without navigations (orders Restrict, carts cascade); `OrderItem` name/price are
+  snapshots; `OrderStatus` stored as text with a generated check constraint.
+- **Search** (`Application/Search`): `search_documents` per product and language (normalized by `SearchText.Normalize`),
+  rebuilt from `search_outbox`, which `SearchOutboxInterceptor` fills on catalog SaveChanges (never enqueue by hand;
+  `ExecuteUpdate` changes are not seen). `SearchIndexWorker` processes it; tests call `IndexSearchAsync()`.
+  `PostgresProductSearch` (generated weighted tsvector + GIN, trigram on title, raw SQL in the migration) and
+  `SimpleProductSearch` (other databases, unit tests). `ProductTextSearch`: code lookup → `ExactNumber`, synonyms,
+  `KeyboardLayouts` (on the raw text), "did you mean"; `SearchTermLog`; `SearchSuggestionService`.
+- **External engine** (`Search:Provider` OpenSearch/Elasticsearch, `Search:Engine`): one REST client
+  (`HttpSearchEngine`, bodies in `SearchEngineRequests`), alias `{prefix}-{locale}` → index `{alias}-{17-digit stamp}`.
+  `IProductSearch` is then `EngineProductSearch` (engine while `SearchEngineHealth.CanServe`, else the
+  `IDatabaseProductSearch`). `SearchIndexService` queues rebuilt products in `search_engine_outbox` (Guid.Empty = full
+  rebuild into new indexes + alias switch); `SearchEngineSyncService` sends them; the worker sets ready/behind/down.
+  Engine integration tests run only with `IntegrationTests:OpenSearchUrl`/`ElasticsearchUrl` (CI service containers).
+- **Browse** (`IProductBrowse`, `GET /catalog/browse`): scope + filters + disjunctive facet counts in memory over small
+  rows; `BrowseQueryParser` keys `c s b q brand group min max stock sale o.{spec} n.{spec}=min-max y.{spec} sort page`.
+- Redirects (`RedirectService`): decoded paths, no trailing slash, never `/`, `/api`, `/_next`, one hop, no loops.
 
 ## Accounts and authorization
 
-- Accounts are identified by **email or phone** (at least one; each unique — `AppUserValidator` + filtered unique
-  indexes `ux_users_normalized_email`, `ux_users_phone_number`). `UserName` is an internal random value. Phones are
-  stored in E.164 via `IPhoneNumberNormalizer` (libphonenumber; accepts Persian/Arabic digits; `Store:PhoneRegion`).
-- Session = Identity application cookie `os_session` (HttpOnly, SameSite=Lax, Secure unless `Auth:SecureCookies=false`),
-  issued by the API and passed through the web proxy. The API answers 401/403, never redirects.
-- CSRF: `OriginCheckMiddleware` rejects POST/PUT/PATCH/DELETE whose `Origin` is not `Store:PublicUrl`'s origin.
-- Authorization: endpoints require **permissions**, not roles —
-  `.RequireAuthorization(Permissions.Policy(Permissions.CatalogManage))`. Roles map to permissions in
-  `RolePermissions` (fixed in code; Admin = all). Get the user id only via `User.GetUserId()`.
-- Account use cases live in `Application/Accounts/AccountService` behind `IAccountIdentity` (Identity in
-  Infrastructure). Request validation: FluentValidation validators + `.Validate<T>()` endpoint filter → 400 with
-  `errors: { field: [codes] }`. Error codes are `account.*` constants (`AccountErrors`, `ProfileErrors`,
-  `AddressErrors`); the web app translates them (`dictionaries/*.json` → `account.errors`), and a test that scans the
-  whole Application project fails if any code lacks a translation in any locale.
-- No account enumeration: wrong identifier and wrong password give the same answer; forgot-password always 202.
-- Sign-in/sign-up/recovery endpoints use the `auth` rate-limit policy (`RateLimiting:AuthPermitPerWindow`).
-- Options that depend on configuration must be read through `IOptions` at runtime, never with
-  `configuration.Get<T>()` while registering services — later sources (env vars, tests) would be ignored.
-- Email: `IEmailSender` (`Email:Delivery` = `Smtp` in production, `Pickup` = `.eml` files under `App_Data/mail` in
-  development). Texts in `EmailTemplates` for every locale; links always point at `Store:PublicUrl/{locale}/…`.
-- SMS: `ISmsSender` with providers `Kavenegar` (Verify Lookup template), `SmsIr` (Verify template), `Twilio` (text),
-  `Pickup` (development: `App_Data/sms/*.txt`), `None` (default). `ISmsCapability.IsEnabled` gates every SMS feature.
-  Provider credentials are validated at startup. `System.Net.Http.HttpClient` logging stays at Warning: Kavenegar's API
-  key is part of the request URL.
-- Phone accounts: sign-in and sign-up are one flow (`/account/phone/send-code` → `/account/phone/sign-in`); a new number
-  becomes a verified, password-less customer. Password sign-up is email only. `PhoneCodeService` owns the code rules
-  (`PhoneCodes` options: length, lifetime, cooldown, attempts, hourly cap); only salted hashes are stored
-  (`phone_verification_codes`). A lockout also blocks code sign-in. Rate limits return `ErrorKind.TooManyRequests` → 429.
-- Tests that depend on time replace the DI `TimeProvider` with `FakeTimeProvider` instead of sleeping.
-- External sign-in (Google/Facebook/Microsoft): `ExternalLoginService` (Application) holds the rules; an existing
-  account is linked automatically **only** when the provider verified the email (only Google's `email_verified` is
-  trusted — see `ExternalAuthGateway.Map`), otherwise `external_email_in_use`. The last sign-in method cannot be
-  unlinked. All three handlers are always registered; a provider without credentials (`Auth:External:*`) gets a
-  placeholder and is never offered (`IExternalLoginProviders`). OAuth callback path:
-  `/api/v1/account/external/{provider}/oauth-callback` (under /api/v1 so the web proxy forwards it); remote failures
-  redirect to `/{locale}/account/login?error=external_failed`.
-- Two-step sign-in (2FA): optional for every account, authenticator (TOTP) + 10 recovery codes + remember-device.
-  Rules in `TwoFactorService` (Application) behind `ITwoFactorIdentity`; `AppSignInManager.SignInWithSecondStepAsync`
-  makes code/provider sign-ins honour 2FA too. A first factor that needs the second step answers 403
-  `account.two_factor_required` (provider callbacks redirect to `login?error=two_factor_required`), then
-  `/api/v1/account/2fa/verify` or `/recovery` completes it. `Security:RequireStaffTwoFactor` (default false) makes
-  permission policies require the `amr=mfa` claim and forbids staff from turning 2FA off. The QR code is generated in
-  the browser (`qrcode`), never by an external service.
-- Every session carries `auth_time` (set in `AppSignInManager.SignInWithClaimsAsync`). Identity's periodic security
-  stamp check rebuilds the principal from the database; `SignInClaims.PreserveOnRefresh` keeps `auth_time`, `amr` and
-  the provider claim (without it, 2FA sessions silently lose `amr=mfa`). Use `SignInClaims.AuthTime(user)` for "signed
-  in recently" checks.
-- Profile/data rights: `ProfileService` and `PersonalDataService` (Application) behind `IAccountDataIdentity`, kept
-  apart from `IAccountIdentity`. Deleting an account **erases** it: personal rows are hard-deleted
-  (`ExecuteDeleteAsync`, not the soft delete), the `users` row stays with no personal data (`ErasedUtc`, skipped by
-  `AppUserValidator`) because orders reference it. Any new table with personal data must be cleared in
-  `PersonalDataService.DeleteAsync` and included in `ExportAsync`.
-- Addresses: `AddressService` (Application/Customers); every query filters `CustomerId == userId`. Countries come
-  from `Store:ShippingCountries` (empty = `PhoneRegion`), postal codes are checked by `PostalCodes`.
-- Staff: `StaffService` (Application/Staff) behind `IStaffIdentity`; error codes `staff.*` (`StaffErrors`, translated
-  under `admin.errors`). Invitations are accepted only by an account whose **verified** email/phone matches. Rules:
-  never act on your own account, always keep one active Admin, write a `StaffAuditEntry` for every change. A role
-  change keeps the session (claims refresh at the one-minute security-stamp check); suspension renews the stamp
-  and locks the account out (`AppUser.SuspendedUtc` + Identity lockout), so every sign-in path is blocked.
-- Admin sections are listed once in `src/lib/admin/sections.ts` (path, label, icon, group, permission): `AdminShell`
-  (side menu from lg, scrolling bar below), the admin start page tiles (`admin.sectionHints`) and the staff-only
-  `AdminMenu` in `SiteHeader` all read it — add a new section there, with its texts in every dictionary.
-- Admin panel (web): pages under `src/app/[locale]/admin/`, framed by `AdminShell`; each page calls
-  `requirePermission()` / `requireStaff()` (`src/lib/admin/access.ts`) inside its `<Suspense>`: signed out → sign-in,
-  no permission → `notFound()`. `proxy.ts` also sends signed-out visitors of `/{locale}/admin` to sign-in.
-- `PublicOriginMiddleware` makes the API see `Store:PublicUrl`'s scheme and host, so absolute URLs (OAuth redirect_uri)
-  and Secure cookies follow the storefront. Integration tests therefore use an `http://` public URL.
-- Browser redirects back into the storefront go through `ReturnPaths.Sanitize` (no open redirects).
-- Web: forms post JSON to `/api/v1/account/*` from the browser (`postJson`); server components read the user with
-  `getCurrentUser()` (forwards only the session cookie, never cached). `proxy.ts` redirects signed-out visitors away
-  from private `/{locale}/account/*` pages; `safeReturnPath()` prevents open redirects.
+- Accounts by **email or phone** (each unique; filtered unique indexes); `UserName` is random. Phones E.164 via
+  `IPhoneNumberNormalizer` (`Store:PhoneRegion`). Phone sign-in = sign-up (verified, password-less); password sign-up
+  is email only. Only salted code hashes are stored.
+- Session cookie `os_session` (HttpOnly, Lax, Secure unless `Auth:SecureCookies=false`) from the API through the web
+  proxy. The API answers 401/403, never redirects. CSRF: `OriginCheckMiddleware` (Origin must equal `Store:PublicUrl`).
+  `PublicOriginMiddleware` makes the API see the public scheme/host (integration tests use an `http://` public URL).
+- Endpoints require **permissions** (`Permissions.Policy(...)`), mapped from roles in `RolePermissions` (Admin = all).
+  User id only via `User.GetUserId()`.
+- Validation: FluentValidation + `.Validate<T>()` → 400 `errors: { field: [codes] }`. No account enumeration
+  (same answer for wrong identifier/password; forgot-password always 202). `auth` rate-limit policy; 429 via
+  `ErrorKind.TooManyRequests`.
+- Email `IEmailSender` (`Smtp`, or `Pickup` .eml in dev); links always `Store:PublicUrl/{locale}/…`. SMS `ISmsSender`
+  (Kavenegar, SmsIr, Twilio, Pickup, None default), gated by `ISmsCapability.IsEnabled`; keep `HttpClient` logging at
+  Warning (Kavenegar's key is in the URL).
+- External logins: auto-link only when the provider verified the email (only Google's `email_verified`); the last
+  sign-in method cannot be unlinked; providers without credentials are never offered. Callback
+  `/api/v1/account/external/{provider}/oauth-callback`.
+- 2FA (TOTP + 10 recovery codes + remember-device): every sign-in path honours it (`SignInWithSecondStepAsync`); 403
+  `account.two_factor_required`, then `/2fa/verify` or `/recovery`. `Security:RequireStaffTwoFactor` requires `amr=mfa`.
+  QR is generated in the browser. `SignInClaims.PreserveOnRefresh` keeps `auth_time`/`amr`/provider across the
+  security-stamp refresh; use `SignInClaims.AuthTime(user)` for "signed in recently".
+- Account deletion **erases**: personal rows hard-deleted (`ExecuteDeleteAsync`), the `users` row stays without data
+  (`ErasedUtc`). **Any new table with personal data must be cleared in `PersonalDataService.DeleteAsync` and exported
+  in `ExportAsync`.**
+- Staff (`StaffService`): invitations need a matching **verified** email/phone; never act on yourself; always one
+  active Admin; audit every change; suspension renews the stamp and locks out.
+- Redirects back into the storefront: `ReturnPaths.Sanitize` (API) / `safeReturnPath()` (web).
 
 ## Frontend conventions (Next.js 16 — read node_modules/next/dist/docs before using unfamiliar APIs)
 
-- Cache Components + Partial Prefetching are on. Data fetchers use `"use cache"` + `cacheTag` + `cacheLife`;
-  invalidate with `revalidateTag(tag, "max")` (two arguments in v16) via `POST /api/revalidate`.
-- Anything store-specific or runtime-env-dependent is read inside `<Suspense>` after `await connection()`
-  (`loadStore()` does this), so the build never needs the API.
-- `middleware` is now `proxy` (`src/proxy.ts`). Nonce-based CSP is incompatible with prerendering, so the CSP is
-  static with `'unsafe-inline'` scripts and everything else locked to `'self'`.
-- Server-only modules import `"server-only"`; the API is called only from the server (`apiGet`), never from the browser.
-- UI strings: `src/lib/i18n/dictionaries/<locale>.json`, all with the same keys as `fa.json` (enforced by a test).
-- Design system: colours, states, ring and `--radius` are CSS tokens in `globals.css` (light + `[data-theme=dark]` +
-  a no-JS system fallback); use the token classes (`bg-surface`, `text-muted`, `bg-danger`, …) and the shared
-  components in `src/components/ui/` (`Button`/`ButtonLink`/`buttonClass`, `Card`, `Badge`, `Skeleton`), not raw
-  palette colours. `dark:` follows the chosen theme (custom variant). Also `bg-accent` (badges, discounts),
-  `bg-inverse`/`text-inverse-foreground` (dark bands such as the footer) and the `tint tint-0…7` classes (soft tiles
-  that work in both themes). Icons: `<Icon name=…>` in `src/components/ui/Icon.tsx` (our own inline SVGs; add new
-  ones there, never an icon font or CDN).
-- Layout (`src/components/layout/`): `SiteHeader` (sticky; brand, GET search form, theme, `LanguageSwitcher`,
-  account, cart; main menu from md up), `BottomNav` (phones only, hidden in the admin panel), `SiteFooter`. The home
-  page follows the design canvas "طراحی صفحه اول فروشگاه" (Digikala-style structure, our own palette and texts).
-  Product rails (`ProductRail`: discounted, newest) show only products from the API — never products hard-coded in
-  the web app; sample products exist only through the opt-in `DemoCatalogSeeder`.
-- Products: `/{locale}/p/{number}/{slug}` (`app/[locale]/p/[number]/[[...slug]]`). `proxy.ts` 301s an old, wrong or
-  missing slug to the current one (it asks `GET /catalog/products/{n}/slug`), because the page streams and can no
-  longer change its status. The page writes canonical + hreflang only for translated languages (`productAlternates`;
-  untranslated → noindex, canonical on the default language) and Product JSON-LD from the same response as the
-  visible price (`productJsonLd`). Money: `formatMoney` (Intl; amount first in fa/ar; currency from `Store:Currency`).
-- Listings: `/{locale}/c/{cat}[/{sub}]`, `/{locale}/b/{brand}` and `/{locale}/search` all use `GET /catalog/browse`
-  (`IProductBrowse` / `ProductBrowseService`: scope + filters + disjunctive facet counts computed in memory over
-  small rows; `BrowseQueryParser` reads `c s b q brand group min max stock sale o.{spec} n.{spec}=min-max y.{spec}
-  sort page`, repeated keys joined). Web: `lib/catalog/browse.ts` (address bar ↔ API; typed prices are display
-  currency, converted back; `nmin.`/`nmax.` form inputs become `n.`), `loadListing`/`listingMetadata`
-  (`lib/catalog/listing-page.ts`), `ProductListing` + `ListingFacets` (facet links `rel=nofollow`, ranges as GET
-  forms). Filtered/sorted → `noindex,follow`, canonical = plain list (page ≥ 2 keeps `?page`); `listingJsonLd`.
-- Search (`Application/Search`): `search_documents` (one per published product and language; Title/Keywords/
-  Details/Codes/Description, all `SearchText.Normalize`d) built by `SearchIndexService` from the `search_outbox`, which
-  `SearchOutboxInterceptor` fills on every catalog SaveChanges (never enqueue by hand; ExecuteUpdate stock changes are
-  not search texts). `SearchIndexWorker` processes it; tests call `IndexSearchAsync()` (DemoCatalogTestBase) instead.
-  Engines behind `IProductSearch`: `PostgresProductSearch` (generated weighted `search_vector` tsvector + GIN and a
-  trigram index on title, created in the migration with raw SQL; read with ADO.NET, not `SqlQuery<T>`) and
-  `SimpleProductSearch` (any database, the unit tests). `ProductTextSearch` adds code lookup (SKU/barcode/number →
-  `BrowseSearch.ExactNumber`, the search page redirects), synonyms (`SearchTerms`), `KeyboardLayouts` retries and
-  "did you mean"; `SearchTermLog` counts phrases. Suggestions: `SearchSuggestionService` → `SearchSuggest` in the header.
-  Npgsql cannot project `ValueTuple`s: use small records in projections.
-- Display currency: `loadDisplayCurrency(locale)` (cookie `os_currency` = "{locale}:{CODE}", else the language's
-  default, else the base) inside Suspense; components take a `DisplayCurrency` and convert with `convertAmount` /
-  `displayMoney` — never store or send converted prices. The choice is set by `GET /{locale}/currency?code=&returnTo=`
-  (a plain link, `safeReturnPath`). Branding: `brandingCss()` → a hoisted `<style>` in the layout; home sections follow
-  `homeLayouts[branding.homeLayout]`. Admin saves call `refreshStorefront(locale, tags)` →
-  `POST /{locale}/admin/refresh` (Origin + permission checked) to expire the `store`/`currencies` caches at once.
-- A page with no per-request content of its own renders `<Suspense><RequestTimeMarker /></Suspense>`: the layout's
-  metadata reads the store per request, and without a marker Next.js reports "uncached data in generateMetadata()".
-  Every API read must come after `await connection()` (or `loadStore()`), or `npm run build` fails without an API.
-- Theme: `src/lib/theme.ts` + `ThemeToggle`; the `<head>` script sets `data-theme` before paint (keep it tiny; the
-  root `<html>` has `suppressHydrationWarning` for it). Never read the theme on the server: pages must stay static.
-- Fonts: `src/lib/fonts.ts` (`next/font/local`, files from npm packages; never Google Fonts or a CDN). Vazirmatn has
-  an Arabic-script `unicode-range` and comes first in every stack; Inter (Latin), Noto Sans Armenian (hy).
-- Number/date/list formatting uses the built-in `Intl` (`formatDate`, `formatList`): Persian calendar and digits for fa.
+- Cache Components + Partial Prefetching. Fetchers: `"use cache"` + `cacheTag` + `cacheLife`; invalidate with
+  `revalidateTag(tag, "max")` via `POST /api/revalidate`; admin saves call `refreshStorefront(locale, tags)`.
+- Store/runtime data only inside `<Suspense>` after `await connection()` (`loadStore()`), so the build needs no API.
+  Dynamic route params (`[number]`) are read inside Suspense too. A page without per-request content renders
+  `<Suspense><RequestTimeMarker /></Suspense>` (else "uncached data in generateMetadata()").
+- `src/proxy.ts` (was middleware): API forwarding, redirects table, locale redirects, product slug 301s, security
+  headers, noindex, sign-in redirects for `/account/*` and `/admin`. Static CSP (`'unsafe-inline'` scripts, rest `'self'`).
+- Server-only modules import `"server-only"`; server components call the API with `apiGet`; browser code only posts
+  JSON to `/api/v1/*` (`postJson`) or fetches public endpoints such as suggestions.
+- UI strings in `src/lib/i18n/dictionaries/<locale>.json`, same keys as `fa.json` (tested).
+- Design system: CSS tokens in `globals.css` (light, `[data-theme=dark]`, no-JS fallback); token classes
+  (`bg-surface`, `text-muted`, `bg-accent`, `bg-inverse`, `tint-0…7`) and `src/components/ui/` (`Button`, `Card`,
+  `Badge`, `Skeleton`, `Icon` = our own inline SVGs). No raw palette colours, icon fonts or CDNs.
+- Admin: sections listed once in `src/lib/admin/sections.ts` (texts in every dictionary); pages under
+  `app/[locale]/admin/` in `AdminShell`, calling `requirePermission()`/`requireStaff()` inside Suspense.
+- Product URLs `/{locale}/p/{number}/{slug}`; canonical + hreflang only for translated languages (`productAlternates`),
+  JSON-LD from the same response as the visible price. Listings `/c/{cat}[/{sub}]`, `/b/{brand}`, `/search`
+  (`lib/catalog/browse.ts`, `listing-page.ts`): facet links `rel=nofollow`, ranges as GET forms, filtered/sorted →
+  `noindex,follow`, canonical = plain list (page ≥ 2 keeps `?page`). Streamed pages cannot change HTTP status.
+- Money: `formatMoney`; display currency via `loadDisplayCurrency(locale)` (cookie `os_currency`) and
+  `convertAmount`/`displayMoney` — never store or send converted prices (convert typed prices back to base).
+- Theme: `<head>` script sets `data-theme` before paint; never read the theme on the server. Fonts via
+  `next/font/local` from npm packages (Vazirmatn first, Inter, Noto Sans Armenian). Formatting with `Intl`
+  (`formatDate`, `formatList`; Persian calendar/digits for fa).
+- Home page follows the design canvas "طراحی صفحه اول فروشگاه"; rails show API products only (never hard-coded).
 - Tests: Vitest (`environment: node`; `// @vitest-environment jsdom` for components) + Testing Library.
 
 ## Commits
@@ -432,11 +229,10 @@ Messages start with a Solar Hijri date, e.g. `1405-08-17 Fix soft delete and aud
 
 ## graphify
 
-This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
-
-Rules:
-- When graphify-out/graph.json exists, run `graphify query "<question>"` before your first grep, search or source-file read for a codebase question, and put this rule in every subagent prompt that explores code. Read raw files only for lines the graph or an earlier read already located. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
-- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
-- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
-- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
-- A committed graphify-out/graph.json is rewritten whole on every build, so a large diff to it in a pull request is expected. Do not flag it as churn or suggest skipping the graph rebuild or its hooks.
+The knowledge graph lives in graphify-out/.
+- When graphify-out/graph.json exists, run `graphify query "<question>"` before the first grep/search/source read for a
+  codebase question (and put this rule in every code-exploring subagent prompt); then read only located lines. Use
+  `graphify path "<A>" "<B>"` and `graphify explain "<concept>"`. Use graphify-out/wiki/index.md for broad navigation
+  if it exists; GRAPH_REPORT.md only for broad architecture review.
+- After modifying code, run `graphify update .` (AST-only, free).
+- A large graph.json diff in a PR is expected; do not flag it.

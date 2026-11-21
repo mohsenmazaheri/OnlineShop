@@ -30,5 +30,16 @@ describe("SearchIndexPanel", () => {
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
     expect(fetchMock.mock.calls[0][0]).toBe("/api/v1/admin/seo/search-index/rebuild");
     expect(screen.getByRole("status").textContent).toBe(en.admin.searchIndexQueued);
+    expect(screen.queryByText(/Search engine/)).toBeNull();
+  });
+
+  it("says whether the search engine answers or the database stands in", () => {
+    const { rerender } = render(
+      <SearchIndexPanel locale="en" texts={en.admin} status={{ documents: 4, pending: 0, engine: { provider: "OpenSearch", serving: true, pending: 2 } }} />,
+    );
+    expect(screen.getByText("Search engine: OpenSearch, answering searches. 2 products waiting to reach it.")).toBeTruthy();
+
+    rerender(<SearchIndexPanel locale="en" texts={en.admin} status={{ documents: 4, pending: 0, engine: { provider: "Elasticsearch", serving: false, pending: 0 } }} />);
+    expect(screen.getByText(/Elasticsearch is not answering right now/).className).toContain("text-danger");
   });
 });

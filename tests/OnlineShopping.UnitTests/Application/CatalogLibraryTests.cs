@@ -35,7 +35,7 @@ public abstract class DemoCatalogTestBase : IDisposable
     protected async Task IndexSearchAsync()
     {
         await using var db = Database.CreateContext();
-        var index = new OnlineShopping.Application.Search.SearchIndexService(db, Database.Clock, Options.Create(Store));
+        var index = new OnlineShopping.Application.Search.SearchIndexService(db, Database.Clock, Options.Create(Store), Options.Create(new OnlineShopping.Application.Search.SearchOptions()));
         while (await index.ProcessOutboxAsync() > 0)
         {
         }

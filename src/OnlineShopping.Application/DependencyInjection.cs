@@ -17,6 +17,27 @@ namespace OnlineShopping.Application;
 
 public static class DependencyInjection
 {
+    /// <summary>
+    /// Search: the database's engine (Infrastructure replaces the simple one on PostgreSQL) answers unless
+    /// Search:Provider names an external engine, which then answers while healthy, with the database as fallback.
+    /// The provider is read at runtime, so tests and environment variables can switch it.
+    /// </summary>
+    private static void AddSearch(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOptions<Search.SearchOptions>()
+            .Bind(configuration.GetSection(Search.SearchOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        services.TryAddScoped<Search.IDatabaseProductSearch, Search.SimpleProductSearch>();
+        services.AddSingleton<Search.SearchEngineHealth>();
+        services.AddScoped<Search.EngineProductSearch>();
+        services.AddScoped<Search.SearchEngineSyncService>();
+        services.AddScoped<Search.IProductSearch>(sp =>
+            sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<Search.SearchOptions>>().Value.UsesEngine
+                ? sp.GetRequiredService<Search.EngineProductSearch>()
+                : sp.GetRequiredService<Search.IDatabaseProductSearch>());
+    }
+
     public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOptions<StoreOptions>()
@@ -31,7 +52,7 @@ public static class DependencyInjection
         services.AddScoped<ICategoryQueries, CategoryQueries>();
         services.AddScoped<IProductQueries, ProductQueries>();
         services.AddScoped<Catalog.Browse.IProductBrowse, Catalog.Browse.ProductBrowseService>();
-        services.TryAddScoped<Search.IProductSearch, Search.SimpleProductSearch>();
+        AddSearch(services, configuration);
         services.AddScoped<Search.ProductTextSearch>();
         services.AddScoped<Search.SearchTermLog>();
         services.AddScoped<Search.SearchIndexService>();

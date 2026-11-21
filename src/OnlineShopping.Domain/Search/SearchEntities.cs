@@ -72,3 +72,17 @@ public sealed class SearchTermStat
 
     public DateTime LastSearchedUtc { get; set; }
 }
+
+/// <summary>
+/// A product whose search documents changed and must reach the external search engine (OpenSearch/Elasticsearch): the
+/// second outbox, written in the same transaction as the documents and removed once the engine has them.
+/// <see cref="Guid.Empty"/> asks for a full rebuild of the engine's indexes.
+/// </summary>
+public sealed class SearchEngineOutboxEntry
+{
+    public long Id { get; set; }
+
+    public Guid ProductId { get; set; }
+
+    public DateTime EnqueuedUtc { get; set; }
+}

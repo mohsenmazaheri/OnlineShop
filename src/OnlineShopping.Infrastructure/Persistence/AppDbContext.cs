@@ -68,6 +68,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<StockReservation> StockReservations => Set<StockReservation>();
     public DbSet<SearchDocument> SearchDocuments => Set<SearchDocument>();
     public DbSet<SearchOutboxEntry> SearchOutbox => Set<SearchOutboxEntry>();
+    public DbSet<SearchEngineOutboxEntry> SearchEngineOutbox => Set<SearchEngineOutboxEntry>();
     public DbSet<SearchTermStat> SearchTermStats => Set<SearchTermStat>();
 
     /// <summary>ASP.NET Core Data Protection keys, shared by all app instances (cookies, antiforgery tokens).</summary>
@@ -710,6 +711,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.ToTable("search_outbox");
             e.Property(o => o.Target).HasConversion<string>().HasMaxLength(16);
         });
+
+        b.Entity<SearchEngineOutboxEntry>(e => e.ToTable("search_engine_outbox"));
 
         b.Entity<SearchTermStat>(e =>
         {

@@ -56,6 +56,7 @@ public interface IApplicationDbContext
     DbSet<StockReservation> StockReservations { get; }
     DbSet<SearchDocument> SearchDocuments { get; }
     DbSet<SearchOutboxEntry> SearchOutbox { get; }
+    DbSet<SearchEngineOutboxEntry> SearchEngineOutbox { get; }
     DbSet<SearchTermStat> SearchTermStats { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

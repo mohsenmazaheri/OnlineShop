@@ -58,7 +58,7 @@ public static class DependencyInjection
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<AppDbContext>());
         // PostgreSQL searches with full-text and trigrams; other databases keep the simple engine.
         if (databaseOptions.Provider == DatabaseProvider.PostgreSql)
-            services.Replace(ServiceDescriptor.Scoped<Application.Search.IProductSearch, Search.PostgresProductSearch>());
+            services.Replace(ServiceDescriptor.Scoped<Application.Search.IDatabaseProductSearch, Search.PostgresProductSearch>());
 
         AddIdentityAndAuth(services, configuration);
         AddEmail(services, configuration);
@@ -300,10 +300,20 @@ public static class DependencyInjection
         services.AddHostedService<ExchangeRateSyncWorker>();
         services.AddHostedService<Inventory.ReservationExpiryWorker>();
         services.AddHostedService<Search.SearchIndexWorker>();
-        services.AddOptions<Application.Search.SearchOptions>()
-            .Bind(configuration.GetSection(Application.Search.SearchOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+        AddSearchEngine(services);
+    }
 
+    /// <summary>
+    /// The external search engine's client (OpenSearch and Elasticsearch speak the same REST API for what the shop
+    /// uses). Its address and credentials are read at runtime; it is only called when Search:Provider names it.
+    /// </summary>
+    private static void AddSearchEngine(IServiceCollection services)
+    {
+        services.AddHttpClient<Search.HttpSearchEngine>((sp, client) =>
+        {
+            var engine = sp.GetRequiredService<IOptions<Application.Search.SearchOptions>>().Value.Engine;
+            Search.HttpSearchEngine.Configure(client, engine);
+        });
+        services.AddScoped<Application.Search.ISearchEngine>(sp => sp.GetRequiredService<Search.HttpSearchEngine>());
     }
 }

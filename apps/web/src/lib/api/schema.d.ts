@@ -815,7 +815,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** How many search documents there are and how many catalog changes wait to reach them. */
+        /** How many search documents there are, how many catalog changes wait to reach them, and the search engine's state. */
         get: operations["GetSearchIndexStatus"];
         put?: never;
         post?: never;
@@ -834,7 +834,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Queue a rebuild of every product's search documents (done in the background). */
+        /** Queue a rebuild of every product's search documents and, with a search engine, of its indexes (done in the background). */
         post: operations["RebuildSearchIndex"];
         delete?: never;
         options?: never;
@@ -2939,12 +2939,21 @@ export interface components {
             name: string;
             path: string;
         };
+        SearchEngineStatus: {
+            provider: components["schemas"]["SearchProvider"];
+            serving: boolean;
+            /** Format: int32 */
+            pending: number;
+        };
         SearchIndexStatus: {
             /** Format: int32 */
             documents: number;
             /** Format: int32 */
             pending: number;
+            engine?: null | components["schemas"]["SearchEngineStatus"];
         };
+        /** @enum {unknown} */
+        SearchProvider: "Postgres" | "OpenSearch" | "Elasticsearch";
         SearchSuggestions: {
             products: components["schemas"]["ProductCard"][];
             categories: components["schemas"]["SuggestedLink"][];
