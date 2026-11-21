@@ -13,7 +13,7 @@ namespace OnlineShopping.Infrastructure.Search;
 /// description. pg_trgm's word similarity of the title adds typo tolerance ("samsnug" still finds "samsung") and
 /// powers "did you mean". The vector column and both GIN indexes are created by the PostgreSQL migration.
 /// </summary>
-public sealed class PostgresProductSearch(AppDbContext db) : IProductSearch
+public sealed class PostgresProductSearch(AppDbContext db) : IDatabaseProductSearch
 {
     /// <summary>A word similarity this high counts as a match on its own (pg_trgm's word_similarity).</summary>
     public const double TypoThreshold = 0.45;

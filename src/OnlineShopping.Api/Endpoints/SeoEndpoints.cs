@@ -46,14 +46,15 @@ public static class SeoEndpoints
             })
             .WithName("RecordRedirectHit").WithSummary("Count a use of a redirect (sent by the storefront).");
 
-        admin.MapGet("/search-index", async (SearchIndexService index, CancellationToken ct) => TypedResults.Ok(await index.StatusAsync(ct)))
-            .WithName("GetSearchIndexStatus").WithSummary("How many search documents there are and how many catalog changes wait to reach them.");
-        admin.MapPost("/search-index/rebuild", async (SearchIndexService index, CancellationToken ct) =>
+        admin.MapGet("/search-index", async (SearchIndexService index, SearchEngineSyncService engine, CancellationToken ct) =>
+                TypedResults.Ok(await index.StatusAsync(ct) with { Engine = await engine.StatusAsync(ct) }))
+            .WithName("GetSearchIndexStatus").WithSummary("How many search documents there are, how many catalog changes wait to reach them, and the search engine's state.");
+        admin.MapPost("/search-index/rebuild", async (SearchIndexService index, SearchEngineSyncService engine, CancellationToken ct) =>
             {
                 await index.EnqueueAllAsync(ct);
-                return TypedResults.Ok(await index.StatusAsync(ct));
+                return TypedResults.Ok(await index.StatusAsync(ct) with { Engine = await engine.StatusAsync(ct) });
             })
-            .WithName("RebuildSearchIndex").WithSummary("Queue a rebuild of every product's search documents (done in the background).");
+            .WithName("RebuildSearchIndex").WithSummary("Queue a rebuild of every product's search documents and, with a search engine, of its indexes (done in the background).");
 
         return app;
     }

@@ -2524,7 +2524,7 @@
         "tags": [
           "Admin: SEO"
         ],
-        "summary": "How many search documents there are and how many catalog changes wait to reach them.",
+        "summary": "How many search documents there are, how many catalog changes wait to reach them, and the search engine's state.",
         "operationId": "GetSearchIndexStatus",
         "responses": {
           "200": {
@@ -2545,7 +2545,7 @@
         "tags": [
           "Admin: SEO"
         ],
-        "summary": "Queue a rebuild of every product's search documents (done in the background).",
+        "summary": "Queue a rebuild of every product's search documents and, with a search engine, of its indexes (done in the background).",
         "operationId": "RebuildSearchIndex",
         "responses": {
           "200": {
@@ -9016,6 +9016,26 @@
           }
         }
       },
+      "SearchEngineStatus": {
+        "required": [
+          "provider",
+          "serving",
+          "pending"
+        ],
+        "type": "object",
+        "properties": {
+          "provider": {
+            "$ref": "#/components/schemas/SearchProvider"
+          },
+          "serving": {
+            "type": "boolean"
+          },
+          "pending": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
       "SearchIndexStatus": {
         "required": [
           "documents",
@@ -9030,8 +9050,25 @@
           "pending": {
             "type": "integer",
             "format": "int32"
+          },
+          "engine": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/SearchEngineStatus"
+              }
+            ]
           }
         }
+      },
+      "SearchProvider": {
+        "enum": [
+          "Postgres",
+          "OpenSearch",
+          "Elasticsearch"
+        ]
       },
       "SearchSuggestions": {
         "required": [

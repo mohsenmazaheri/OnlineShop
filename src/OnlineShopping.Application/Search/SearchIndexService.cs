@@ -7,16 +7,18 @@ using OnlineShopping.Domain.Search;
 
 namespace OnlineShopping.Application.Search;
 
-public sealed record SearchIndexStatus(int Documents, int Pending);
+/// <summary>The search documents, the changes waiting for them, and the external engine (null when the database searches).</summary>
+public sealed record SearchIndexStatus(int Documents, int Pending, SearchEngineStatus? Engine = null);
 
 /// <summary>
 /// Keeps the search documents in step with the catalog. Every catalog change queues an outbox entry in its own
 /// transaction (the SaveChanges interceptor); <see cref="ProcessOutboxAsync"/> turns the queued entries into product
 /// ids (a renamed brand means all its products) and rebuilds their documents: one per published product and shop
 /// language, every text in one spelling. Unpublished or deleted products lose theirs. A full rebuild queues
-/// <see cref="SearchTarget.All"/>.
+/// <see cref="SearchTarget.All"/>. With an external engine, the rebuilt products (or a full rebuild) are queued for it in
+/// the same transaction that removes the handled entries (<see cref="SearchEngineSyncService"/>).
 /// </summary>
-public sealed class SearchIndexService(IApplicationDbContext db, TimeProvider clock, IOptions<StoreOptions> store)
+public sealed class SearchIndexService(IApplicationDbContext db, TimeProvider clock, IOptions<StoreOptions> store, IOptions<SearchOptions> search)
 {
     public const int Batch = 200;
 
@@ -30,7 +32,21 @@ public sealed class SearchIndexService(IApplicationDbContext db, TimeProvider cl
         foreach (var chunk in ids.Chunk(Batch))
             await RebuildAsync(chunk, cancellationToken);
         var done = entries.Select(e => e.Id).ToList();
-        await db.SearchOutbox.Where(e => done.Contains(e.Id)).ExecuteDeleteAsync(cancellationToken);
+        await db.InTransactionAsync<bool>(async () =>
+        {
+            if (search.Value.UsesEngine)
+            {
+                var now = clock.GetUtcNow().UtcDateTime;
+                if (entries.Any(e => e.Target == SearchTarget.All))
+                    db.SearchEngineOutbox.Add(new SearchEngineOutboxEntry { ProductId = Guid.Empty, EnqueuedUtc = now });
+                else
+                    db.SearchEngineOutbox.AddRange(ids.Select(id => new SearchEngineOutboxEntry { ProductId = id, EnqueuedUtc = now }));
+                await db.SaveChangesAsync(cancellationToken);
+            }
+            await db.SearchOutbox.Where(e => done.Contains(e.Id)).ExecuteDeleteAsync(cancellationToken);
+            return true;
+        }, cancellationToken);
+        db.ChangeTracker.Clear();
         return entries.Count;
     }
 

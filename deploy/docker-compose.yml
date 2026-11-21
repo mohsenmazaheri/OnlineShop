@@ -82,6 +82,14 @@ services:
       Sms__Twilio__AuthToken: ${TWILIO_AUTH_TOKEN:-}
       Sms__Twilio__From: ${TWILIO_FROM:-}
       Sms__Twilio__MessagingServiceSid: ${TWILIO_MESSAGING_SERVICE_SID:-}
+      # Search engine (optional): Postgres (default, nothing else to run) | OpenSearch | Elasticsearch.
+      # For OpenSearch start the "search" profile below; the database answers whenever the engine is down.
+      Search__Provider: ${SEARCH_PROVIDER:-Postgres}
+      Search__Engine__Url: ${SEARCH_ENGINE_URL:-http://search:9200}
+      Search__Engine__Username: ${SEARCH_ENGINE_USERNAME:-}
+      Search__Engine__Password: ${SEARCH_ENGINE_PASSWORD:-}
+      Search__Engine__ApiKey: ${SEARCH_ENGINE_API_KEY:-}
+      Search__Engine__IndexPrefix: ${SEARCH_INDEX_PREFIX:-onlineshop}
       # The API is reachable only from the web container on this private network, so it may trust
       # X-Forwarded-For; otherwise every visitor would share the web container's rate-limit bucket.
       ReverseProxy__TrustForwardedHeadersFromAnyHost: "true"
@@ -103,9 +111,30 @@ services:
       - "${WEB_PORT:-3000}:3000"
     networks: [backend]
 
+  # Optional OpenSearch for large catalogues: `--profile search` and SEARCH_PROVIDER=OpenSearch (about 2 GB of RAM).
+  # Not published; only the API reaches it on the private network, so its security plugin is off.
+  # In Iran use an image from a registry reachable there (SEARCH_IMAGE).
+  search:
+    image: ${SEARCH_IMAGE:-opensearchproject/opensearch:2.19.1}
+    profiles: [search]
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      DISABLE_SECURITY_PLUGIN: "true"
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+      OPENSEARCH_JAVA_OPTS: ${SEARCH_JAVA_OPTS:--Xms1g -Xmx1g}
+    ulimits:
+      memlock: { soft: -1, hard: -1 }
+      nofile: { soft: 65536, hard: 65536 }
+    volumes:
+      # A rebuildable copy: the admin's "rebuild index" refills it from PostgreSQL.
+      - search-data:/usr/share/opensearch/data
+    networks: [backend]
+
 volumes:
   db-data:
   media:
+  search-data:
 
 networks:
   backend:

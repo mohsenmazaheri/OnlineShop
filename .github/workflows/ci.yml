@@ -27,10 +27,34 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U ci"
           --health-interval 5s --health-timeout 5s --health-retries 10
+      # The optional search engines (Search:Provider); the engine integration tests run against both.
+      opensearch:
+        image: opensearchproject/opensearch:2.19.1
+        env:
+          discovery.type: single-node
+          DISABLE_SECURITY_PLUGIN: "true"
+          DISABLE_INSTALL_DEMO_CONFIG: "true"
+          OPENSEARCH_JAVA_OPTS: -Xms512m -Xmx512m
+        ports: ["9200:9200"]
+        options: >-
+          --health-cmd "curl -fs http://localhost:9200/_cluster/health"
+          --health-interval 10s --health-timeout 5s --health-retries 30
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.17.4
+        env:
+          discovery.type: single-node
+          xpack.security.enabled: "false"
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+        ports: ["9201:9200"]
+        options: >-
+          --health-cmd "curl -fs http://localhost:9200/_cluster/health"
+          --health-interval 10s --health-timeout 5s --health-retries 30
     env:
       DOTNET_NOLOGO: true
       # Integration tests create and drop their own databases on this server.
       INTEGRATIONTESTS__ADMINCONNECTION: Host=localhost;Port=5432;Database=postgres;Username=ci;Password=ci-only-password
+      INTEGRATIONTESTS__OPENSEARCHURL: http://localhost:9200
+      INTEGRATIONTESTS__ELASTICSEARCHURL: http://localhost:9201
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-dotnet@v5

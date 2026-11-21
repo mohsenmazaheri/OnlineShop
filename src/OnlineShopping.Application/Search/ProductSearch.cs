@@ -7,8 +7,9 @@ namespace OnlineShopping.Application.Search;
 
 /// <summary>
 /// A search engine over the search documents. The default is PostgreSQL full-text search with trigram typo tolerance
-/// (Infrastructure); <see cref="SimpleProductSearch"/> works on any database. A search engine (phase 6c) is another
-/// implementation. Only the matching and ranking live here; prices and stock always come from the database.
+/// (Infrastructure); <see cref="SimpleProductSearch"/> works on any database. An external engine is another
+/// implementation (<see cref="ISearchEngine"/>, with the database as fallback). Only the matching and ranking live
+/// here; prices and stock always come from the database.
 /// </summary>
 public interface IProductSearch
 {
@@ -25,7 +26,7 @@ public interface IProductSearch
 /// word, so typing "sams" finds "samsung". No typo tolerance: "did you mean" covers misspellings. Fine for small
 /// catalogues and the engine of the unit tests (SQLite).
 /// </summary>
-public sealed class SimpleProductSearch(IApplicationDbContext db) : IProductSearch
+public sealed class SimpleProductSearch(IApplicationDbContext db) : IDatabaseProductSearch
 {
     public async Task<IReadOnlyDictionary<Guid, double>> MatchAsync(SearchTerms terms, string locale, int limit, CancellationToken cancellationToken = default)
     {
