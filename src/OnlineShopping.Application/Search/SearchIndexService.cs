@@ -212,10 +212,31 @@ public sealed class SearchIndexService(IApplicationDbContext db, TimeProvider cl
         return result;
     }
 
-    /// <summary>The texts in one spelling, joined and cut to the column's length.</summary>
+    /// <summary>The texts in one spelling, joined, with the parts of joined words, cut to the column's length.</summary>
     private static string Clean(int max, IEnumerable<string?> parts)
     {
-        var text = SearchText.Normalize(string.Join(' ', parts.Where(p => !string.IsNullOrWhiteSpace(p))));
+        var text = WithParts(SearchText.Normalize(string.Join(' ', parts.Where(p => !string.IsNullOrWhiteSpace(p)))));
         return text.Length > max ? text[..max] : text;
+    }
+
+    /// <summary>
+    /// Adds the letter-and-digit parts of words joined by punctuation ("b-12345678" → also "b 12345678"). Searches split
+    /// such words the same way, and PostgreSQL's text parser does not always: it reads "b-12345678" as "b" and the
+    /// number "-12345678", so the code was never found.
+    /// </summary>
+    internal static string WithParts(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        var extra = new List<string>();
+        foreach (var word in text.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (word.All(char.IsLetterOrDigit))
+                continue;
+            var pieces = new string(word.Select(c => char.IsLetterOrDigit(c) ? c : ' ').ToArray())
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (pieces.Length > 1)
+                extra.Add(string.Join(' ', pieces));
+        }
+        return extra.Count == 0 ? text : $"{text} {string.Join(' ', extra.Distinct(StringComparer.Ordinal))}";
     }
 }

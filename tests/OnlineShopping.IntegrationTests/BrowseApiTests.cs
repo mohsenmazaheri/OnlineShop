@@ -38,7 +38,8 @@ public sealed class BrowseApiTests(CatalogAdminApiTests.AdminFactory factory) : 
         using var admin = factory.CreateClient();
         (await admin.PostAsJsonAsync("/api/v1/account/login",
             new LoginRequest(CatalogAdminApiTests.AdminFactory.AdminEmail, CatalogAdminApiTests.AdminFactory.AdminPassword, false))).EnsureSuccessStatusCode();
-        var suffix = Guid.NewGuid().ToString("N")[..8];
+        // Digits only on purpose: PostgreSQL reads "b-12345678" as "b" and a negative number (the SKU search below).
+        var suffix = Random.Shared.Next(10_000_000, 100_000_000).ToString(System.Globalization.CultureInfo.InvariantCulture);
         var category = await ReadAsync<CatalogNodeView>(await admin.PostAsJsonAsync("/api/v1/admin/catalog/categories",
             new SaveCatalogNodeRequest([new("fa", $"ورزشی {suffix}", $"varzeshi-{suffix}", null), new("en", $"Sport {suffix}", $"sport-{suffix}", null)])));
         var sub = await ReadAsync<CatalogNodeView>(await admin.PostAsJsonAsync($"/api/v1/admin/catalog/categories/{category.Id}/subcategories",
