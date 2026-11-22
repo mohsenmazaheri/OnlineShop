@@ -2,13 +2,13 @@
 
 ## Project overview
 
-**OnlineShopping**: a single-store online shop for small businesses. Cross-platform (Linux/Windows), mobile-first
+**OnlineShop**: a single-store online shop for small businesses. Cross-platform (Linux/Windows), mobile-first
 PWA, fast and secure. Monorepo: **ASP.NET Core 10 Web API** on **PostgreSQL 18** (Clean Architecture: Domain /
 Application / Infrastructure / Api) + **Next.js 16** storefront in `apps/web`. One Docker stack per shop; the same
 images serve every shop.
 
 **Plan and all recorded decisions: [docs/ROADMAP.md](docs/ROADMAP.md)** (Persian). Read it before starting, work on
-one step at a time, mark the status there when a step is done. Done: phases 0, 2–6 and 7a (cart); phase 1 has a
+one step at a time, mark the status there when a step is done. Done: phases 0, 2–6, 7a (cart) and 7b (checkout); phase 1 has a
 "remaining" list. SEO/marketing design: [docs/SEO-MARKETING.md](docs/SEO-MARKETING.md) (acceptance checklist at its end).
 
 Key decisions (details in the roadmap):
@@ -52,19 +52,19 @@ Key decisions (details in the roadmap):
 ## Layout and commands
 
 ```
-src/OnlineShopping.{Domain,Application,Infrastructure,Api}, src/OnlineShopping.Infrastructure.Migrations.PostgreSql
-tests/OnlineShopping.UnitTests (xUnit, SQLite in-memory, TestHost) and .IntegrationTests (real PostgreSQL, db per class)
-apps/web (Next.js: src/app/[locale], src/proxy.ts, src/lib, openapi/OnlineShopping.Api.json → src/lib/api/schema.d.ts)
-deploy/ (Dockerfiles, docker-compose.yml, .env.example, nginx.conf)   docs/ (ROADMAP.md, SEO-MARKETING.md)
+src/OnlineShop.{Domain,Application,Infrastructure,Api}, src/OnlineShop.Infrastructure.Migrations.PostgreSql
+tests/OnlineShop.UnitTests (xUnit, SQLite in-memory, TestHost) and .IntegrationTests (real PostgreSQL, db per class)
+apps/web (Next.js: src/app/[locale], src/proxy.ts, src/lib, openapi/OnlineShop.Api.json → src/lib/api/schema.d.ts)
+deploy/ (Dockerfiles, docker-compose.yml, .env.example, nginx.conf)   docs/ (ROADMAP.md, SEO-MARKETING.md, images/ = README screenshots)
 Directory.Build.props (net10.0, warnings = errors), Directory.Packages.props (central versions), dotnet-tools.json
 ```
 
 ```bash
-dotnet tool restore && dotnet build OnlineShopping.sln     # build also rewrites apps/web/openapi/*.json
-dotnet test OnlineShopping.sln [--filter "FullyQualifiedName~X"]
-dotnet run --project src/OnlineShopping.Api [--launch-profile "API + web"]   # :5087, migrates the dev DB
-dotnet tool run dotnet-ef migrations add <Name> --project src/OnlineShopping.Infrastructure.Migrations.PostgreSql --startup-project src/OnlineShopping.Api
-dotnet tool run dotnet-ef migrations has-pending-model-changes --project src/OnlineShopping.Infrastructure.Migrations.PostgreSql --startup-project src/OnlineShopping.Api
+dotnet tool restore && dotnet build OnlineShop.sln     # build also rewrites apps/web/openapi/*.json
+dotnet test OnlineShop.sln [--filter "FullyQualifiedName~X"]
+dotnet run --project src/OnlineShop.Api [--launch-profile "API + web"]   # :5087, migrates the dev DB
+dotnet tool run dotnet-ef migrations add <Name> --project src/OnlineShop.Infrastructure.Migrations.PostgreSql --startup-project src/OnlineShop.Api
+dotnet tool run dotnet-ef migrations has-pending-model-changes --project src/OnlineShop.Infrastructure.Migrations.PostgreSql --startup-project src/OnlineShop.Api
 # apps/web (Node at C:\Program Files\nodejs; add to PATH in Git Bash)
 npm run dev | test | lint | typecheck | build | gen:api
 docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
@@ -145,9 +145,18 @@ After a model change: migration + `has-pending-model-changes` reports none. Afte
   `MinimumStock`. Stocktake differences = counted − stock at `CountedUtc`.
 - **Reservations** (`StockReservationService`): available = Stock − Reserved (storefront `InStock`). Reserve all or
   nothing ("reserved + n where stock − reserved ≥ n"); commit/release/expiry first claim the row with a conditional
-  UPDATE; commit sells via `StockLedger.TakeAsync`. **Phase 7 checkout must use it.**
-- Orders: `CustomerId` FKs to `users` without navigations (orders Restrict, carts cascade); `OrderItem` name/price are
-  snapshots; `OrderStatus` stored as text with a generated check constraint.
+  UPDATE; commit sells via `StockLedger.TakeAsync`. Checkout reserves with reference `order:{number}`.
+- Orders: `CustomerId` (null for guests) FKs to `users` without navigations (orders Restrict, carts cascade); `Number`
+  unique from 1001; everything is a snapshot (items with SKU/variant label/price, method name, tax rate, contact and
+  address: personal data, blanked on erasure); `OrderStatus` stored as text with a generated check constraint.
+- **Checkout** (`Sales/CheckoutService`, `CheckoutEndpoints`, codes `checkout.*` → web `checkout.errors`, merged with
+  `account.errors` for address codes): `GET /checkout`, `POST /checkout/quote` (refused discount reported, not failed),
+  `POST /checkout/orders` (rate limit `checkout`; one transaction: number, `StockReservationService.ReserveAsync`,
+  `DiscountCodeService.ClaimAsync`, order; refuses a total other than `ExpectedTotal`). Arithmetic only in
+  `CheckoutPricing` (discount, shipping per started kg/free threshold, tax inside or added, rounded to the base
+  currency's decimals). Admin: `ShippingMethodService` + `TaxSettingsService` (`/admin/shipping`, settings.manage,
+  `shipping.*` → `admin.shippingErrors`), `DiscountCodeService` (`/admin/discounts`, discounts.manage, `discount.*` →
+  `admin.discountErrors`). Web: `CheckoutForm` (amounts in the base currency, `baseCurrency()`), `lib/checkout/*`.
 - **Cart** (`Sales/CartService`, `CartEndpoints`, codes `cart.*` → web `cart.errors`): server-side for guests too
   (`CartOwner`: user id, else the HttpOnly `os_cart` token, stored only as SHA-256 `GuestTokenHash`); the first cart
   request after sign-in merges it (`MergeAsync`) and drops the cookie. Lines keyed by `ItemId` (variant id, else product

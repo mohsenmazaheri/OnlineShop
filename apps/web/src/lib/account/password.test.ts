@@ -6,7 +6,7 @@ import { PASSWORD_MIN_LENGTH } from "./password";
 describe("password rules", () => {
   it("uses the same minimum length as the API", () => {
     const source = readFileSync(
-      fileURLToPath(new URL("../../../../../src/OnlineShopping.Application/Accounts/AccountValidators.cs", import.meta.url)),
+      fileURLToPath(new URL("../../../../../src/OnlineShop.Application/Accounts/AccountValidators.cs", import.meta.url)),
       "utf8",
     );
     const api = Number(/const int MinLength = (\d+);/.exec(source)?.[1]);

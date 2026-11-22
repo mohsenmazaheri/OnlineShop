@@ -9,7 +9,7 @@ import { getDictionary } from "./dictionaries";
  * Application project (not bin/obj), so a new code without a translation fails here.
  */
 function apiErrorCodes(prefix: string): string[] {
-  const root = fileURLToPath(new URL("../../../../../src/OnlineShopping.Application/", import.meta.url));
+  const root = fileURLToPath(new URL("../../../../../src/OnlineShop.Application/", import.meta.url));
   // Authorization/ holds permission names such as "staff.manage", which are not error codes.
   const files = readdirSync(root, { recursive: true, encoding: "utf8" }).filter(
     (file) => file.endsWith(".cs") && !/(^|[\\/])(bin|obj|Authorization)[\\/]/.test(file),
@@ -32,6 +32,9 @@ const sections = [
   { prefix: "review", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).reviews.errors },
   { prefix: "content", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).admin.contentErrors },
   { prefix: "cart", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).cart.errors },
+  { prefix: "checkout", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).checkout.errors },
+  { prefix: "shipping", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).admin.shippingErrors },
+  { prefix: "discount", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).admin.discountErrors },
   { prefix: "branding", errors: async (locale: (typeof supportedLocales)[number]) => (await getDictionary(locale)).admin.brandingErrors },
 ] as const;
 

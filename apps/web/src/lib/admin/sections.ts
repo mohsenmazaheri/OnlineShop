@@ -1,6 +1,6 @@
 import type { IconName } from "@/components/ui/Icon";
 
-export type AdminSection = "home" | "products" | "import" | "catalog" | "brands" | "specs" | "seo" | "landing" | "content" | "reviews" | "staff" | "currencies" | "branding" | "inventory" | "movements" | "purchases" | "reservations" | "stocktakes" | "suppliers" | "warehouses";
+export type AdminSection = "home" | "products" | "import" | "catalog" | "brands" | "specs" | "seo" | "landing" | "content" | "reviews" | "staff" | "currencies" | "branding" | "shipping" | "discounts" | "inventory" | "movements" | "purchases" | "reservations" | "stocktakes" | "suppliers" | "warehouses";
 export type AdminGroup = "catalog" | "inventory" | "store" | "team";
 
 type SectionDefinition = {
@@ -34,6 +34,8 @@ export const adminSections: readonly SectionDefinition[] = [
   { section: "warehouses", path: "/warehouses", label: "navWarehouses", icon: "warehouse", group: "inventory", permission: "inventory.view" },
   { section: "branding", path: "/branding", label: "navBranding", icon: "palette", group: "store", permission: "settings.manage" },
   { section: "currencies", path: "/currencies", label: "navCurrencies", icon: "coin", group: "store", permission: "settings.manage" },
+  { section: "shipping", path: "/shipping", label: "navShipping", icon: "truck", group: "store", permission: "settings.manage" },
+  { section: "discounts", path: "/discounts", label: "navDiscounts", icon: "tag", group: "store", permission: "discounts.manage" },
   { section: "staff", path: "/staff", label: "navStaff", icon: "users", group: "team", permission: "staff.manage" },
 ];
 

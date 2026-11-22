@@ -48,6 +48,13 @@ export function resolveDisplayCurrency(settings: CurrencySettings, locale: strin
   return { ...currency, isBase: currency.code === settings.base, base: settings.base };
 }
 
+/** The base currency itself, for amounts that are charged as they are (checkout, orders). */
+export function baseCurrency(settings: CurrencySettings): DisplayCurrency {
+  const found = settings.currencies.find((c) => c.code === settings.base);
+  const decimals = found?.decimals ?? (["IRR", "IRT", "JPY", "KRW"].includes(settings.base) ? 0 : 2);
+  return { ...(found ?? { code: settings.base, symbol: null, decimals, roundingStep: 1, rate: 1 }), rate: 1, isBase: true, base: settings.base };
+}
+
 /** A base-currency amount in the display currency, rounded to its step (the base currency is never changed). */
 export function convertAmount(amount: number, currency: DisplayCurrency): number {
   if (currency.isBase) return amount;
