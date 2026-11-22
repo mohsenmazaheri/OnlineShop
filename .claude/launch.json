@@ -4,7 +4,7 @@
     {
       "name": "api",
       "runtimeExecutable": "dotnet",
-      "runtimeArgs": ["run", "--project", "src/OnlineShopping.Api", "--launch-profile", "http"],
+      "runtimeArgs": ["run", "--project", "src/OnlineShop.Api", "--launch-profile", "http"],
       "port": 5087
     },
     {

@@ -9,7 +9,7 @@ import { getDictionary } from "./dictionaries";
  * Application project (not bin/obj), so a new code without a translation fails here.
  */
 function apiErrorCodes(prefix: string): string[] {
-  const root = fileURLToPath(new URL("../../../../../src/OnlineShopping.Application/", import.meta.url));
+  const root = fileURLToPath(new URL("../../../../../src/OnlineShop.Application/", import.meta.url));
   // Authorization/ holds permission names such as "staff.manage", which are not error codes.
   const files = readdirSync(root, { recursive: true, encoding: "utf8" }).filter(
     (file) => file.endsWith(".cs") && !/(^|[\\/])(bin|obj|Authorization)[\\/]/.test(file),

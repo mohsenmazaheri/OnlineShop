@@ -1,0 +1,57 @@
+using Microsoft.Extensions.Options;
+using OnlineShop.Api.Common;
+using OnlineShop.Application.Accounts;
+using OnlineShop.Application.Catalog;
+using OnlineShop.Application.Common;
+using OnlineShop.Application.Notifications;
+using OnlineShop.Application.Settings;
+
+namespace OnlineShop.Api.Endpoints;
+
+/// <summary>Sign-up methods currently available (phone needs a configured SMS provider).</summary>
+public sealed record SignUpMethods(bool Email, bool Phone);
+
+/// <summary>Sign-in methods currently available (SMS codes need a configured SMS provider).</summary>
+public sealed record SignInMethods(bool Password, bool PhoneCode, IReadOnlyList<string> External);
+
+/// <summary>Checkout rules: whether customers may buy without an account, and where the shop ships (ISO country codes).</summary>
+public sealed record CheckoutSettings(bool Guest, IReadOnlyList<string> ShippingCountries);
+
+/// <summary>Store settings the storefront needs; <c>Currency</c> is the base currency of all prices (ISO 4217).</summary>
+public sealed record StoreInfoResponse(string Name, string DefaultLocale, IReadOnlyList<string> Locales, string Currency, SignUpMethods SignUp, SignInMethods SignIn,
+    CheckoutSettings Checkout, BrandingView Branding);
+
+/// <summary>Public, read-only storefront endpoints (no authentication).</summary>
+public static class StoreEndpoints
+{
+    public static IEndpointRouteBuilder MapStoreEndpoints(this IEndpointRouteBuilder app)
+    {
+        var group = app.MapGroup("/api/v1").WithTags("Storefront");
+
+        group.MapGet("/store", async (IOptions<StoreOptions> options, IOptions<AuthOptions> auth, ISmsCapability sms, IExternalLoginProviders external, BrandingService branding, CancellationToken ct) =>
+            {
+                var store = options.Value;
+                var signUp = new SignUpMethods(auth.Value.EmailSignUp, auth.Value.PhoneSignUp && sms.IsEnabled);
+                var signIn = new SignInMethods(Password: true, PhoneCode: sms.IsEnabled, External: external.Enabled);
+                var checkout = new CheckoutSettings(store.GuestCheckout, store.ShippingCountryList);
+                return TypedResults.Ok(new StoreInfoResponse(store.Name, store.DefaultLocale, store.LocaleList, store.Currency, signUp, signIn, checkout, await branding.GetAsync(ct)));
+            })
+            .WithName("GetStoreInfo")
+            .WithSummary("Store name, the locales it offers, the available sign-up/sign-in methods and checkout settings.");
+
+        // ?locale=en: names in that language (an unknown or disabled locale gives the store's default language).
+        group.MapGet("/catalog/categories", async (string? locale, ICategoryQueries queries, IOptions<StoreOptions> store, CancellationToken ct) =>
+                TypedResults.Ok(await queries.GetMenuAsync(store.Value.ContentLocale(locale), ct)))
+            .WithName("GetCategoryMenu")
+            .WithSummary("All categories with their sub-categories, for menus and the home page, named in the requested locale.");
+
+        group.MapGet("/catalog/categories/{slug}", async (string slug, string? locale, ICategoryQueries queries, IOptions<StoreOptions> store, CancellationToken ct) =>
+                (await queries.GetBySlugAsync(slug, store.Value.ContentLocale(locale), ct)).ToHttpResult())
+            .WithName("GetCategoryBySlug")
+            .WithSummary("One category by its slug.")
+            .Produces<CategorySummary>()
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        return app;
+    }
+}

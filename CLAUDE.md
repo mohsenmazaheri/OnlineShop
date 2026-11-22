@@ -2,7 +2,7 @@
 
 ## Project overview
 
-**OnlineShopping**: a single-store online shop for small businesses. Cross-platform (Linux/Windows), mobile-first
+**OnlineShop**: a single-store online shop for small businesses. Cross-platform (Linux/Windows), mobile-first
 PWA, fast and secure. Monorepo: **ASP.NET Core 10 Web API** on **PostgreSQL 18** (Clean Architecture: Domain /
 Application / Infrastructure / Api) + **Next.js 16** storefront in `apps/web`. One Docker stack per shop; the same
 images serve every shop.
@@ -52,19 +52,19 @@ Key decisions (details in the roadmap):
 ## Layout and commands
 
 ```
-src/OnlineShopping.{Domain,Application,Infrastructure,Api}, src/OnlineShopping.Infrastructure.Migrations.PostgreSql
-tests/OnlineShopping.UnitTests (xUnit, SQLite in-memory, TestHost) and .IntegrationTests (real PostgreSQL, db per class)
-apps/web (Next.js: src/app/[locale], src/proxy.ts, src/lib, openapi/OnlineShopping.Api.json → src/lib/api/schema.d.ts)
-deploy/ (Dockerfiles, docker-compose.yml, .env.example, nginx.conf)   docs/ (ROADMAP.md, SEO-MARKETING.md)
+src/OnlineShop.{Domain,Application,Infrastructure,Api}, src/OnlineShop.Infrastructure.Migrations.PostgreSql
+tests/OnlineShop.UnitTests (xUnit, SQLite in-memory, TestHost) and .IntegrationTests (real PostgreSQL, db per class)
+apps/web (Next.js: src/app/[locale], src/proxy.ts, src/lib, openapi/OnlineShop.Api.json → src/lib/api/schema.d.ts)
+deploy/ (Dockerfiles, docker-compose.yml, .env.example, nginx.conf)   docs/ (ROADMAP.md, SEO-MARKETING.md, images/ = README screenshots)
 Directory.Build.props (net10.0, warnings = errors), Directory.Packages.props (central versions), dotnet-tools.json
 ```
 
 ```bash
-dotnet tool restore && dotnet build OnlineShopping.sln     # build also rewrites apps/web/openapi/*.json
-dotnet test OnlineShopping.sln [--filter "FullyQualifiedName~X"]
-dotnet run --project src/OnlineShopping.Api [--launch-profile "API + web"]   # :5087, migrates the dev DB
-dotnet tool run dotnet-ef migrations add <Name> --project src/OnlineShopping.Infrastructure.Migrations.PostgreSql --startup-project src/OnlineShopping.Api
-dotnet tool run dotnet-ef migrations has-pending-model-changes --project src/OnlineShopping.Infrastructure.Migrations.PostgreSql --startup-project src/OnlineShopping.Api
+dotnet tool restore && dotnet build OnlineShop.sln     # build also rewrites apps/web/openapi/*.json
+dotnet test OnlineShop.sln [--filter "FullyQualifiedName~X"]
+dotnet run --project src/OnlineShop.Api [--launch-profile "API + web"]   # :5087, migrates the dev DB
+dotnet tool run dotnet-ef migrations add <Name> --project src/OnlineShop.Infrastructure.Migrations.PostgreSql --startup-project src/OnlineShop.Api
+dotnet tool run dotnet-ef migrations has-pending-model-changes --project src/OnlineShop.Infrastructure.Migrations.PostgreSql --startup-project src/OnlineShop.Api
 # apps/web (Node at C:\Program Files\nodejs; add to PATH in Git Bash)
 npm run dev | test | lint | typecheck | build | gen:api
 docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build

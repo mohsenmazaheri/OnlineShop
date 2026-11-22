@@ -1,4 +1,4 @@
-# نقشهٔ راه و فازبندی پروژهٔ OnlineShopping-MVC
+# نقشهٔ راه و فازبندی پروژهٔ OnlineShop
 
 > هدف: فروشگاه اینترنتی **تک‌فروشگاهی برای کسب‌وکارهای کوچک** (تعداد مشتری کم تا متوسط)، سریع، زیبا، امن،
 > چندزبانه، **PWA و موبایل‌محور**، با انبارداری و حسابداری، **Cross-Platform** (لینوکس و ویندوز).
@@ -91,12 +91,12 @@
 
 ```
 apps/web/                                   Next.js 16 (TypeScript, App Router, Cache Components, PWA)
-src/OnlineShopping.Domain/                  موجودیت‌ها (بدون وابستگی)
-src/OnlineShopping.Application/             Use caseها، Result<T>، IApplicationDbContext، StoreOptions
-src/OnlineShopping.Infrastructure/          EF Core/PostgreSQL، Identity، Data Protection، Seeder
-src/OnlineShopping.Infrastructure.Migrations.PostgreSql/
-src/OnlineShopping.Api/                     ASP.NET Core Web API
-tests/OnlineShopping.UnitTests, tests/OnlineShopping.IntegrationTests (PostgreSQL واقعی)
+src/OnlineShop.Domain/                  موجودیت‌ها (بدون وابستگی)
+src/OnlineShop.Application/             Use caseها، Result<T>، IApplicationDbContext، StoreOptions
+src/OnlineShop.Infrastructure/          EF Core/PostgreSQL، Identity، Data Protection، Seeder
+src/OnlineShop.Infrastructure.Migrations.PostgreSql/
+src/OnlineShop.Api/                     ASP.NET Core Web API
+tests/OnlineShop.UnitTests, tests/OnlineShop.IntegrationTests (PostgreSQL واقعی)
 deploy/                                     Dockerfileها، docker-compose، نمونهٔ nginx
 ```
 
