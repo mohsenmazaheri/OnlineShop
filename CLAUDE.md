@@ -8,8 +8,8 @@ Application / Infrastructure / Api) + **Next.js 16** storefront in `apps/web`. O
 images serve every shop.
 
 **Plan and all recorded decisions: [docs/ROADMAP.md](docs/ROADMAP.md)** (Persian). Read it before starting, work on
-one step at a time, mark the status there when a step is done. Done: phases 0, 2–6; phase 1 has a "remaining"
-list. SEO/marketing design: [docs/SEO-MARKETING.md](docs/SEO-MARKETING.md) (acceptance checklist at its end).
+one step at a time, mark the status there when a step is done. Done: phases 0, 2–6 and 7a (cart); phase 1 has a
+"remaining" list. SEO/marketing design: [docs/SEO-MARKETING.md](docs/SEO-MARKETING.md) (acceptance checklist at its end).
 
 Key decisions (details in the roadmap):
 - EF Core code-first, **one migrations project per provider** (PostgreSQL now, `snake_case`; SQL Server/MySQL later).
@@ -148,6 +148,13 @@ After a model change: migration + `has-pending-model-changes` reports none. Afte
   UPDATE; commit sells via `StockLedger.TakeAsync`. **Phase 7 checkout must use it.**
 - Orders: `CustomerId` FKs to `users` without navigations (orders Restrict, carts cascade); `OrderItem` name/price are
   snapshots; `OrderStatus` stored as text with a generated check constraint.
+- **Cart** (`Sales/CartService`, `CartEndpoints`, codes `cart.*` → web `cart.errors`): server-side for guests too
+  (`CartOwner`: user id, else the HttpOnly `os_cart` token, stored only as SHA-256 `GuestTokenHash`); the first cart
+  request after sign-in merges it (`MergeAsync`) and drops the cookie. Lines keyed by `ItemId` (variant id, else product
+  id). Carts hold quantities only: price and available (Stock − Reserved) are read live, changed lines get a
+  `CartLineProblem` and leave the subtotal. Every answer sets readable `os_cart_n` (the badge, `lib/cart/count.ts`; call
+  `notifyCartChanged()` after a change). Web: `AddToCartButton` (in `VariantPicker` for variant products),
+  `CartContents` (converted unit price × quantity), `getCart` (`lib/cart/server.ts`, forwards both cookies).
 - **Search** (`Application/Search`): `search_documents` per product and language (normalized by `SearchText.Normalize`),
   rebuilt from `search_outbox`, which `SearchOutboxInterceptor` fills on catalog SaveChanges (never enqueue by hand;
   `ExecuteUpdate` changes are not seen). `SearchIndexWorker` processes it; tests call `IndexSearchAsync()`.

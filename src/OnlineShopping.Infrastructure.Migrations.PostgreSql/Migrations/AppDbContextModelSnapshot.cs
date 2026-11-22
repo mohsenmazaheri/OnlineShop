@@ -2154,9 +2154,14 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasColumnName("created_utc");
 
                     b.Property<string>("CustomerId")
-                        .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)")
                         .HasColumnName("customer_id");
+
+                    b.Property<string>("GuestTokenHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("guest_token_hash");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
@@ -2172,6 +2177,11 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.HasIndex("CustomerId")
                         .IsUnique()
                         .HasDatabaseName("ix_carts_customer_id")
+                        .HasFilter("is_deleted = false");
+
+                    b.HasIndex("GuestTokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_carts_guest_token_hash")
                         .HasFilter("is_deleted = false");
 
                     b.ToTable("carts", (string)null);
@@ -2196,6 +2206,10 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("item_id");
+
                     b.Property<DateTime?>("ModifiedUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("modified_utc");
@@ -2208,15 +2222,22 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("quantity");
 
+                    b.Property<Guid?>("VariantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("variant_id");
+
                     b.HasKey("Id")
                         .HasName("pk_cart_items");
 
                     b.HasIndex("ProductId")
                         .HasDatabaseName("ix_cart_items_product_id");
 
-                    b.HasIndex("CartId", "ProductId")
+                    b.HasIndex("VariantId")
+                        .HasDatabaseName("ix_cart_items_variant_id");
+
+                    b.HasIndex("CartId", "ItemId")
                         .IsUnique()
-                        .HasDatabaseName("ix_cart_items_cart_id_product_id")
+                        .HasDatabaseName("ix_cart_items_cart_id_item_id")
                         .HasFilter("is_deleted = false");
 
                     b.ToTable("cart_items", (string)null);
@@ -3928,7 +3949,6 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .WithMany()
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("fk_carts_users_customer_id");
                 });
 
@@ -3947,6 +3967,12 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_cart_items_products_product_id");
+
+                    b.HasOne("OnlineShopping.Domain.Catalog.ProductVariant", null)
+                        .WithMany()
+                        .HasForeignKey("VariantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_cart_items_product_variants_variant_id");
 
                     b.Navigation("Cart");
 

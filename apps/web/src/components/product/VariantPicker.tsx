@@ -3,9 +3,11 @@
 import { useState } from "react";
 import type { DisplayCurrency } from "@/lib/currency/display";
 import { defaultVariant, optionState, selectVariant, type VariantAxis, type VariantOffer } from "@/lib/catalog/variants";
+import { AddToCartButton, type AddToCartTexts } from "@/components/cart/AddToCartButton";
+import type { ErrorTexts } from "@/lib/account/problems";
 import { Price, type PriceTexts } from "./Price";
 
-type Texts = PriceTexts & { inStock: string; outOfStock: string; sku: string; soldOutOption: string };
+type Texts = PriceTexts & AddToCartTexts & { inStock: string; outOfStock: string; sku: string; soldOutOption: string };
 
 type Props = {
   axes: VariantAxis[];
@@ -13,6 +15,9 @@ type Props = {
   money: DisplayCurrency;
   locale: string;
   texts: Texts;
+  /** The product's public number, for the add-to-cart button of the chosen variant. */
+  number: number;
+  cartErrors: ErrorTexts;
 };
 
 /**
@@ -20,7 +25,7 @@ type Props = {
  * and SKU are right without JavaScript; with it, the chips switch the variant. Sold-out options stay choosable (struck
  * through) so the visitor sees why.
  */
-export function VariantPicker({ axes, variants, money, locale, texts }: Props) {
+export function VariantPicker({ axes, variants, money, locale, texts, number, cartErrors }: Props) {
   const [current, setCurrent] = useState(() => defaultVariant(variants));
   if (!current) return null;
 
@@ -68,6 +73,8 @@ export function VariantPicker({ axes, variants, money, locale, texts }: Props) {
           {texts.sku}: <span dir="ltr">{current.sku}</span>
         </p>
       </div>
+      {/* Keyed by the variant, so a confirmation does not linger after switching. */}
+      <AddToCartButton key={current.sku} locale={locale} number={number} variantSku={current.sku} inStock={current.inStock} texts={texts} errors={cartErrors} />
     </div>
   );
 }

@@ -4,7 +4,8 @@ import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { productPath } from "@/lib/catalog/product-path";
 import { Countdown } from "./Countdown";
 import { RatingLine } from "./ProductCard";
-import { Button } from "@/components/ui/Button";
+import { AddToCartButton } from "@/components/cart/AddToCartButton";
+import type { ErrorTexts } from "@/lib/account/problems";
 import type { ProductDetail } from "@/lib/api/storefront";
 import { brandOf, formatSpecValue } from "@/lib/catalog/specs";
 import type { DisplayCurrency } from "@/lib/currency/display";
@@ -21,13 +22,15 @@ type Props = {
   /** Name of the base currency, for the "approximate price" note when another currency is shown. */
   baseName: string;
   texts: Dictionary["product"];
+  /** Messages for refused cart adds (dict.cart.errors). */
+  cartErrors: ErrorTexts;
 };
 
 /**
  * The product page body (Digikala-style structure: breadcrumb, image, title with key facts, a price box; then the
  * description and the full specifications). Pure presentation; the page loads the data and writes the metadata.
  */
-export function ProductView({ product, locale, money, baseName, texts }: Props) {
+export function ProductView({ product, locale, money, baseName, texts, cartErrors }: Props) {
   // Older data may keep the brand as a "brand" spec; the brand itself wins.
   const brand = product.brand?.name ?? brandOf(product.specs);
   const keyFacts = product.specs.filter((s) => s.inSummary && !(product.brand && s.code === "brand")).slice(0, 6);
@@ -92,7 +95,7 @@ export function ProductView({ product, locale, money, baseName, texts }: Props) 
 
         <aside aria-label={texts.price} className="flex h-fit flex-col gap-4 rounded-2xl border border-border bg-surface p-4 md:col-span-2 lg:col-span-1">
           {hasVariants ? (
-            <VariantPicker axes={product.variantAxes} variants={product.variants} money={money} locale={locale} texts={texts} />
+            <VariantPicker axes={product.variantAxes} variants={product.variants} money={money} locale={locale} texts={texts} number={product.number} cartErrors={cartErrors} />
           ) : (
             <>
               <Price price={product.price} compareAtPrice={product.compareAtPrice} money={money} locale={locale} texts={texts} size="lg" />
@@ -104,13 +107,8 @@ export function ProductView({ product, locale, money, baseName, texts }: Props) 
           )}
           {product.saleEndsUtc && <Countdown endsUtc={product.saleEndsUtc} locale={locale} texts={texts} className="text-danger" />}
           {!money.isBase && <p className="text-xs text-muted">{texts.approximate.replace("{base}", baseName)}</p>}
-          {/* Checkout arrives in phase 7: the button is shown, honestly disabled. */}
-          <Button size="lg" disabled aria-describedby="cart-soon">
-            {texts.addToCart}
-          </Button>
-          <p id="cart-soon" className="text-xs text-muted">
-            {texts.cartSoon}
-          </p>
+          {/* With variants the picker holds the button, since it knows the chosen variant. */}
+          {!hasVariants && <AddToCartButton locale={locale} number={product.number} inStock={product.inStock} texts={texts} errors={cartErrors} />}
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
             <WishlistButton locale={locale} number={product.number} returnPath={productPath(locale, product.number, product.slug)} texts={texts} />
             <CompareButton locale={locale} number={product.number} category={product.category.slug} texts={texts} />

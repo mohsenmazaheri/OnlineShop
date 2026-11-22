@@ -58,6 +58,7 @@ public static class DependencyInjection
         services.AddScoped<Catalog.LandingPageService>();
         services.AddScoped<Catalog.SitemapService>();
         services.AddScoped<Content.ContentService>();
+        services.AddScoped<Sales.CartService>();
         services.AddScoped<Catalog.Compare.CompareListService>();
         services.AddScoped<Catalog.Reviews.ReviewService>();
         services.AddScoped<Customers.WishlistService>();

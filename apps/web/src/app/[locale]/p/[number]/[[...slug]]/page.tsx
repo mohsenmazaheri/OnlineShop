@@ -92,7 +92,7 @@ async function Product({ params, searchParams }: { params: Params; searchParams:
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd(product, pageUrl, offer.currency, siteUrl(), offer.priceOf, { items: shown })) }}
       />
-      <ProductView product={product} locale={locale} money={money} baseName={currencyName(money.base, locale)} texts={dict.product} />
+      <ProductView product={product} locale={locale} money={money} baseName={currencyName(money.base, locale)} texts={dict.product} cartErrors={dict.cart.errors} />
       {reviews && (
         <div className="mt-8 border-t border-border pt-6">
           <ProductReviews

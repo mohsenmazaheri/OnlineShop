@@ -59,7 +59,8 @@
     "suggestBrands": "Marken",
     "suggestPopular": "Häufige Suchen",
     "suggestAll": "Alle Ergebnisse für „{query}“",
-    "suggestLabel": "Suchvorschläge"
+    "suggestLabel": "Suchvorschläge",
+    "cartCount": "{count} Artikel im Warenkorb"
   },
   "account": {
     "loginTitle": "Anmelden",
@@ -1012,7 +1013,34 @@
   "cart": {
     "title": "Warenkorb",
     "empty": "Ihr Warenkorb ist leer.",
-    "continue": "Weiter einkaufen"
+    "continue": "Weiter einkaufen",
+    "itemCount": "{count} Artikel",
+    "subtotal": "Summe der Artikel",
+    "summary": "Übersicht",
+    "checkout": "Weiter zur Kasse",
+    "checkoutSoon": "Die Online-Bestellung ist bald möglich; Ihre Artikel bleiben im Warenkorb.",
+    "shippingLater": "Versand und Steuer kommen im nächsten Schritt hinzu.",
+    "unreachable": "Der Warenkorb kann gerade nicht angezeigt werden. Bitte versuchen Sie es gleich noch einmal.",
+    "hasProblems": "Einige Artikel haben sich geändert; bitte prüfen Sie die markierten Zeilen.",
+    "problemUnavailable": "Nicht mehr erhältlich; bitte entfernen.",
+    "problemOutOfStock": "Ausverkauft",
+    "problemNotEnoughStock": "Nur noch {count} verfügbar; bitte die Menge verringern.",
+    "each": "je {price}",
+    "decrease": "Eins weniger",
+    "increase": "Eins mehr",
+    "remove": "{name} entfernen",
+    "quantity": "Menge",
+    "errors": {
+      "generic": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
+      "network": "Der Shop ist nicht erreichbar. Prüfen Sie Ihre Internetverbindung.",
+      "too_many_requests": "Zu viele Anfragen. Bitte versuchen Sie es gleich noch einmal.",
+      "product_not_found": "Dieser Artikel ist nicht mehr erhältlich.",
+      "variant_required": "Bitte wählen Sie zuerst Farbe oder Größe.",
+      "not_enough_stock": "Von diesem Artikel ist nicht genug vorrätig.",
+      "line_not_found": "Diese Zeile ist nicht mehr im Warenkorb; bitte laden Sie die Seite neu.",
+      "quantity_invalid": "Die Menge muss zwischen 1 und 99 liegen.",
+      "too_many_lines": "Der Warenkorb ist voll (höchstens 50 Zeilen)."
+    }
   },
   "product": {
     "price": "Preis",
@@ -1021,7 +1049,6 @@
     "inStock": "Auf Lager",
     "outOfStock": "Nicht vorrätig",
     "addToCart": "In den Warenkorb",
-    "cartSoon": "Online-Bestellungen sind bald möglich.",
     "keyFacts": "Wichtigste Merkmale",
     "description": "Produktbeschreibung",
     "specs": "Technische Daten",
@@ -1042,7 +1069,9 @@
     "ratingLabel": "{average} von 5 ({count} Bewertungen)",
     "offerEndsIn": "Angebot endet in",
     "offerEnded": "Dieses Angebot ist beendet",
-    "offerDays": "{n} T."
+    "offerDays": "{n} T.",
+    "added": "In den Warenkorb gelegt.",
+    "viewCart": "Zum Warenkorb"
   },
   "listing": {
     "home": "Startseite",
