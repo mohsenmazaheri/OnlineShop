@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CartBadge } from "@/components/cart/CartBadge";
 import { Suspense } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Icon } from "@/components/ui/Icon";
@@ -117,9 +118,10 @@ export function SiteHeader({ locale, texts }: Props) {
               href={`/${locale}/cart`}
               aria-label={texts.cart}
               title={texts.cart}
-              className="hidden h-11 w-11 items-center justify-center rounded-xl text-foreground hover:bg-surface-muted md:flex"
+              className="relative hidden h-11 w-11 items-center justify-center rounded-xl text-foreground hover:bg-surface-muted md:flex"
             >
               <Icon name="cart" size={24} />
+              <CartBadge locale={locale} label={texts.cartCount} />
             </Link>
           </div>
         </div>

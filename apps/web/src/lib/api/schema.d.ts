@@ -506,6 +506,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/cart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The visitor's cart with current prices and stock (a guest's merges into the account after signing in). */
+        get: operations["GetCart"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cart/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a product (number) or a variant (SKU) to the cart; never more than is available. */
+        post: operations["AddToCart"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cart/items/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change a line's quantity (0 removes it). */
+        put: operations["SetCartQuantity"];
+        post?: never;
+        /** Remove a line from the cart. */
+        delete: operations["RemoveFromCart"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/currencies": {
         parameters: {
             query?: never;
@@ -2434,6 +2486,13 @@ export interface components {
             postalCode: null | string;
             isDefault: boolean;
         };
+        AddToCartRequest: {
+            /** Format: int64 */
+            number: number;
+            variantSku: null | string;
+            /** Format: int32 */
+            quantity: number;
+        };
         AuthenticatorSetup: {
             sharedKey: string;
             authenticatorUri: string;
@@ -2523,6 +2582,39 @@ export interface components {
             productName: string;
             /** Format: int32 */
             quantity: number;
+        };
+        CartLine: {
+            /** Format: uuid */
+            id: string;
+            /** Format: int64 */
+            number: number;
+            name: string;
+            slug: string;
+            variantSku: null | string;
+            variantLabel: null | string;
+            imageUrl: null | string;
+            /** Format: double */
+            unitPrice: number;
+            /** Format: double */
+            compareAtPrice: null | number;
+            /** Format: int32 */
+            quantity: number;
+            /** Format: int32 */
+            available: number;
+            /** Format: double */
+            lineTotal: number;
+            problem: components["schemas"]["CartLineProblem"];
+        };
+        /** @enum {unknown} */
+        CartLineProblem: "None" | "Unavailable" | "OutOfStock" | "NotEnoughStock";
+        CartView: {
+            lines: components["schemas"]["CartLine"][];
+            /** Format: int32 */
+            itemCount: number;
+            /** Format: double */
+            subtotal: number;
+            currency: string;
+            hasProblems: boolean;
         };
         CatalogNodeView: {
             /** Format: uuid */
@@ -3599,6 +3691,10 @@ export interface components {
         };
         SetLocaleCurrencyRequest: {
             currencyCode: string;
+        };
+        SetQuantityRequest: {
+            /** Format: int32 */
+            quantity: number;
         };
         /** @description Sign-in methods currently available (SMS codes need a configured SMS provider). */
         SignInMethods: {
@@ -5015,6 +5111,124 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    GetCart: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartView"];
+                };
+            };
+        };
+    };
+    AddToCart: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddToCartRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    SetCartQuantity: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetQuantityRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    RemoveFromCart: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartView"];
+                };
             };
         };
     };

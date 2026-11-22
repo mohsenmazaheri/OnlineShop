@@ -59,7 +59,8 @@
     "suggestBrands": "العلامات التجارية",
     "suggestPopular": "عمليات بحث شائعة",
     "suggestAll": "كل النتائج لـ «{query}»",
-    "suggestLabel": "اقتراحات البحث"
+    "suggestLabel": "اقتراحات البحث",
+    "cartCount": "{count} منتجات في السلة"
   },
   "account": {
     "loginTitle": "تسجيل الدخول",
@@ -1012,7 +1013,34 @@
   "cart": {
     "title": "سلة التسوق",
     "empty": "سلة التسوق فارغة.",
-    "continue": "متابعة التسوق"
+    "continue": "متابعة التسوق",
+    "itemCount": "{count} منتجات",
+    "subtotal": "مجموع المنتجات",
+    "summary": "ملخص السلة",
+    "checkout": "متابعة الشراء",
+    "checkoutSoon": "الدفع عبر الإنترنت متاح قريبًا؛ تبقى منتجاتك في السلة.",
+    "shippingLater": "تُضاف تكلفة الشحن والضريبة في الخطوة التالية.",
+    "unreachable": "لا يمكن عرض السلة الآن. يُرجى المحاولة بعد قليل.",
+    "hasProblems": "تغيّرت بعض المنتجات؛ يُرجى مراجعة الأسطر المحددة.",
+    "problemUnavailable": "لم يعد متوفرًا؛ يُرجى إزالته.",
+    "problemOutOfStock": "نفد من المخزون",
+    "problemNotEnoughStock": "بقي {count} فقط؛ يُرجى تقليل الكمية.",
+    "each": "{price} للقطعة",
+    "decrease": "واحد أقل",
+    "increase": "واحد أكثر",
+    "remove": "إزالة {name}",
+    "quantity": "الكمية",
+    "errors": {
+      "generic": "حدث خطأ ما. يُرجى المحاولة مرة أخرى.",
+      "network": "تعذّر الوصول إلى المتجر. تحقّق من اتصالك بالإنترنت.",
+      "too_many_requests": "طلبات كثيرة جدًا. يُرجى المحاولة بعد قليل.",
+      "product_not_found": "هذا المنتج لم يعد متوفرًا.",
+      "variant_required": "اختر اللون أو المقاس أولًا.",
+      "not_enough_stock": "المخزون من هذا المنتج غير كافٍ.",
+      "line_not_found": "هذا السطر لم يعد في السلة؛ يُرجى إعادة تحميل الصفحة.",
+      "quantity_invalid": "يجب أن تكون الكمية من 1 إلى 99.",
+      "too_many_lines": "السلة ممتلئة (50 سطرًا كحد أقصى)."
+    }
   },
   "product": {
     "price": "السعر",
@@ -1021,7 +1049,6 @@
     "inStock": "متوفر",
     "outOfStock": "غير متوفر",
     "addToCart": "أضف إلى السلة",
-    "cartSoon": "الطلب عبر الإنترنت متاح قريبًا.",
     "keyFacts": "أهم الميزات",
     "description": "عن المنتج",
     "specs": "المواصفات",
@@ -1042,7 +1069,9 @@
     "ratingLabel": "{average} من 5 ({count} تقييم)",
     "offerEndsIn": "ينتهي العرض خلال",
     "offerEnded": "انتهى هذا العرض",
-    "offerDays": "{n} يوم"
+    "offerDays": "{n} يوم",
+    "added": "أُضيف إلى السلة.",
+    "viewCart": "عرض السلة"
   },
   "listing": {
     "home": "الرئيسية",

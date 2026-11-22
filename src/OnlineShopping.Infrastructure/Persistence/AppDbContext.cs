@@ -476,6 +476,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         b.Entity<Cart>(e =>
         {
             e.HasIndex(x => x.CustomerId).IsUnique().HasFilter(NotDeletedFilter);
+            e.Property(x => x.CustomerId).HasMaxLength(450);
+            e.Property(x => x.GuestTokenHash).HasMaxLength(64);
+            e.HasIndex(x => x.GuestTokenHash).IsUnique().HasFilter(NotDeletedFilter);
             e.HasOne<AppUser>()
                 .WithMany()
                 .HasForeignKey(c => c.CustomerId)
@@ -484,7 +487,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
         b.Entity<CartItem>(e =>
         {
-            e.HasIndex(x => new { x.CartId, x.ProductId }).IsUnique().HasFilter(NotDeletedFilter);
+            e.HasIndex(x => new { x.CartId, x.ItemId }).IsUnique().HasFilter(NotDeletedFilter);
+            e.HasOne<ProductVariant>().WithMany().HasForeignKey(i => i.VariantId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(i => i.Cart)
                 .WithMany(c => c.Items)
                 .HasForeignKey(i => i.CartId)

@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { CartBadge } from "@/components/cart/CartBadge";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { activeTab, type NavTab } from "./locale-path";
 
-type Texts = { bottomMenu: string; home: string; categoriesShort: string; cart: string; myAccount: string };
+type Texts = { bottomMenu: string; home: string; categoriesShort: string; cart: string; cartCount: string; myAccount: string };
 
 /**
  * The phone's tab bar (hidden from md up, where the header shows the same links), marking the current tab. Not shown
@@ -39,7 +40,10 @@ export function BottomNavBar({ locale, texts, active }: { locale: string; texts:
               aria-current={active === tab ? "page" : undefined}
               className="flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] text-muted aria-[current=page]:font-bold aria-[current=page]:text-primary"
             >
-              <Icon name={icon} size={24} />
+              <span className="relative">
+                <Icon name={icon} size={24} />
+                {tab === "cart" && <CartBadge locale={locale} label={texts.cartCount} />}
+              </span>
               {label}
             </Link>
           </li>

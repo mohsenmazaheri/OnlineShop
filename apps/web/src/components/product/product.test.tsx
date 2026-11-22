@@ -139,7 +139,7 @@ describe("SpecTable", () => {
 
 describe("ProductView", () => {
   it("shows the heading, key facts, price box, description and specs", () => {
-    render(<ProductView product={detail} locale="en" money={eur} baseName="euro" texts={en.product} />);
+    render(<ProductView product={detail} locale="en" money={eur} baseName="euro" texts={en.product} cartErrors={en.cart.errors} />);
 
     expect(screen.getByRole("heading", { level: 1, name: "Orvia X1" })).toBeTruthy();
     expect(screen.getByRole("navigation", { name: en.product.breadcrumb }).textContent).toContain("Mobile phones");
@@ -147,14 +147,15 @@ describe("ProductView", () => {
     expect(within(facts).getAllByRole("listitem")).toHaveLength(2);
     expect(screen.getByText(en.product.inStock)).toBeTruthy();
     const button = screen.getByRole("button", { name: en.product.addToCart }) as HTMLButtonElement;
-    expect(button.disabled).toBe(true);
+    // In stock: the cart is open (phase 7).
+    expect(button.disabled).toBe(false);
     expect(screen.getByText("A bright display.")).toBeTruthy();
     expect(screen.getByRole("img", { name: "Orvia X1" })).toBeTruthy();
     expect(screen.queryByText(/Approximate price/)).toBeNull();
   });
 
   it("says a converted price is approximate", () => {
-    render(<ProductView product={detail} locale="en" money={toman} baseName="euro" texts={en.product} />);
+    render(<ProductView product={detail} locale="en" money={toman} baseName="euro" texts={en.product} cartErrors={en.cart.errors} />);
 
     expect(screen.getByText("Approximate price; you pay in euro.")).toBeTruthy();
   });
@@ -166,7 +167,7 @@ describe("ProductView", () => {
       variantAxes: [{ code: "size", name: "Size", options: [{ code: "m", value: "M" }] }],
       variants: [{ sku: "X1-M", gtin: null, price: 300, compareAtPrice: null, inStock: true, options: [{ axis: "size", option: "m" }] }],
     };
-    render(<ProductView product={withVariants} locale="en" money={eur} baseName="euro" texts={en.product} />);
+    render(<ProductView product={withVariants} locale="en" money={eur} baseName="euro" texts={en.product} cartErrors={en.cart.errors} />);
 
     expect(screen.getByText("Orvia Inc.")).toBeTruthy();
     // The brand itself replaces the old "brand" spec in the key facts.
@@ -174,5 +175,7 @@ describe("ProductView", () => {
     expect(screen.getByRole("button", { name: "M" }).getAttribute("aria-pressed")).toBe("true");
     expect(screen.getByText("X1-M")).toBeTruthy();
     expect(screen.queryByText("DEMO-PHN-001")).toBeNull();
+    // One add-to-cart button, the picker's (it knows the chosen variant).
+    expect(screen.getAllByRole("button", { name: en.product.addToCart })).toHaveLength(1);
   });
 });
