@@ -1566,6 +1566,462 @@
         }
       }
     },
+    "/api/v1/checkout": {
+      "get": {
+        "tags": [
+          "Checkout"
+        ],
+        "summary": "What checkout starts with: the cart, saved addresses, countries, shipping methods and tax.",
+        "operationId": "GetCheckout",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/checkout/quote": {
+      "post": {
+        "tags": [
+          "Checkout"
+        ],
+        "summary": "The totals for a country, shipping method and discount code (a refused code is reported, not failed).",
+        "operationId": "QuoteCheckout",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutQuoteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutQuote"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/checkout/orders": {
+      "post": {
+        "tags": [
+          "Checkout"
+        ],
+        "summary": "Place the order: reserves the stock, counts the discount code and empties the cart. Payment follows (phase 8).",
+        "operationId": "PlaceOrder",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaceOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlacedOrderView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/shipping": {
+      "get": {
+        "tags": [
+          "Admin: shipping and tax"
+        ],
+        "summary": "All shipping methods, active or not, in checkout order.",
+        "operationId": "ListShippingMethods",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ShippingMethodAdminView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin: shipping and tax"
+        ],
+        "summary": "Add a shipping method.",
+        "operationId": "CreateShippingMethod",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveShippingMethodRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShippingMethodAdminView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/shipping/{id}": {
+      "put": {
+        "tags": [
+          "Admin: shipping and tax"
+        ],
+        "summary": "Change a shipping method (placed orders keep their copy).",
+        "operationId": "UpdateShippingMethod",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveShippingMethodRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShippingMethodAdminView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin: shipping and tax"
+        ],
+        "summary": "Delete a shipping method (placed orders keep their copy).",
+        "operationId": "DeleteShippingMethod",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/shipping/tax": {
+      "get": {
+        "tags": [
+          "Admin: shipping and tax"
+        ],
+        "summary": "The shop's tax rate and whether prices include it.",
+        "operationId": "GetTax",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin: shipping and tax"
+        ],
+        "summary": "Change the tax rate (placed orders keep theirs).",
+        "operationId": "SaveTax",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveTaxRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/discounts": {
+      "get": {
+        "tags": [
+          "Admin: discount codes"
+        ],
+        "summary": "All discount codes, the newest first, with their use counts.",
+        "operationId": "ListDiscountCodes",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DiscountCodeView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin: discount codes"
+        ],
+        "summary": "Add a discount code.",
+        "operationId": "CreateDiscountCode",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveDiscountCodeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscountCodeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/discounts/{id}": {
+      "put": {
+        "tags": [
+          "Admin: discount codes"
+        ],
+        "summary": "Change a discount code (its use count stays).",
+        "operationId": "UpdateDiscountCode",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveDiscountCodeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscountCodeView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin: discount codes"
+        ],
+        "summary": "Delete a discount code (orders keep their copy).",
+        "operationId": "DeleteDiscountCode",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/v1/admin/currencies": {
       "get": {
         "tags": [
@@ -7537,6 +7993,108 @@
           }
         }
       },
+      "CheckoutContact": {
+        "required": [
+          "name",
+          "email",
+          "phoneNumber"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "phoneNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "CheckoutQuote": {
+        "required": [
+          "totals",
+          "currency",
+          "shippingMethods",
+          "shippingMethodId",
+          "discountApplied",
+          "discountError",
+          "hasProblems"
+        ],
+        "type": "object",
+        "properties": {
+          "totals": {
+            "$ref": "#/components/schemas/CheckoutTotals"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "shippingMethods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShippingOption"
+            }
+          },
+          "shippingMethodId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "discountApplied": {
+            "type": "boolean"
+          },
+          "discountError": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "hasProblems": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CheckoutQuoteRequest": {
+        "required": [
+          "countryCode",
+          "shippingMethodId",
+          "discountCode"
+        ],
+        "type": "object",
+        "properties": {
+          "countryCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "shippingMethodId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "discountCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "CheckoutSettings": {
         "required": [
           "guest",
@@ -7555,6 +8113,106 @@
           }
         },
         "description": "Checkout rules: whether customers may buy without an account, and where the shop ships (ISO country codes)."
+      },
+      "CheckoutTotals": {
+        "required": [
+          "subtotal",
+          "discount",
+          "shipping",
+          "tax",
+          "total",
+          "taxRate",
+          "pricesIncludeTax"
+        ],
+        "type": "object",
+        "properties": {
+          "subtotal": {
+            "type": "number",
+            "format": "double"
+          },
+          "discount": {
+            "type": "number",
+            "format": "double"
+          },
+          "shipping": {
+            "type": "number",
+            "format": "double"
+          },
+          "tax": {
+            "type": "number",
+            "format": "double"
+          },
+          "total": {
+            "type": "number",
+            "format": "double"
+          },
+          "taxRate": {
+            "type": "number",
+            "format": "double"
+          },
+          "pricesIncludeTax": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CheckoutView": {
+        "required": [
+          "cart",
+          "signedIn",
+          "guestCheckout",
+          "emailRequired",
+          "contact",
+          "addresses",
+          "countries",
+          "shippingMethods",
+          "tax"
+        ],
+        "type": "object",
+        "properties": {
+          "cart": {
+            "$ref": "#/components/schemas/CartView"
+          },
+          "signedIn": {
+            "type": "boolean"
+          },
+          "guestCheckout": {
+            "type": "boolean"
+          },
+          "emailRequired": {
+            "type": "boolean"
+          },
+          "contact": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/CheckoutContact"
+              }
+            ]
+          },
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddressView"
+            }
+          },
+          "countries": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "shippingMethods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShippingOption"
+            }
+          },
+          "tax": {
+            "$ref": "#/components/schemas/TaxView"
+          }
+        }
       },
       "CompareGroup": {
         "required": [
@@ -8259,6 +8917,98 @@
             ]
           }
         }
+      },
+      "DiscountCodeView": {
+        "required": [
+          "id",
+          "code",
+          "kind",
+          "value",
+          "minSubtotal",
+          "maxDiscount",
+          "startsUtc",
+          "endsUtc",
+          "usageLimit",
+          "usedCount",
+          "oncePerCustomer",
+          "isActive",
+          "note"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/DiscountKind"
+          },
+          "value": {
+            "type": "number",
+            "format": "double"
+          },
+          "minSubtotal": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "maxDiscount": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "startsUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "endsUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "usageLimit": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "usedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "oncePerCustomer": {
+            "type": "boolean"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "DiscountKind": {
+        "enum": [
+          "Percent",
+          "Amount",
+          "FreeShipping"
+        ]
       },
       "ExternalLoginsView": {
         "required": [
@@ -9057,22 +9807,96 @@
           }
         }
       },
+      "OrderContactData": {
+        "required": [
+          "email",
+          "recipientName",
+          "phoneNumber",
+          "countryCode",
+          "region",
+          "city",
+          "line1",
+          "line2",
+          "postalCode",
+          "note"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "recipientName": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "countryCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "region": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "line1": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "line2": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "postalCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "OrderData": {
         "required": [
-          "id",
+          "number",
           "orderedUtc",
           "status",
           "subtotal",
+          "discount",
           "tax",
           "shipping",
           "total",
+          "currency",
+          "contact",
           "items"
         ],
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
+          "number": {
+            "type": "integer",
+            "format": "int64"
           },
           "orderedUtc": {
             "type": "string",
@@ -9082,6 +9906,10 @@
             "type": "string"
           },
           "subtotal": {
+            "type": "number",
+            "format": "double"
+          },
+          "discount": {
             "type": "number",
             "format": "double"
           },
@@ -9096,6 +9924,12 @@
           "total": {
             "type": "number",
             "format": "double"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "contact": {
+            "$ref": "#/components/schemas/OrderContactData"
           },
           "items": {
             "type": "array",
@@ -9246,6 +10080,114 @@
           },
           "isNewAccount": {
             "type": "boolean"
+          }
+        }
+      },
+      "PlacedOrderView": {
+        "required": [
+          "number",
+          "total",
+          "currency",
+          "paymentDueUtc",
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "total": {
+            "type": "number",
+            "format": "double"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "paymentDueUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PlaceOrderRequest": {
+        "required": [
+          "shippingMethodId",
+          "addressId",
+          "address",
+          "saveAddress",
+          "email",
+          "pickupName",
+          "pickupPhone",
+          "discountCode",
+          "note",
+          "expectedTotal"
+        ],
+        "type": "object",
+        "properties": {
+          "shippingMethodId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "addressId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "address": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/AddressInput"
+              }
+            ]
+          },
+          "saveAddress": {
+            "type": "boolean"
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "pickupName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "pickupPhone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "discountCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "expectedTotal": {
+            "type": "number",
+            "format": "double"
           }
         }
       },
@@ -11075,6 +12017,81 @@
           }
         }
       },
+      "SaveDiscountCodeRequest": {
+        "required": [
+          "code",
+          "kind",
+          "value",
+          "minSubtotal",
+          "maxDiscount",
+          "startsUtc",
+          "endsUtc",
+          "usageLimit",
+          "oncePerCustomer",
+          "isActive",
+          "note"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/DiscountKind"
+          },
+          "value": {
+            "type": "number",
+            "format": "double"
+          },
+          "minSubtotal": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "maxDiscount": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "startsUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "endsUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "usageLimit": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "oncePerCustomer": {
+            "type": "boolean"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "SavedProductData": {
         "required": [
           "number",
@@ -11337,6 +12354,74 @@
           }
         }
       },
+      "SaveShippingMethodRequest": {
+        "required": [
+          "texts",
+          "isPickup",
+          "cost",
+          "costPerKg",
+          "freeOver",
+          "countries",
+          "minDays",
+          "maxDays",
+          "isActive",
+          "sortOrder"
+        ],
+        "type": "object",
+        "properties": {
+          "texts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LocalizedText"
+            }
+          },
+          "isPickup": {
+            "type": "boolean"
+          },
+          "cost": {
+            "type": "number",
+            "format": "double"
+          },
+          "costPerKg": {
+            "type": "number",
+            "format": "double"
+          },
+          "freeOver": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "countries": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "minDays": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "maxDays": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "sortOrder": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
       "SaveSpecRequest": {
         "required": [
           "code",
@@ -11449,6 +12534,22 @@
             "items": {
               "type": "string"
             }
+          }
+        }
+      },
+      "SaveTaxRequest": {
+        "required": [
+          "rate",
+          "pricesIncludeTax"
+        ],
+        "type": "object",
+        "properties": {
+          "rate": {
+            "type": "number",
+            "format": "double"
+          },
+          "pricesIncludeTax": {
+            "type": "boolean"
           }
         }
       },
@@ -11709,6 +12810,134 @@
           "quantity": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "ShippingMethodAdminView": {
+        "required": [
+          "id",
+          "texts",
+          "isPickup",
+          "cost",
+          "costPerKg",
+          "freeOver",
+          "countries",
+          "minDays",
+          "maxDays",
+          "isActive",
+          "sortOrder"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "texts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LocalizedText"
+            }
+          },
+          "isPickup": {
+            "type": "boolean"
+          },
+          "cost": {
+            "type": "number",
+            "format": "double"
+          },
+          "costPerKg": {
+            "type": "number",
+            "format": "double"
+          },
+          "freeOver": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "countries": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "minDays": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "maxDays": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "sortOrder": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ShippingOption": {
+        "required": [
+          "id",
+          "name",
+          "description",
+          "isPickup",
+          "countries",
+          "minDays",
+          "maxDays",
+          "cost"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isPickup": {
+            "type": "boolean"
+          },
+          "countries": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "minDays": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "maxDays": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "cost": {
+            "type": "number",
+            "format": "double"
           }
         }
       },
@@ -12955,6 +14184,22 @@
           }
         }
       },
+      "TaxView": {
+        "required": [
+          "rate",
+          "pricesIncludeTax"
+        ],
+        "type": "object",
+        "properties": {
+          "rate": {
+            "type": "number",
+            "format": "double"
+          },
+          "pricesIncludeTax": {
+            "type": "boolean"
+          }
+        }
+      },
       "TransferStockRequest": {
         "required": [
           "sku",
@@ -13385,6 +14630,15 @@
     },
     {
       "name": "Cart"
+    },
+    {
+      "name": "Checkout"
+    },
+    {
+      "name": "Admin: shipping and tax"
+    },
+    {
+      "name": "Admin: discount codes"
     },
     {
       "name": "Admin: currencies"

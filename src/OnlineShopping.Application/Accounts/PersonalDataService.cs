@@ -28,7 +28,8 @@ public sealed class PersonalDataService(
             .OrderBy(o => o.OrderedUtc)
             .Select(o => new
             {
-                o.Id, o.OrderedUtc, o.Status, o.Subtotal, o.Tax, o.Shipping, o.Total,
+                o.Number, o.OrderedUtc, o.Status, o.Subtotal, o.Discount, o.Tax, o.Shipping, o.Total, o.Currency,
+                Contact = new OrderContactData(o.Email, o.RecipientName, o.PhoneNumber, o.CountryCode, o.Region, o.City, o.Line1, o.Line2, o.PostalCode, o.Note),
                 Items = o.Items.Select(i => new OrderItemData(i.ProductName, i.UnitPrice, i.Quantity)).ToList()
             })
             .ToListAsync(cancellationToken);
@@ -61,7 +62,7 @@ public sealed class PersonalDataService(
             clock.GetUtcNow().UtcDateTime,
             account,
             await addresses.ListAsync(userId, cancellationToken),
-            orders.Select(o => new OrderData(o.Id, o.OrderedUtc, o.Status.ToString(), o.Subtotal, o.Tax, o.Shipping, o.Total, o.Items)).ToList(),
+            orders.Select(o => new OrderData(o.Number, o.OrderedUtc, o.Status.ToString(), o.Subtotal, o.Discount, o.Tax, o.Shipping, o.Total, o.Currency, o.Contact, o.Items)).ToList(),
             cart,
             compare,
             wishlist,
@@ -104,8 +105,17 @@ public sealed class PersonalDataService(
         await db.PhoneVerificationCodes
             .Where(c => c.UserId == userId || (user.PhoneNumber != null && c.PhoneNumber == user.PhoneNumber))
             .ExecuteDeleteAsync(cancellationToken);
-        // Orders stay: they are financial records and only hold product snapshots and totals. When orders gain
-        // shipping/contact snapshots (phase 5), blank them here as well.
+        // Orders stay (financial records with product snapshots and totals), without who they went to and where.
+        await db.Orders.IgnoreQueryFilters().Where(o => o.CustomerId == userId).ExecuteUpdateAsync(s => s
+            .SetProperty(o => o.Email, (string?)null)
+            .SetProperty(o => o.RecipientName, "")
+            .SetProperty(o => o.PhoneNumber, "")
+            .SetProperty(o => o.Region, (string?)null)
+            .SetProperty(o => o.City, (string?)null)
+            .SetProperty(o => o.Line1, (string?)null)
+            .SetProperty(o => o.Line2, (string?)null)
+            .SetProperty(o => o.PostalCode, (string?)null)
+            .SetProperty(o => o.Note, (string?)null), cancellationToken);
 
         await data.EraseAsync(userId);
         return true;

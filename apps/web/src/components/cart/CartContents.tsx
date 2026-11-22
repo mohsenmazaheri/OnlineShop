@@ -126,13 +126,21 @@ export function CartContents({ cart, locale, money, approximate, texts, errors }
         </dl>
         {approximate && <p className="text-xs text-muted">{approximate}</p>}
         <p className="text-xs text-muted">{texts.shippingLater}</p>
-        {/* Checkout arrives in phase 7b: the button is shown, honestly disabled. */}
-        <Button size="lg" disabled aria-describedby="checkout-soon">
-          {texts.checkout}
-        </Button>
-        <p id="checkout-soon" className="text-xs text-muted">
-          {texts.checkoutSoon}
-        </p>
+        {/* Changed lines are fixed in the cart first (checkout would refuse them). */}
+        {cart.hasProblems ? (
+          <Button size="lg" disabled aria-describedby="checkout-fix">
+            {texts.checkout}
+          </Button>
+        ) : (
+          <ButtonLink href={`/${locale}/checkout`} size="lg">
+            {texts.checkout}
+          </ButtonLink>
+        )}
+        {cart.hasProblems && (
+          <p id="checkout-fix" className="text-xs text-muted">
+            {texts.fixFirst}
+          </p>
+        )}
         <Link href={`/${locale}`} className="text-center text-sm text-primary hover:underline">
           {texts.continue}
         </Link>

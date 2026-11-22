@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { convertAmount, currencyCookieValue, isIsoCurrency, parseCurrencyCookie, resolveDisplayCurrency, type CurrencySettings } from "./display";
+import { baseCurrency, convertAmount, currencyCookieValue, isIsoCurrency, parseCurrencyCookie, resolveDisplayCurrency, type CurrencySettings } from "./display";
 
 const settings: CurrencySettings = {
   base: "IRR",
@@ -56,5 +56,16 @@ describe("isIsoCurrency", () => {
   it("knows ISO codes and not shop-defined ones", () => {
     expect(isIsoCurrency("USD")).toBe(true);
     expect(isIsoCurrency("IRT")).toBe(false);
+  });
+});
+
+describe("baseCurrency", () => {
+  it("is the base currency as set up, unconverted", () => {
+    expect(baseCurrency(settings)).toEqual({ code: "IRR", symbol: null, decimals: 0, roundingStep: 1000, rate: 1, isBase: true, base: "IRR" });
+  });
+
+  it("falls back to the usual decimals when the base currency is not set up", () => {
+    expect(baseCurrency({ base: "EUR", currencies: [], localeDefaults: {} })).toMatchObject({ code: "EUR", decimals: 2, rate: 1, isBase: true });
+    expect(baseCurrency({ base: "IRR", currencies: [], localeDefaults: {} }).decimals).toBe(0);
   });
 });

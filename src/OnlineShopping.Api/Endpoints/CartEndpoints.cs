@@ -66,7 +66,7 @@ public static class CartEndpoints
     /// Whose cart this request is about: the signed-in customer's (merging a guest cart left in the cookie), else the
     /// guest's from the cookie, created on the first add.
     /// </summary>
-    private static async Task<CartOwner> OwnerAsync(HttpContext http, CartService carts, AuthOptions auth, bool create, CancellationToken ct)
+    internal static async Task<CartOwner> OwnerAsync(HttpContext http, CartService carts, AuthOptions auth, bool create, CancellationToken ct)
     {
         var userId = http.User.Identity?.IsAuthenticated == true ? http.User.GetUserId() : null;
         var token = http.Request.Cookies[GuestCookie];
@@ -87,6 +87,14 @@ public static class CartEndpoints
             http.Response.Cookies.Append(GuestCookie, token, Options(auth, httpOnly: true));
         }
         return new CartOwner(null, string.IsNullOrEmpty(token) ? null : token);
+    }
+
+    /// <summary>The cart became an order: the guest cookie and the count go.</summary>
+    internal static void Forget(HttpContext http, AuthOptions auth)
+    {
+        if (http.Request.Cookies.ContainsKey(GuestCookie))
+            http.Response.Cookies.Delete(GuestCookie, Options(auth, httpOnly: true));
+        http.Response.Cookies.Delete(CountCookie, Options(auth, httpOnly: false));
     }
 
     private static Microsoft.AspNetCore.Http.HttpResults.Ok<CartView> Answer(HttpContext http, AuthOptions auth, CartView view)

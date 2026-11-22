@@ -2243,6 +2243,92 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.ToTable("cart_items", (string)null);
                 });
 
+            modelBuilder.Entity("OnlineShopping.Domain.Sales.DiscountCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<DateTime?>("EndsUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ends_utc");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("kind");
+
+                    b.Property<decimal?>("MaxDiscount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("max_discount");
+
+                    b.Property<decimal?>("MinSubtotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("min_subtotal");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("note");
+
+                    b.Property<bool>("OncePerCustomer")
+                        .HasColumnType("boolean")
+                        .HasColumnName("once_per_customer");
+
+                    b.Property<DateTime?>("StartsUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("starts_utc");
+
+                    b.Property<int?>("UsageLimit")
+                        .HasColumnType("integer")
+                        .HasColumnName("usage_limit");
+
+                    b.Property<int>("UsedCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("used_count");
+
+                    b.Property<decimal>("Value")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("value");
+
+                    b.HasKey("Id")
+                        .HasName("pk_discount_codes");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_discount_codes_code")
+                        .HasFilter("is_deleted = false");
+
+                    b.ToTable("discount_codes", (string)null);
+                });
+
             modelBuilder.Entity("OnlineShopping.Domain.Sales.Order", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2250,31 +2336,139 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("City")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("city");
+
+                    b.Property<string>("CountryCode")
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)")
+                        .HasColumnName("country_code");
+
                     b.Property<DateTime>("CreatedUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_utc");
 
-                    b.Property<string>("CustomerId")
+                    b.Property<string>("Currency")
                         .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<string>("CustomerId")
                         .HasColumnType("text")
                         .HasColumnName("customer_id");
+
+                    b.Property<decimal>("Discount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("discount");
+
+                    b.Property<Guid?>("DiscountCodeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("discount_code_id");
+
+                    b.Property<string>("DiscountCodeText")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("discount_code_text");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("email");
+
+                    b.Property<decimal>("ExchangeRate")
+                        .HasPrecision(28, 12)
+                        .HasColumnType("numeric(28,12)")
+                        .HasColumnName("exchange_rate");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
+                    b.Property<bool>("IsPickup")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_pickup");
+
+                    b.Property<string>("Line1")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("line1");
+
+                    b.Property<string>("Line2")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("line2");
+
+                    b.Property<string>("Locale")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("locale");
+
                     b.Property<DateTime?>("ModifiedUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("modified_utc");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("note");
+
+                    b.Property<long>("Number")
+                        .HasColumnType("bigint")
+                        .HasColumnName("number");
 
                     b.Property<DateTime>("OrderedUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("ordered_utc");
 
+                    b.Property<DateTime?>("PaymentDueUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("payment_due_utc");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("phone_number");
+
+                    b.Property<string>("PostalCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("postal_code");
+
+                    b.Property<bool>("PricesIncludeTax")
+                        .HasColumnType("boolean")
+                        .HasColumnName("prices_include_tax");
+
+                    b.Property<string>("RecipientName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("recipient_name");
+
+                    b.Property<string>("Region")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("region");
+
                     b.Property<decimal>("Shipping")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("shipping");
+
+                    b.Property<Guid?>("ShippingMethodId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("shipping_method_id");
+
+                    b.Property<string>("ShippingMethodName")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("shipping_method_name");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -2292,6 +2486,11 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("tax");
 
+                    b.Property<decimal>("TaxRate")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("tax_rate");
+
                     b.Property<decimal>("Total")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)")
@@ -2300,8 +2499,21 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                     b.HasKey("Id")
                         .HasName("pk_orders");
 
+                    b.HasIndex("DiscountCodeId")
+                        .HasDatabaseName("ix_orders_discount_code_id");
+
+                    b.HasIndex("Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_orders_number");
+
+                    b.HasIndex("ShippingMethodId")
+                        .HasDatabaseName("ix_orders_shipping_method_id");
+
                     b.HasIndex("CustomerId", "OrderedUtc")
                         .HasDatabaseName("ix_orders_customer_id_ordered_utc");
+
+                    b.HasIndex("Status", "PaymentDueUtc")
+                        .HasDatabaseName("ix_orders_status_payment_due_utc");
 
                     b.ToTable("orders", null, t =>
                         {
@@ -2342,14 +2554,33 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasColumnType("character varying(300)")
                         .HasColumnName("product_name");
 
+                    b.Property<long>("ProductNumber")
+                        .HasColumnType("bigint")
+                        .HasColumnName("product_number");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("integer")
                         .HasColumnName("quantity");
+
+                    b.Property<string>("Sku")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("sku");
 
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("unit_price");
+
+                    b.Property<Guid?>("VariantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("variant_id");
+
+                    b.Property<string>("VariantLabel")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("variant_label");
 
                     b.HasKey("Id")
                         .HasName("pk_order_items");
@@ -2361,6 +2592,83 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasDatabaseName("ix_order_items_product_id");
 
                     b.ToTable("order_items", (string)null);
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Sales.ShippingMethod", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Cost")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("cost");
+
+                    b.Property<decimal>("CostPerKg")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("cost_per_kg");
+
+                    b.Property<string>("Countries")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("countries");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("description");
+
+                    b.Property<decimal?>("FreeOver")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("free_over");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<bool>("IsPickup")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_pickup");
+
+                    b.Property<int?>("MaxDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("max_days");
+
+                    b.Property<int?>("MinDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("min_days");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("name");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.HasKey("Id")
+                        .HasName("pk_shipping_methods");
+
+                    b.ToTable("shipping_methods", (string)null);
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Search.SearchDocument", b =>
@@ -2650,6 +2958,40 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasName("pk_store_branding");
 
                     b.ToTable("store_branding", (string)null);
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Settings.TaxSettings", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<bool>("PricesIncludeTax")
+                        .HasColumnType("boolean")
+                        .HasColumnName("prices_include_tax");
+
+                    b.Property<decimal>("Rate")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("rate");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tax_settings");
+
+                    b.ToTable("tax_settings", (string)null);
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Staff.StaffAuditEntry", b =>
@@ -3985,8 +4327,19 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .WithMany()
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
                         .HasConstraintName("fk_orders_users_customer_id");
+
+                    b.HasOne("OnlineShopping.Domain.Sales.DiscountCode", null)
+                        .WithMany()
+                        .HasForeignKey("DiscountCodeId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_orders_discount_codes_discount_code_id");
+
+                    b.HasOne("OnlineShopping.Domain.Sales.ShippingMethod", null)
+                        .WithMany()
+                        .HasForeignKey("ShippingMethodId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_orders_shipping_methods_shipping_method_id");
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Sales.OrderItem", b =>
@@ -4006,6 +4359,62 @@ namespace OnlineShopping.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasConstraintName("fk_order_items_products_product_id");
 
                     b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("OnlineShopping.Domain.Sales.ShippingMethod", b =>
+                {
+                    b.OwnsMany("OnlineShopping.Domain.Catalog.CatalogTranslation", "Translations", b1 =>
+                        {
+                            b1.Property<Guid>("ShippingMethodId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("shipping_method_id");
+
+                            b1.Property<string>("Locale")
+                                .HasMaxLength(8)
+                                .HasColumnType("character varying(8)")
+                                .HasColumnName("locale");
+
+                            b1.Property<string>("Description")
+                                .HasColumnType("text")
+                                .HasColumnName("description");
+
+                            b1.Property<string>("MetaDescription")
+                                .HasMaxLength(400)
+                                .HasColumnType("character varying(400)")
+                                .HasColumnName("meta_description");
+
+                            b1.Property<string>("MetaTitle")
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("meta_title");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasMaxLength(300)
+                                .HasColumnType("character varying(300)")
+                                .HasColumnName("name");
+
+                            b1.Property<string>("Slug")
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("slug");
+
+                            b1.Property<string>("Tags")
+                                .HasMaxLength(500)
+                                .HasColumnType("character varying(500)")
+                                .HasColumnName("tags");
+
+                            b1.HasKey("ShippingMethodId", "Locale")
+                                .HasName("pk_shipping_method_translations");
+
+                            b1.ToTable("shipping_method_translations", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("ShippingMethodId")
+                                .HasConstraintName("fk_shipping_method_translations_shipping_methods_shipping_meth");
+                        });
+
+                    b.Navigation("Translations");
                 });
 
             modelBuilder.Entity("OnlineShopping.Domain.Search.SearchDocument", b =>

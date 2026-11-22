@@ -27,6 +27,9 @@ public sealed class AppDbContextModelTests : IDisposable
         Assert.All(entityTypes, t => Assert.NotEmpty(t.GetDeclaredQueryFilters()));
     }
 
+    private static readonly HashSet<(string, string)> NotMoney =
+        [("Order", "ExchangeRate"), ("Order", "TaxRate"), ("TaxSettings", "Rate"), ("DiscountCode", "Value")];
+
     [Fact]
     public void Every_money_property_has_money_precision()
     {
@@ -37,6 +40,8 @@ public sealed class AppDbContextModelTests : IDisposable
             .Where(p => (Nullable.GetUnderlyingType(p.ClrType) ?? p.ClrType) == typeof(decimal))
             // Exchange rates and their rounding steps are not money: they need more scale (see ConfigureCurrencies).
             .Where(p => p.DeclaringType.ClrType != typeof(OnlineShopping.Domain.Pricing.Currency))
+            // Percentages and an order's exchange rate are not money either.
+            .Where(p => !NotMoney.Contains((p.DeclaringType.ClrType.Name, p.Name)))
             .ToList();
         // Unit costs keep four decimals: an average of several purchases is rarely a whole cent.
         var costs = decimals.Where(p => CostColumns.Contains((p.DeclaringType.ClrType.Name, p.Name))).ToList();

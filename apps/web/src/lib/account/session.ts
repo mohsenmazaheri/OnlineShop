@@ -258,3 +258,22 @@ export type ContentList = components["schemas"]["ContentList"];
 export function getContentList(fetchImpl: typeof fetch = fetch): Promise<ContentList | null> {
   return getForUser<ContentList>("/api/v1/admin/content", fetchImpl);
 }
+
+export type ShippingMethodAdmin = components["schemas"]["ShippingMethodAdminView"];
+export type TaxSettings = components["schemas"]["TaxView"];
+
+/** The shipping methods and the tax setting (settings.manage), or null without the permission. */
+export async function getShippingAdmin(fetchImpl: typeof fetch = fetch): Promise<{ methods: ShippingMethodAdmin[]; tax: TaxSettings } | null> {
+  const [methods, tax] = await Promise.all([
+    getForUser<ShippingMethodAdmin[]>("/api/v1/admin/shipping", fetchImpl),
+    getForUser<TaxSettings>("/api/v1/admin/shipping/tax", fetchImpl),
+  ]);
+  return methods && tax ? { methods, tax } : null;
+}
+
+export type DiscountCodeAdmin = components["schemas"]["DiscountCodeView"];
+
+/** Every discount code, the newest first (discounts.manage), or null without the permission. */
+export function getDiscountCodes(fetchImpl: typeof fetch = fetch): Promise<DiscountCodeAdmin[] | null> {
+  return getForUser<DiscountCodeAdmin[]>("/api/v1/admin/discounts", fetchImpl);
+}

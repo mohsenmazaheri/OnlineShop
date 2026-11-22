@@ -558,6 +558,147 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** What checkout starts with: the cart, saved addresses, countries, shipping methods and tax. */
+        get: operations["GetCheckout"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/checkout/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** The totals for a country, shipping method and discount code (a refused code is reported, not failed). */
+        post: operations["QuoteCheckout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/checkout/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Place the order: reserves the stock, counts the discount code and empties the cart. Payment follows (phase 8). */
+        post: operations["PlaceOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shipping": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** All shipping methods, active or not, in checkout order. */
+        get: operations["ListShippingMethods"];
+        put?: never;
+        /** Add a shipping method. */
+        post: operations["CreateShippingMethod"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shipping/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change a shipping method (placed orders keep their copy). */
+        put: operations["UpdateShippingMethod"];
+        post?: never;
+        /** Delete a shipping method (placed orders keep their copy). */
+        delete: operations["DeleteShippingMethod"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/shipping/tax": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The shop's tax rate and whether prices include it. */
+        get: operations["GetTax"];
+        /** Change the tax rate (placed orders keep theirs). */
+        put: operations["SaveTax"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/discounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** All discount codes, the newest first, with their use counts. */
+        get: operations["ListDiscountCodes"];
+        put?: never;
+        /** Add a discount code. */
+        post: operations["CreateDiscountCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/discounts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change a discount code (its use count stays). */
+        put: operations["UpdateDiscountCode"];
+        post?: never;
+        /** Delete a discount code (orders keep their copy). */
+        delete: operations["DeleteDiscountCode"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/currencies": {
         parameters: {
             query?: never;
@@ -2653,10 +2794,57 @@ export interface components {
         ChangeStaffRolesRequest: {
             roles: string[];
         };
+        CheckoutContact: {
+            name: null | string;
+            email: null | string;
+            phoneNumber: null | string;
+        };
+        CheckoutQuote: {
+            totals: components["schemas"]["CheckoutTotals"];
+            currency: string;
+            shippingMethods: components["schemas"]["ShippingOption"][];
+            /** Format: uuid */
+            shippingMethodId: null | string;
+            discountApplied: boolean;
+            discountError: null | string;
+            hasProblems: boolean;
+        };
+        CheckoutQuoteRequest: {
+            countryCode: null | string;
+            /** Format: uuid */
+            shippingMethodId: null | string;
+            discountCode: null | string;
+        };
         /** @description Checkout rules: whether customers may buy without an account, and where the shop ships (ISO country codes). */
         CheckoutSettings: {
             guest: boolean;
             shippingCountries: string[];
+        };
+        CheckoutTotals: {
+            /** Format: double */
+            subtotal: number;
+            /** Format: double */
+            discount: number;
+            /** Format: double */
+            shipping: number;
+            /** Format: double */
+            tax: number;
+            /** Format: double */
+            total: number;
+            /** Format: double */
+            taxRate: number;
+            pricesIncludeTax: boolean;
+        };
+        CheckoutView: {
+            cart: components["schemas"]["CartView"];
+            signedIn: boolean;
+            guestCheckout: boolean;
+            emailRequired: boolean;
+            contact: null | components["schemas"]["CheckoutContact"];
+            addresses: components["schemas"]["AddressView"][];
+            countries: string[];
+            shippingMethods: components["schemas"]["ShippingOption"][];
+            tax: components["schemas"]["TaxView"];
         };
         CompareGroup: {
             name: string;
@@ -2824,6 +3012,31 @@ export interface components {
         DeleteAccountRequest: {
             password: null | string;
         };
+        DiscountCodeView: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            kind: components["schemas"]["DiscountKind"];
+            /** Format: double */
+            value: number;
+            /** Format: double */
+            minSubtotal: null | number;
+            /** Format: double */
+            maxDiscount: null | number;
+            /** Format: date-time */
+            startsUtc: null | string;
+            /** Format: date-time */
+            endsUtc: null | string;
+            /** Format: int32 */
+            usageLimit: null | number;
+            /** Format: int32 */
+            usedCount: number;
+            oncePerCustomer: boolean;
+            isActive: boolean;
+            note: null | string;
+        };
+        /** @enum {unknown} */
+        DiscountKind: "Percent" | "Amount" | "FreeShipping";
         ExternalLoginsView: {
             available: string[];
             linked: string[];
@@ -3031,20 +3244,36 @@ export interface components {
             locale: string;
             value: string;
         };
+        OrderContactData: {
+            email: null | string;
+            recipientName: string;
+            phoneNumber: string;
+            countryCode: null | string;
+            region: null | string;
+            city: null | string;
+            line1: null | string;
+            line2: null | string;
+            postalCode: null | string;
+            note: null | string;
+        };
         OrderData: {
-            /** Format: uuid */
-            id: string;
+            /** Format: int64 */
+            number: number;
             /** Format: date-time */
             orderedUtc: string;
             status: string;
             /** Format: double */
             subtotal: number;
             /** Format: double */
+            discount: number;
+            /** Format: double */
             tax: number;
             /** Format: double */
             shipping: number;
             /** Format: double */
             total: number;
+            currency: string;
+            contact: components["schemas"]["OrderContactData"];
             items: components["schemas"]["OrderItemData"][];
         };
         OrderItemData: {
@@ -3081,6 +3310,31 @@ export interface components {
         PhoneSignInResult: {
             user: components["schemas"]["CurrentUser"];
             isNewAccount: boolean;
+        };
+        PlacedOrderView: {
+            /** Format: int64 */
+            number: number;
+            /** Format: double */
+            total: number;
+            currency: string;
+            /** Format: date-time */
+            paymentDueUtc: string;
+            email: null | string;
+        };
+        PlaceOrderRequest: {
+            /** Format: uuid */
+            shippingMethodId: string;
+            /** Format: uuid */
+            addressId: null | string;
+            address: null | components["schemas"]["AddressInput"];
+            saveAddress: boolean;
+            email: null | string;
+            pickupName: null | string;
+            pickupPhone: null | string;
+            discountCode: null | string;
+            note: null | string;
+            /** Format: double */
+            expectedTotal: number;
         };
         PostList: {
             items: components["schemas"]["PostSummary"][];
@@ -3550,6 +3804,25 @@ export interface components {
             /** Format: int32 */
             sortOrder: number;
         };
+        SaveDiscountCodeRequest: {
+            code: string;
+            kind: components["schemas"]["DiscountKind"];
+            /** Format: double */
+            value: number;
+            /** Format: double */
+            minSubtotal: null | number;
+            /** Format: double */
+            maxDiscount: null | number;
+            /** Format: date-time */
+            startsUtc: null | string;
+            /** Format: date-time */
+            endsUtc: null | string;
+            /** Format: int32 */
+            usageLimit: null | number;
+            oncePerCustomer: boolean;
+            isActive: boolean;
+            note: null | string;
+        };
         SavedProductData: {
             /** Format: int64 */
             number: number;
@@ -3613,6 +3886,24 @@ export interface components {
             toPath: null | string;
             kind: components["schemas"]["RedirectKind"];
         };
+        SaveShippingMethodRequest: {
+            texts: components["schemas"]["LocalizedText"][];
+            isPickup: boolean;
+            /** Format: double */
+            cost: number;
+            /** Format: double */
+            costPerKg: number;
+            /** Format: double */
+            freeOver: null | number;
+            countries: string[];
+            /** Format: int32 */
+            minDays: null | number;
+            /** Format: int32 */
+            maxDays: null | number;
+            isActive: boolean;
+            /** Format: int32 */
+            sortOrder: number;
+        };
         SaveSpecRequest: {
             code: null | string;
             kind: string;
@@ -3635,6 +3926,11 @@ export interface components {
         SaveSynonymRequest: {
             locale: string;
             terms: string[];
+        };
+        SaveTaxRequest: {
+            /** Format: double */
+            rate: number;
+            pricesIncludeTax: boolean;
         };
         SaveTemplateRequest: {
             specCodes: string[];
@@ -3695,6 +3991,40 @@ export interface components {
         SetQuantityRequest: {
             /** Format: int32 */
             quantity: number;
+        };
+        ShippingMethodAdminView: {
+            /** Format: uuid */
+            id: string;
+            texts: components["schemas"]["LocalizedText"][];
+            isPickup: boolean;
+            /** Format: double */
+            cost: number;
+            /** Format: double */
+            costPerKg: number;
+            /** Format: double */
+            freeOver: null | number;
+            countries: string[];
+            /** Format: int32 */
+            minDays: null | number;
+            /** Format: int32 */
+            maxDays: null | number;
+            isActive: boolean;
+            /** Format: int32 */
+            sortOrder: number;
+        };
+        ShippingOption: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            description: null | string;
+            isPickup: boolean;
+            countries: string[];
+            /** Format: int32 */
+            minDays: null | number;
+            /** Format: int32 */
+            maxDays: null | number;
+            /** Format: double */
+            cost: number;
         };
         /** @description Sign-in methods currently available (SMS codes need a configured SMS provider). */
         SignInMethods: {
@@ -4004,6 +4334,11 @@ export interface components {
             id: string;
             locale: string;
             terms: string[];
+        };
+        TaxView: {
+            /** Format: double */
+            rate: number;
+            pricesIncludeTax: boolean;
         };
         TransferStockRequest: {
             sku: string;
@@ -5229,6 +5564,358 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["CartView"];
                 };
+            };
+        };
+    };
+    GetCheckout: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckoutView"];
+                };
+            };
+        };
+    };
+    QuoteCheckout: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckoutQuoteRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckoutQuote"];
+                };
+            };
+        };
+    };
+    PlaceOrder: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlaceOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlacedOrderView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    ListShippingMethods: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShippingMethodAdminView"][];
+                };
+            };
+        };
+    };
+    CreateShippingMethod: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveShippingMethodRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShippingMethodAdminView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    UpdateShippingMethod: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveShippingMethodRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShippingMethodAdminView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    DeleteShippingMethod: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GetTax: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxView"];
+                };
+            };
+        };
+    };
+    SaveTax: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveTaxRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    ListDiscountCodes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiscountCodeView"][];
+                };
+            };
+        };
+    };
+    CreateDiscountCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveDiscountCodeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiscountCodeView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    UpdateDiscountCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveDiscountCodeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiscountCodeView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    DeleteDiscountCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

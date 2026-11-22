@@ -73,6 +73,17 @@ builder.Services.AddRateLimiter(options =>
                 Window = TimeSpan.FromSeconds(builder.Configuration.GetValue("RateLimiting:WindowSeconds", 60)),
                 QueueLimit = 0
             }));
+
+    // Placing orders (per address): every order holds stock until it is paid, so a script must not lock up the shop.
+    options.AddPolicy(CheckoutEndpoints.CheckoutRateLimitPolicy, context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = builder.Configuration.GetValue("RateLimiting:CheckoutPermitPerWindow", 10),
+                Window = TimeSpan.FromSeconds(builder.Configuration.GetValue("RateLimiting:WindowSeconds", 60)),
+                QueueLimit = 0
+            }));
 });
 
 builder.Services.AddHsts(options =>
@@ -122,6 +133,7 @@ app.MapReviewEndpoints();
 app.MapStorefrontSeoEndpoints();
 app.MapContentEndpoints();
 app.MapCartEndpoints();
+app.MapCheckoutEndpoints();
 app.MapCurrencyEndpoints();
 app.MapBrandingEndpoints();
 app.MapCatalogAdminEndpoints();

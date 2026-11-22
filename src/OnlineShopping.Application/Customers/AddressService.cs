@@ -105,9 +105,13 @@ public sealed class AddressService(IApplicationDbContext db, IPhoneNumberNormali
         return true;
     }
 
-    /// <summary>Copies the input onto the entity after the business checks; returns the error, or null when it was applied.</summary>
-    private AppError? Apply(CustomerAddress address, AddressInput input)
+    /// <summary>
+    /// The address after the business checks (a shipping country, a valid phone number read in that country, a postal
+    /// code of the country's format), or the first problem.
+    /// </summary>
+    public Result<ShippingAddress> Check(AddressInput input)
     {
+        ArgumentNullException.ThrowIfNull(input);
         var country = input.CountryCode.Trim().ToUpperInvariant();
         if (!store.Value.ShippingCountryList.Contains(country, StringComparer.Ordinal))
             return AppError.Validation(AddressErrors.CountryNotSupported, "The shop does not ship to this country.");
@@ -124,16 +128,32 @@ public sealed class AddressService(IApplicationDbContext db, IPhoneNumberNormali
             if (postalCode is null)
                 return AppError.Validation(AddressErrors.PostalCodeInvalid, "The postal code is not valid for this country.");
         }
+        return new ShippingAddress(input.RecipientName.Trim(), phone, country, Clean(input.Region), input.City.Trim(), input.Line1.Trim(), Clean(input.Line2), postalCode);
+    }
 
+    /// <summary>One of the customer's own addresses (ownership checked in the query), or null.</summary>
+    public async Task<ShippingAddress?> FindAsync(string userId, Guid id, CancellationToken cancellationToken = default) =>
+        await db.CustomerAddresses.AsNoTracking()
+            .Where(a => a.Id == id && a.CustomerId == userId)
+            .Select(a => new ShippingAddress(a.RecipientName, a.PhoneNumber, a.CountryCode, a.Region, a.City, a.Line1, a.Line2, a.PostalCode))
+            .FirstOrDefaultAsync(cancellationToken);
+
+    /// <summary>Copies the input onto the entity after the business checks; returns the error, or null when it was applied.</summary>
+    private AppError? Apply(CustomerAddress address, AddressInput input)
+    {
+        var checkedAddress = Check(input);
+        if (!checkedAddress.IsSuccess)
+            return checkedAddress.Error;
+        var a = checkedAddress.Value;
         address.Label = Clean(input.Label);
-        address.RecipientName = input.RecipientName.Trim();
-        address.PhoneNumber = phone;
-        address.CountryCode = country;
-        address.Region = Clean(input.Region);
-        address.City = input.City.Trim();
-        address.Line1 = input.Line1.Trim();
-        address.Line2 = Clean(input.Line2);
-        address.PostalCode = postalCode;
+        address.RecipientName = a.RecipientName;
+        address.PhoneNumber = a.PhoneNumber;
+        address.CountryCode = a.CountryCode;
+        address.Region = a.Region;
+        address.City = a.City;
+        address.Line1 = a.Line1;
+        address.Line2 = a.Line2;
+        address.PostalCode = a.PostalCode;
         return null;
     }
 

@@ -74,3 +74,9 @@ public sealed record CartLine(
 /// the subtotal of the lines that can be bought, and whether any line has a problem (checkout waits for it).
 /// </summary>
 public sealed record CartView(IReadOnlyList<CartLine> Lines, int ItemCount, decimal Subtotal, string Currency, bool HasProblems);
+
+/// <summary>A cart line with what an order copies from it.</summary>
+public sealed record CheckoutItem(CartLine Line, Guid ProductId, Guid? VariantId, string Sku, int WeightGrams);
+
+/// <summary>The cart for checkout: its id (null: no cart yet), the view and the lines with their product data.</summary>
+public sealed record CheckoutCart(Guid? CartId, CartView View, IReadOnlyList<CheckoutItem> Items);

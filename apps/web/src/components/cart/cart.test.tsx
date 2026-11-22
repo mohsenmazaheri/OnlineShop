@@ -57,8 +57,7 @@ describe("CartContents", () => {
     expect(screen.getByText(en.cart.itemCount.replace("{count}", "3"))).toBeTruthy();
     expect(screen.getByText("€239")).toBeTruthy();
     expect(screen.getByText(en.cart.each.replace("{price}", "€100"))).toBeTruthy();
-    // Checkout opens in the next step.
-    expect((screen.getByRole("button", { name: en.cart.checkout }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByRole("link", { name: en.cart.checkout }).getAttribute("href")).toBe("/en/checkout");
     expect(screen.queryByRole("alert")).toBeNull();
   });
 
@@ -70,6 +69,8 @@ describe("CartContents", () => {
     render(<CartContents cart={changed} locale="en" money={eur} approximate="Approximate price; you pay in euro." texts={en.cart} errors={en.cart.errors} />);
 
     expect(screen.getByRole("alert").textContent).toBe(en.cart.hasProblems);
+    // Checkout waits until the cart is fixed.
+    expect((screen.getByRole("button", { name: en.cart.checkout }) as HTMLButtonElement).disabled).toBe(true);
     expect(screen.getByText(en.cart.problemNotEnoughStock.replace("{count}", "1"))).toBeTruthy();
     expect(screen.getByText(en.cart.problemUnavailable)).toBeTruthy();
     expect(screen.getByText("Approximate price; you pay in euro.")).toBeTruthy();

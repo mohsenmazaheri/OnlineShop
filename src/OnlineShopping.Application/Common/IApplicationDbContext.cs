@@ -50,6 +50,9 @@ public interface IApplicationDbContext
     DbSet<Currency> Currencies { get; }
     DbSet<LocaleCurrency> LocaleCurrencies { get; }
     DbSet<StoreBranding> StoreBranding { get; }
+    DbSet<TaxSettings> TaxSettings { get; }
+    DbSet<ShippingMethod> ShippingMethods { get; }
+    DbSet<DiscountCode> DiscountCodes { get; }
     DbSet<Warehouse> Warehouses { get; }
     DbSet<StockMovement> StockMovements { get; }
     DbSet<StockLevel> StockLevels { get; }

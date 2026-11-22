@@ -62,6 +62,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Currency> Currencies => Set<Currency>();
     public DbSet<LocaleCurrency> LocaleCurrencies => Set<LocaleCurrency>();
     public DbSet<StoreBranding> StoreBranding => Set<StoreBranding>();
+    public DbSet<TaxSettings> TaxSettings => Set<TaxSettings>();
+    public DbSet<ShippingMethod> ShippingMethods => Set<ShippingMethod>();
+    public DbSet<DiscountCode> DiscountCodes => Set<DiscountCode>();
     public DbSet<Warehouse> Warehouses => Set<Warehouse>();
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
     public DbSet<StockLevel> StockLevels => Set<StockLevel>();
@@ -95,6 +98,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         ConfigureSeo(builder);
         ConfigureCart(builder);
         ConfigureOrders(builder);
+        ConfigureCheckout(builder);
         ConfigurePhoneCodes(builder);
         ConfigureAddresses(builder);
         ConfigureStaff(builder);
@@ -462,6 +466,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.Property(x => x.HomeLayout).HasConversion<string>().HasMaxLength(16);
             e.Property(x => x.LogoUrl).HasMaxLength(2048);
             e.Property(x => x.HeroImageUrl).HasMaxLength(2048);
+        });
+        b.Entity<TaxSettings>(e =>
+        {
+            e.ToTable("tax_settings");
+            e.Property(x => x.Rate).HasPrecision(5, 2);
         });
         b.Entity<LocaleCurrency>(e =>
         {
@@ -837,16 +846,38 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         b.Entity<Order>(e =>
         {
-            // Orders are financial records: deleting a user must never delete their orders.
+            // Orders are financial records: deleting a user must never delete their orders. Guests order without one.
             e.HasOne<AppUser>()
                 .WithMany()
                 .HasForeignKey(o => o.CustomerId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
             e.HasIndex(x => new { x.CustomerId, x.OrderedUtc });
+            e.HasIndex(x => x.Number).IsUnique();
+            e.HasIndex(x => new { x.Status, x.PaymentDueUtc });
 
             e.Property(o => o.Status)
                 .HasConversion<string>()
                 .HasMaxLength(32);
+            e.Property(o => o.Locale).HasMaxLength(8);
+            e.Property(o => o.Email).HasMaxLength(256);
+            e.Property(o => o.RecipientName).HasMaxLength(100);
+            e.Property(o => o.PhoneNumber).HasMaxLength(32);
+            e.Property(o => o.CountryCode).HasMaxLength(2);
+            e.Property(o => o.Region).HasMaxLength(100);
+            e.Property(o => o.City).HasMaxLength(100);
+            e.Property(o => o.Line1).HasMaxLength(300);
+            e.Property(o => o.Line2).HasMaxLength(300);
+            e.Property(o => o.PostalCode).HasMaxLength(20);
+            e.Property(o => o.Note).HasMaxLength(1000);
+            e.Property(o => o.ShippingMethodName).HasMaxLength(300);
+            e.Property(o => o.DiscountCodeText).HasMaxLength(40);
+            e.Property(o => o.Currency).HasMaxLength(3);
+            e.Property(o => o.ExchangeRate).HasPrecision(28, 12);
+            e.Property(o => o.TaxRate).HasPrecision(5, 2);
+            // Snapshots: the method or code may be deleted later; the order keeps its copy.
+            e.HasOne<ShippingMethod>().WithMany().HasForeignKey(o => o.ShippingMethodId).OnDelete(DeleteBehavior.SetNull);
+            e.HasOne<DiscountCode>().WithMany().HasForeignKey(o => o.DiscountCodeId).OnDelete(DeleteBehavior.SetNull);
 
             e.ToTable(tb => tb.HasCheckConstraint(OrderStatusCheckConstraintName, BuildOrderStatusCheckSql()));
         });
@@ -854,6 +885,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         b.Entity<OrderItem>(e =>
         {
             e.Property(x => x.ProductName).HasMaxLength(300);
+            e.Property(x => x.Sku).HasMaxLength(64);
+            e.Property(x => x.VariantLabel).HasMaxLength(300);
             e.HasOne(i => i.Order)
                 .WithMany(o => o.Items)
                 .HasForeignKey(i => i.OrderId)
@@ -863,6 +896,28 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 .WithMany()
                 .HasForeignKey(i => i.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private static void ConfigureCheckout(ModelBuilder b)
+    {
+        b.Entity<ShippingMethod>(e =>
+        {
+            e.ToTable("shipping_methods");
+            e.Property(x => x.Name).HasMaxLength(300);
+            e.Property(x => x.Description).HasMaxLength(1000);
+            e.Property(x => x.Countries).HasMaxLength(500);
+            e.Property(x => x.CostPerKg).HasPrecision(18, 2);
+            e.Ignore(x => x.CountryList);
+            e.OwnsMany(x => x.Translations, t => ConfigureTranslation(t, "shipping_method_translations", "ShippingMethodId"));
+        });
+        b.Entity<DiscountCode>(e =>
+        {
+            e.ToTable("discount_codes");
+            e.Property(x => x.Code).HasMaxLength(40);
+            e.Property(x => x.Kind).HasConversion<string>().HasMaxLength(16);
+            e.Property(x => x.Note).HasMaxLength(300);
+            e.HasIndex(x => x.Code).IsUnique().HasFilter(NotDeletedFilter);
         });
     }
 

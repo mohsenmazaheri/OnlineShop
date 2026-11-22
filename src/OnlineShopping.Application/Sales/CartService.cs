@@ -31,6 +31,22 @@ public sealed class CartService(IApplicationDbContext db, IOptions<StoreOptions>
         return await ViewAsync(cart?.Id, locale, cancellationToken);
     }
 
+    /// <summary>The cart as checkout needs it: the view plus each line's product, variant, SKU and weight.</summary>
+    public async Task<CheckoutCart> GetForCheckoutAsync(CartOwner owner, string locale, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(owner);
+        var cart = await FindAsync(owner, cancellationToken);
+        var items = cart is null ? [] : await ItemsAsync(cart.Id, locale, cancellationToken);
+        return new CheckoutCart(cart?.Id, ToView(items), items);
+    }
+
+    /// <summary>Empties a cart after its order was placed.</summary>
+    public async Task ClearAsync(Guid cartId, CancellationToken cancellationToken = default)
+    {
+        await db.CartItems.Where(i => i.CartId == cartId).ExecuteDeleteAsync(cancellationToken);
+        await db.Carts.Where(c => c.Id == cartId).ExecuteDeleteAsync(cancellationToken);
+    }
+
     public async Task<Result<CartView>> AddAsync(CartOwner owner, AddToCartRequest request, string locale, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(owner);
@@ -170,13 +186,18 @@ public sealed class CartService(IApplicationDbContext db, IOptions<StoreOptions>
             ? await db.ProductVariants.Where(v => v.Id == variantId).Select(v => v.Stock - v.Reserved).FirstOrDefaultAsync(cancellationToken)
             : await db.Products.Where(p => p.Id == line.ProductId).Select(p => p.Stock - p.Reserved).FirstOrDefaultAsync(cancellationToken);
 
-    private async Task<CartView> ViewAsync(Guid? cartId, string locale, CancellationToken cancellationToken)
-    {
-        var currency = store.Value.Currency;
-        if (cartId is not { } id)
-            return new CartView([], 0, 0, currency, false);
+    private async Task<CartView> ViewAsync(Guid? cartId, string locale, CancellationToken cancellationToken) =>
+        ToView(cartId is { } id ? await ItemsAsync(id, locale, cancellationToken) : []);
 
-        var items = await db.CartItems.AsNoTracking().Where(i => i.CartId == id).OrderBy(i => i.CreatedUtc)
+    private CartView ToView(IReadOnlyList<CheckoutItem> items)
+    {
+        var lines = items.Select(i => i.Line).ToList();
+        return new CartView(lines, lines.Sum(l => l.Quantity), lines.Sum(l => l.LineTotal), store.Value.Currency, lines.Any(l => l.Problem != CartLineProblem.None));
+    }
+
+    private async Task<List<CheckoutItem>> ItemsAsync(Guid cartId, string locale, CancellationToken cancellationToken)
+    {
+        var items = await db.CartItems.AsNoTracking().Where(i => i.CartId == cartId).OrderBy(i => i.CreatedUtc)
             .Select(i => new { i.Id, i.ProductId, i.VariantId, i.Quantity }).ToListAsync(cancellationToken);
         var productIds = items.Select(i => i.ProductId).Distinct().ToList();
         var products = await db.Products.IgnoreQueryFilters().AsNoTracking().Where(p => productIds.Contains(p.Id))
@@ -184,6 +205,8 @@ public sealed class CartService(IApplicationDbContext db, IOptions<StoreOptions>
             {
                 p.Id,
                 p.PublicNumber,
+                p.SKU,
+                p.WeightGrams,
                 Name = p.Translations.Where(t => t.Locale == locale).Select(t => t.Name).FirstOrDefault() ?? p.Name,
                 Slug = p.Translations.Where(t => t.Locale == locale).Select(t => t.Slug).FirstOrDefault() ?? p.Slug,
                 Image = p.Images.OrderBy(m => m.SortOrder).Select(m => m.Url).FirstOrDefault(),
@@ -199,7 +222,7 @@ public sealed class CartService(IApplicationDbContext db, IOptions<StoreOptions>
             .ToDictionaryAsync(v => v.Id, cancellationToken);
         var labels = await VariantLabelsAsync(variantIds, locale, cancellationToken);
 
-        var lines = new List<CartLine>();
+        var lines = new List<CheckoutItem>();
         foreach (var item in items)
         {
             if (!products.TryGetValue(item.ProductId, out var p))
@@ -212,11 +235,12 @@ public sealed class CartService(IApplicationDbContext db, IOptions<StoreOptions>
                 : available == 0 ? CartLineProblem.OutOfStock
                 : item.Quantity > available ? CartLineProblem.NotEnoughStock
                 : CartLineProblem.None;
-            lines.Add(new CartLine(
+            var line = new CartLine(
                 item.Id, p.PublicNumber, p.Name, p.Slug, v?.Sku, v is null ? null : labels.GetValueOrDefault(v.Id), p.Image,
-                price, compareAt, item.Quantity, available, problem == CartLineProblem.None ? price * item.Quantity : 0, problem));
+                price, compareAt, item.Quantity, available, problem == CartLineProblem.None ? price * item.Quantity : 0, problem);
+            lines.Add(new CheckoutItem(line, p.Id, item.VariantId, v?.Sku ?? p.SKU, p.WeightGrams ?? 0));
         }
-        return new CartView(lines, lines.Sum(l => l.Quantity), lines.Sum(l => l.LineTotal), currency, lines.Any(l => l.Problem != CartLineProblem.None));
+        return lines;
     }
 
     private sealed record OptionRow(Guid VariantId, int SpecOrder, string Value);

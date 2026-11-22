@@ -8,7 +8,7 @@ Application / Infrastructure / Api) + **Next.js 16** storefront in `apps/web`. O
 images serve every shop.
 
 **Plan and all recorded decisions: [docs/ROADMAP.md](docs/ROADMAP.md)** (Persian). Read it before starting, work on
-one step at a time, mark the status there when a step is done. Done: phases 0, 2–6 and 7a (cart); phase 1 has a
+one step at a time, mark the status there when a step is done. Done: phases 0, 2–6, 7a (cart) and 7b (checkout); phase 1 has a
 "remaining" list. SEO/marketing design: [docs/SEO-MARKETING.md](docs/SEO-MARKETING.md) (acceptance checklist at its end).
 
 Key decisions (details in the roadmap):
@@ -145,9 +145,18 @@ After a model change: migration + `has-pending-model-changes` reports none. Afte
   `MinimumStock`. Stocktake differences = counted − stock at `CountedUtc`.
 - **Reservations** (`StockReservationService`): available = Stock − Reserved (storefront `InStock`). Reserve all or
   nothing ("reserved + n where stock − reserved ≥ n"); commit/release/expiry first claim the row with a conditional
-  UPDATE; commit sells via `StockLedger.TakeAsync`. **Phase 7 checkout must use it.**
-- Orders: `CustomerId` FKs to `users` without navigations (orders Restrict, carts cascade); `OrderItem` name/price are
-  snapshots; `OrderStatus` stored as text with a generated check constraint.
+  UPDATE; commit sells via `StockLedger.TakeAsync`. Checkout reserves with reference `order:{number}`.
+- Orders: `CustomerId` (null for guests) FKs to `users` without navigations (orders Restrict, carts cascade); `Number`
+  unique from 1001; everything is a snapshot (items with SKU/variant label/price, method name, tax rate, contact and
+  address: personal data, blanked on erasure); `OrderStatus` stored as text with a generated check constraint.
+- **Checkout** (`Sales/CheckoutService`, `CheckoutEndpoints`, codes `checkout.*` → web `checkout.errors`, merged with
+  `account.errors` for address codes): `GET /checkout`, `POST /checkout/quote` (refused discount reported, not failed),
+  `POST /checkout/orders` (rate limit `checkout`; one transaction: number, `StockReservationService.ReserveAsync`,
+  `DiscountCodeService.ClaimAsync`, order; refuses a total other than `ExpectedTotal`). Arithmetic only in
+  `CheckoutPricing` (discount, shipping per started kg/free threshold, tax inside or added, rounded to the base
+  currency's decimals). Admin: `ShippingMethodService` + `TaxSettingsService` (`/admin/shipping`, settings.manage,
+  `shipping.*` → `admin.shippingErrors`), `DiscountCodeService` (`/admin/discounts`, discounts.manage, `discount.*` →
+  `admin.discountErrors`). Web: `CheckoutForm` (amounts in the base currency, `baseCurrency()`), `lib/checkout/*`.
 - **Cart** (`Sales/CartService`, `CartEndpoints`, codes `cart.*` → web `cart.errors`): server-side for guests too
   (`CartOwner`: user id, else the HttpOnly `os_cart` token, stored only as SHA-256 `GuestTokenHash`); the first cart
   request after sign-in merges it (`MergeAsync`) and drops the cookie. Lines keyed by `ItemId` (variant id, else product

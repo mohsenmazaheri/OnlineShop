@@ -16,20 +16,25 @@ export function cartCookieHeader(values: { session?: string; cart?: string }): s
 }
 
 /**
- * The visitor's cart with current prices and stock, for server rendering. Per visitor: never cached. Null when the API
- * cannot be reached (the page then says so instead of showing an empty cart).
+ * GET an endpoint that answers per visitor (the cart, checkout) for server rendering, forwarding only the session and
+ * guest-cart cookies. Never cached. Null when the API cannot be reached or refuses.
  */
-export async function getCart(locale: string, fetchImpl: typeof fetch = fetch): Promise<CartView | null> {
+export async function getForVisitor<T>(path: `/api/v1/${string}`, fetchImpl: typeof fetch = fetch): Promise<T | null> {
   const jar = await cookies();
   const cookie = cartCookieHeader({ session: jar.get(sessionCookieName)?.value, cart: jar.get(cartCookieName)?.value });
   try {
-    const response = await fetchImpl(`${apiBaseUrl()}/api/v1/cart?locale=${encodeURIComponent(locale)}`, {
+    const response = await fetchImpl(`${apiBaseUrl()}${path}`, {
       headers: cookie ? { Accept: "application/json", Cookie: cookie } : { Accept: "application/json" },
       cache: "no-store",
       signal: AbortSignal.timeout(5000),
     });
-    return response.ok ? ((await response.json()) as CartView) : null;
+    return response.ok ? ((await response.json()) as T) : null;
   } catch {
     return null;
   }
+}
+
+/** The visitor's cart with current prices and stock (null: the API cannot be reached, so the page says so). */
+export function getCart(locale: string, fetchImpl: typeof fetch = fetch): Promise<CartView | null> {
+  return getForVisitor<CartView>(`/api/v1/cart?locale=${encodeURIComponent(locale)}`, fetchImpl);
 }

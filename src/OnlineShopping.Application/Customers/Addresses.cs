@@ -28,6 +28,17 @@ public sealed record AddressView(
     string? PostalCode,
     bool IsDefault);
 
+/// <summary>A checked address, as an order copies it (phone in E.164, country upper-case, postal code normalized).</summary>
+public sealed record ShippingAddress(
+    string RecipientName,
+    string PhoneNumber,
+    string CountryCode,
+    string? Region,
+    string City,
+    string Line1,
+    string? Line2,
+    string? PostalCode);
+
 /// <summary>Stable error codes for the address book (translated by the web app under <c>account.errors</c>).</summary>
 public static class AddressErrors
 {

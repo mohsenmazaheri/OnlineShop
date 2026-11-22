@@ -46,8 +46,13 @@ public sealed record AccountData(
     IReadOnlyList<string> ExternalLogins,
     IReadOnlyList<string> Roles);
 
-public sealed record OrderData(Guid Id, DateTime OrderedUtc, string Status, decimal Subtotal, decimal Tax, decimal Shipping, decimal Total,
-    IReadOnlyList<OrderItemData> Items);
+public sealed record OrderData(long Number, DateTime OrderedUtc, string Status, decimal Subtotal, decimal Discount, decimal Tax, decimal Shipping,
+    decimal Total, string Currency, OrderContactData Contact, IReadOnlyList<OrderItemData> Items);
+
+/// <summary>Who an order went to and where (empty after the account was erased).</summary>
+public sealed record OrderContactData(
+    string? Email, string RecipientName, string PhoneNumber, string? CountryCode, string? Region, string? City, string? Line1, string? Line2,
+    string? PostalCode, string? Note);
 
 public sealed record OrderItemData(string ProductName, decimal UnitPrice, int Quantity);
 

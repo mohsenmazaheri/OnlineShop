@@ -63,7 +63,8 @@ public sealed class PersonalDataServiceTests : IDisposable
         product.RatingCount = 1;
         _db.Orders.Add(new Order
         {
-            CustomerId = userId, OrderedUtc = Now.UtcDateTime, Subtotal = 10, Total = 10, Status = OrderStatus.Pending,
+            CustomerId = userId, OrderedUtc = Now.UtcDateTime, Subtotal = 10, Total = 10, Status = OrderStatus.Pending, Number = 1001, Currency = "IRR",
+            Email = "ali@test.local", RecipientName = "Ali", PhoneNumber = Phone, CountryCode = "IR", City = "Tehran", Line1 = "Street 1", Note = "Ring twice",
             Items = { new OrderItem { ProductId = product.Id, ProductName = "Phone X", UnitPrice = 5, Quantity = 2 } }
         });
         _db.PhoneVerificationCodes.Add(new PhoneVerificationCode
@@ -85,7 +86,7 @@ public sealed class PersonalDataServiceTests : IDisposable
         Assert.Equal("ali@test.local", export.Account.Email);
         Assert.Equal("Tehran", Assert.Single(export.Addresses).City);
         var order = Assert.Single(export.Orders);
-        Assert.Equal("Pending", order.Status);
+        Assert.Equal(("Pending", 1001L, "Tehran", "Ring twice"), (order.Status, order.Number, order.Contact.City, order.Contact.Note));
         Assert.Equal(new OrderItemData("Phone X", 5, 2), Assert.Single(order.Items));
         Assert.Equal(new CartItemData("Phone X", 2), Assert.Single(export.Cart));
         var compared = Assert.Single(export.Compare);
@@ -129,6 +130,9 @@ public sealed class PersonalDataServiceTests : IDisposable
         Assert.Equal(0, (await check.Products.SingleAsync()).RatingCount);
         Assert.False(await check.PhoneVerificationCodes.AnyAsync());
         Assert.Equal(1, await check.Orders.CountAsync(o => o.CustomerId == _password));
+        // The order keeps its amounts and country, not who it went to and where.
+        var kept = await check.Orders.SingleAsync(o => o.CustomerId == _password);
+        Assert.Equal((10m, "IR", null, "", "", null, null), (kept.Total, kept.CountryCode, kept.Email, kept.RecipientName, kept.PhoneNumber, kept.City, kept.Note));
     }
 
     [Fact]
