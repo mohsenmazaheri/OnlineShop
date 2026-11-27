@@ -68,7 +68,8 @@ public sealed class OrderApiTests(CatalogAdminApiTests.AdminFactory factory) : I
         var list = await ReadAsync<OrderPage>(await admin.GetAsync($"/api/v1/admin/orders?status=Pending&q={Uri.EscapeDataString(email)}"));
         Assert.Equal(placed.Number, Assert.Single(list.Items).Number);
         Assert.Equal(OrderStatus.Paid, await ReadAsync<OrderStatus>(await admin.PostAsJsonAsync($"/api/v1/admin/orders/{placed.Number}/paid", new OrderActionRequest("Transfer"))));
-        var refused = await admin.PostAsJsonAsync($"/api/v1/admin/orders/{placed.Number}/cancel", new OrderActionRequest(null));
+        // Not shipped yet: it cannot be marked delivered.
+        var refused = await admin.PostAsJsonAsync($"/api/v1/admin/orders/{placed.Number}/complete", new OrderActionRequest(null));
         Assert.Equal(HttpStatusCode.Conflict, refused.StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await admin.PostAsJsonAsync($"/api/v1/admin/orders/{placed.Number}/ship", new ShipOrderRequest("", ""))).StatusCode);
         await ReadAsync<OrderStatus>(await admin.PostAsJsonAsync($"/api/v1/admin/orders/{placed.Number}/ship", new ShipOrderRequest("Post", "RR123IR")));

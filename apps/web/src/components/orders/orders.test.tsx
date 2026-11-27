@@ -32,14 +32,20 @@ export const sampleOrder = (over: Partial<OrderView> = {}): OrderView => ({
   taxRate: 10,
   pricesIncludeTax: true,
   total: 185,
-  lines: [{ number: 1001, name: "Orvia X1", sku: "DEMO-PHN-001", variantLabel: null, imageUrl: null, unitPrice: 100, quantity: 2, lineTotal: 200 }],
+  lines: [{ id: "i1", number: 1001, name: "Orvia X1", sku: "DEMO-PHN-001", variantLabel: null, imageUrl: null, unitPrice: 100, quantity: 2, lineTotal: 200, returnable: 2 }],
   history: [
     { atUtc: "2026-11-27T09:00:00Z", kind: "Placed", status: null, text: null, isInternal: false, byStaff: false },
     { atUtc: "2026-11-27T10:00:00Z", kind: "StatusChanged", status: "Paid", text: null, isInternal: false, byStaff: true },
     { atUtc: "2026-11-27T10:05:00Z", kind: "Note", status: null, text: "Packed by Ali", isInternal: true, byStaff: true },
   ],
-  actions: { canMarkPaid: false, canShip: false, canComplete: true, canCancel: false },
+  actions: { canMarkPaid: false, canShip: false, canComplete: true, canCancel: false, canRequestReturn: false, canRefund: false },
   customerId: null,
+  invoice: null,
+  returns: [],
+  refunds: [],
+  refundedTotal: 0,
+  refundable: 0,
+  returnableUntilUtc: null,
   ...over,
 });
 

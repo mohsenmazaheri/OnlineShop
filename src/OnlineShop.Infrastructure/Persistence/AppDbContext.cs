@@ -51,6 +51,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<OrderEvent> OrderEvents => Set<OrderEvent>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<ReturnRequest> ReturnRequests => Set<ReturnRequest>();
+    public DbSet<ReturnLine> ReturnLines => Set<ReturnLine>();
+    public DbSet<Refund> Refunds => Set<Refund>();
+    public DbSet<SalesSettings> SalesSettings => Set<SalesSettings>();
     public DbSet<PhoneVerificationCode> PhoneVerificationCodes => Set<PhoneVerificationCode>();
     public DbSet<CustomerAddress> CustomerAddresses => Set<CustomerAddress>();
     public DbSet<CompareItem> CompareItems => Set<CompareItem>();
@@ -472,6 +477,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             e.ToTable("tax_settings");
             e.Property(x => x.Rate).HasPrecision(5, 2);
+        });
+        b.Entity<SalesSettings>(e =>
+        {
+            e.ToTable("sales_settings");
+            e.Property(x => x.SellerName).HasMaxLength(200);
+            e.Property(x => x.SellerAddress).HasMaxLength(500);
+            e.Property(x => x.SellerTaxNumber).HasMaxLength(100);
+            e.Property(x => x.InvoiceNote).HasMaxLength(500);
         });
         b.Entity<LocaleCurrency>(e =>
         {
@@ -905,6 +918,44 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     private static void ConfigureCheckout(ModelBuilder b)
     {
+        b.Entity<Invoice>(e =>
+        {
+            e.ToTable("invoices");
+            e.HasIndex(x => x.Number).IsUnique();
+            e.HasIndex(x => x.OrderId).IsUnique();
+            e.Property(x => x.SellerName).HasMaxLength(200);
+            e.Property(x => x.SellerAddress).HasMaxLength(500);
+            e.Property(x => x.SellerTaxNumber).HasMaxLength(100);
+            e.Property(x => x.Note).HasMaxLength(500);
+            // Invoices are financial records: an order with an invoice is never deleted.
+            e.HasOne<Order>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+        });
+        b.Entity<ReturnRequest>(e =>
+        {
+            e.ToTable("return_requests");
+            e.HasIndex(x => x.Number).IsUnique();
+            e.HasIndex(x => x.OrderId);
+            e.Property(x => x.Status).HasConversion<string>().HasMaxLength(16);
+            e.Property(x => x.Reason).HasMaxLength(1000);
+            e.Property(x => x.Answer).HasMaxLength(1000);
+            e.HasOne<Order>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Cascade);
+            e.HasMany(x => x.Lines).WithOne().HasForeignKey(l => l.ReturnRequestId).OnDelete(DeleteBehavior.Cascade);
+        });
+        b.Entity<ReturnLine>(e =>
+        {
+            e.ToTable("return_lines");
+            e.HasOne<OrderItem>().WithMany().HasForeignKey(x => x.OrderItemId).OnDelete(DeleteBehavior.Restrict);
+        });
+        b.Entity<Refund>(e =>
+        {
+            e.ToTable("refunds");
+            e.HasIndex(x => x.OrderId);
+            e.Property(x => x.Method).HasMaxLength(100);
+            e.Property(x => x.Note).HasMaxLength(500);
+            e.Property(x => x.ActorUserId).HasMaxLength(450);
+            e.HasOne<Order>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<ReturnRequest>().WithMany().HasForeignKey(x => x.ReturnRequestId).OnDelete(DeleteBehavior.SetNull);
+        });
         b.Entity<OrderEvent>(e =>
         {
             e.ToTable("order_events");

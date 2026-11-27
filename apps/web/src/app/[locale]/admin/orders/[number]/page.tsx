@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { OrderActionsPanel } from "@/components/admin/OrderActionsPanel";
+import { OrderReturnsPanel } from "@/components/admin/OrderReturnsPanel";
 import { OrderDetails, OrderStatusBadge } from "@/components/orders/OrderDetails";
 import { requirePermission } from "@/lib/admin/access";
 import { accountMetadata, routeLocale } from "@/lib/account/page-helpers";
@@ -40,7 +41,8 @@ async function Order({ params }: { params: Params }) {
             <span className="text-xs text-muted">{order.customerId ? texts.orderCustomer : texts.orderGuest}</span>
           </div>
           <OrderActionsPanel order={order} texts={texts} errors={dict.orders.errors} canManage={user.permissions.includes("orders.manage")} />
-          <OrderDetails order={order} locale={locale} texts={dict.orders} staff />
+          <OrderReturnsPanel order={order} texts={texts} errors={dict.orders.errors} canManage={user.permissions.includes("orders.manage")} />
+          <OrderDetails order={order} locale={locale} texts={dict.orders} staff invoiceHref={`/${locale}/admin/orders/${order.number}/invoice`} />
         </>
       )}
     </AdminShell>

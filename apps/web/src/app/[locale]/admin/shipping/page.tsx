@@ -4,7 +4,7 @@ import { ShippingEditor } from "@/components/admin/ShippingEditor";
 import { requirePermission } from "@/lib/admin/access";
 import { languageNames } from "@/lib/admin/language-names";
 import { accountMetadata, routeLocale } from "@/lib/account/page-helpers";
-import { getShippingAdmin } from "@/lib/account/session";
+import { getSalesSettings, getShippingAdmin } from "@/lib/account/session";
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary, type Dictionary } from "@/lib/i18n/dictionaries";
 import { loadStore } from "@/lib/store/load";
@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/admin/sh
 /** Shipping methods and the tax rate (settings.manage). */
 async function Shipping({ locale, texts }: { locale: Locale; texts: Dictionary["admin"] }) {
   const user = await requirePermission(locale, "settings.manage", `/${locale}/admin/shipping`);
-  const [data, store] = await Promise.all([getShippingAdmin(), loadStore()]);
+  const [data, sales, store] = await Promise.all([getShippingAdmin(), getSalesSettings(), loadStore()]);
   const locales = [store.defaultLocale, ...store.locales.filter((l) => l !== store.defaultLocale)];
 
   return (
@@ -29,6 +29,7 @@ async function Shipping({ locale, texts }: { locale: Locale; texts: Dictionary["
           texts={texts}
           methods={data?.methods ?? []}
           tax={data?.tax ?? { rate: 0, pricesIncludeTax: true }}
+          sales={sales ?? { sellerName: null, sellerAddress: null, sellerTaxNumber: null, invoiceNote: null, returnDays: 14 }}
           locales={locales}
           defaultLocale={store.defaultLocale}
           countries={store.checkout.shippingCountries}

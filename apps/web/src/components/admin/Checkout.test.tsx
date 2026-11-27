@@ -52,6 +52,7 @@ const renderShipping = (methods: ShippingMethodAdmin[] = [method]) =>
       texts={en.admin}
       methods={methods}
       tax={{ rate: 9, pricesIncludeTax: true }}
+      sales={{ sellerName: "Sara LLC", sellerAddress: null, sellerTaxNumber: null, invoiceNote: null, returnDays: 14 }}
       locales={["fa", "en"]}
       defaultLocale="fa"
       countries={["IR", "DE"]}
@@ -75,6 +76,18 @@ describe("helpers", () => {
 });
 
 describe("ShippingEditor", () => {
+  it("saves the invoice details and the return period", async () => {
+    renderShipping();
+    fireEvent.change(screen.getByLabelText(en.admin.salesReturnDays), { target: { value: "30" } });
+    fireEvent.click(screen.getByRole("button", { name: en.admin.salesSave }));
+    await waitFor(() => expect(router.refresh).toHaveBeenCalled());
+    expect(bodyOf(0)).toEqual({
+      url: "/api/v1/admin/shipping/sales",
+      method: "PUT",
+      body: { sellerName: "Sara LLC", sellerAddress: null, sellerTaxNumber: null, invoiceNote: null, returnDays: 30 },
+    });
+  });
+
   it("saves the tax rate", async () => {
     renderShipping();
     fireEvent.change(screen.getByLabelText(en.admin.taxRate), { target: { value: "10" } });

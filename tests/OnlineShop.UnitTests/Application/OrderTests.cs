@@ -78,10 +78,11 @@ public sealed class OrderLifecycleTests : DemoCatalogTestBase
         Assert.Equal(OrderStatus.Paid, (await lifecycle.MarkPaidAsync(order.Number, new OrderActionRequest("Bank transfer 4711"))).Value);
         Assert.Equal((stockBefore - 2, 0), await PhoneStockAsync());
         Assert.Equal(OrderErrors.StatusInvalid, (await lifecycle.MarkPaidAsync(order.Number, new OrderActionRequest(null))).Error!.Code);
-        Assert.Equal(OrderErrors.StatusInvalid, (await lifecycle.CancelAsync(order.Number, new OrderActionRequest(null))).Error!.Code);
 
         Database.Clock.Advance(TimeSpan.FromMinutes(1));
         Assert.Equal(OrderStatus.Shipped, (await lifecycle.ShipAsync(order.Number, new ShipOrderRequest(" Post ", " RR123 "))).Value);
+        // Once it left, it cannot be canceled any more.
+        Assert.Equal(OrderErrors.StatusInvalid, (await lifecycle.CancelAsync(order.Number, new OrderActionRequest(null))).Error!.Code);
         Database.Clock.Advance(TimeSpan.FromMinutes(1));
         Assert.Equal(OrderStatus.Completed, (await lifecycle.CompleteAsync(order.Number, new OrderActionRequest(null))).Value);
         Database.Clock.Advance(TimeSpan.FromMinutes(1));
@@ -90,11 +91,11 @@ public sealed class OrderLifecycleTests : DemoCatalogTestBase
         var staff = (await Kit.Queries(db).GetForStaffAsync(order.Number))!;
         Assert.Equal(("Post", "RR123", OrderStatus.Completed), (staff.TrackingCarrier, staff.TrackingCode, staff.Status));
         Assert.Equal(
-            [OrderEventKind.Placed, OrderEventKind.StatusChanged, OrderEventKind.Note, OrderEventKind.TrackingSet, OrderEventKind.StatusChanged, OrderEventKind.StatusChanged, OrderEventKind.Note],
+            [OrderEventKind.Placed, OrderEventKind.StatusChanged, OrderEventKind.Invoiced, OrderEventKind.Note, OrderEventKind.TrackingSet, OrderEventKind.StatusChanged, OrderEventKind.StatusChanged, OrderEventKind.Note],
             staff.History.Select(h => h.Kind));
         Assert.True(staff.History[1].ByStaff);
         // The payment reference is for staff only: the customer's view leaves it out.
-        Assert.True(staff.History[2].IsInternal);
+        Assert.True(staff.History[3].IsInternal);
         var customerView = (await Kit.Queries(db).GetWithTokenAsync(order.Number, Uri.UnescapeDataString(order.Path[(order.Path.IndexOf("key=", StringComparison.Ordinal) + 4)..])))!;
         Assert.DoesNotContain(customerView.History, h => h.Text == "Bank transfer 4711");
         Assert.False(staff.Actions.CanCancel || staff.Actions.CanShip);
@@ -275,8 +276,8 @@ public sealed class OrderPartsTests
     public void Transitions_follow_the_order_life()
     {
         Assert.Equal(new OrderActions(true, false, false, true), OrderTransitions.For(OrderStatus.Pending, false));
-        Assert.Equal(new OrderActions(false, true, false, false), OrderTransitions.For(OrderStatus.Paid, false));
-        Assert.Equal(new OrderActions(false, false, true, false), OrderTransitions.For(OrderStatus.Paid, true));
+        Assert.Equal(new OrderActions(false, true, false, true), OrderTransitions.For(OrderStatus.Paid, false));
+        Assert.Equal(new OrderActions(false, false, true, true), OrderTransitions.For(OrderStatus.Paid, true));
         Assert.Equal(new OrderActions(false, false, true, false), OrderTransitions.For(OrderStatus.Shipped, false));
         Assert.Equal(new OrderActions(false, false, false, false), OrderTransitions.For(OrderStatus.Canceled, false));
     }

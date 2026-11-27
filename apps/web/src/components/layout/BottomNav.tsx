@@ -30,7 +30,7 @@ export function BottomNavBar({ locale, texts, active }: { locale: string; texts:
   return (
     <nav
       aria-label={texts.bottomMenu}
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] md:hidden print:hidden"
     >
       <ul className="grid grid-cols-4 px-2 pt-1">
         {tabs.map(({ tab, href, icon, label }) => (

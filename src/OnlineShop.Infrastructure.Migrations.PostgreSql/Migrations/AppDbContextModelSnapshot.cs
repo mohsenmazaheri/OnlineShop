@@ -2329,6 +2329,72 @@ namespace OnlineShop.Infrastructure.Migrations.PostgreSql.Migrations
                     b.ToTable("discount_codes", (string)null);
                 });
 
+            modelBuilder.Entity("OnlineShop.Domain.Sales.Invoice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTime>("IssuedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("issued_utc");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("note");
+
+                    b.Property<long>("Number")
+                        .HasColumnType("bigint")
+                        .HasColumnName("number");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<string>("SellerAddress")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("seller_address");
+
+                    b.Property<string>("SellerName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("seller_name");
+
+                    b.Property<string>("SellerTaxNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("seller_tax_number");
+
+                    b.HasKey("Id")
+                        .HasName("pk_invoices");
+
+                    b.HasIndex("Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_invoices_number");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_invoices_order_id");
+
+                    b.ToTable("invoices", (string)null);
+                });
+
             modelBuilder.Entity("OnlineShop.Domain.Sales.Order", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2340,6 +2406,10 @@ namespace OnlineShop.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("city");
+
+                    b.Property<DateTime?>("CompletedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_utc");
 
                     b.Property<string>("CountryCode")
                         .HasMaxLength(2)
@@ -2664,6 +2734,166 @@ namespace OnlineShop.Infrastructure.Migrations.PostgreSql.Migrations
                     b.ToTable("order_items", (string)null);
                 });
 
+            modelBuilder.Entity("OnlineShop.Domain.Sales.Refund", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ActorUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)")
+                        .HasColumnName("actor_user_id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("method");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("note");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<Guid?>("ReturnRequestId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("return_request_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_refunds");
+
+                    b.HasIndex("OrderId")
+                        .HasDatabaseName("ix_refunds_order_id");
+
+                    b.HasIndex("ReturnRequestId")
+                        .HasDatabaseName("ix_refunds_return_request_id");
+
+                    b.ToTable("refunds", (string)null);
+                });
+
+            modelBuilder.Entity("OnlineShop.Domain.Sales.ReturnLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<Guid>("OrderItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_item_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<Guid>("ReturnRequestId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("return_request_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_return_lines");
+
+                    b.HasIndex("OrderItemId")
+                        .HasDatabaseName("ix_return_lines_order_item_id");
+
+                    b.HasIndex("ReturnRequestId")
+                        .HasDatabaseName("ix_return_lines_return_request_id");
+
+                    b.ToTable("return_lines", (string)null);
+                });
+
+            modelBuilder.Entity("OnlineShop.Domain.Sales.ReturnRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Answer")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("answer");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<long>("Number")
+                        .HasColumnType("bigint")
+                        .HasColumnName("number");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("reason");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_return_requests");
+
+                    b.HasIndex("Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_return_requests_number");
+
+                    b.HasIndex("OrderId")
+                        .HasDatabaseName("ix_return_requests_order_id");
+
+                    b.ToTable("return_requests", (string)null);
+                });
+
             modelBuilder.Entity("OnlineShop.Domain.Sales.ShippingMethod", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2969,6 +3199,55 @@ namespace OnlineShop.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasDatabaseName("ix_search_synonyms_locale");
 
                     b.ToTable("search_synonyms", (string)null);
+                });
+
+            modelBuilder.Entity("OnlineShop.Domain.Settings.SalesSettings", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<string>("InvoiceNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("invoice_note");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<int>("ReturnDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("return_days");
+
+                    b.Property<string>("SellerAddress")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("seller_address");
+
+                    b.Property<string>("SellerName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("seller_name");
+
+                    b.Property<string>("SellerTaxNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("seller_tax_number");
+
+                    b.HasKey("Id")
+                        .HasName("pk_sales_settings");
+
+                    b.ToTable("sales_settings", (string)null);
                 });
 
             modelBuilder.Entity("OnlineShop.Domain.Settings.StoreBranding", b =>
@@ -4391,6 +4670,16 @@ namespace OnlineShop.Infrastructure.Migrations.PostgreSql.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("OnlineShop.Domain.Sales.Invoice", b =>
+                {
+                    b.HasOne("OnlineShop.Domain.Sales.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_invoices_orders_order_id");
+                });
+
             modelBuilder.Entity("OnlineShop.Domain.Sales.Order", b =>
                 {
                     b.HasOne("OnlineShop.Infrastructure.Identity.AppUser", null)
@@ -4439,6 +4728,49 @@ namespace OnlineShop.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasConstraintName("fk_order_items_products_product_id");
 
                     b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("OnlineShop.Domain.Sales.Refund", b =>
+                {
+                    b.HasOne("OnlineShop.Domain.Sales.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_refunds_orders_order_id");
+
+                    b.HasOne("OnlineShop.Domain.Sales.ReturnRequest", null)
+                        .WithMany()
+                        .HasForeignKey("ReturnRequestId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_refunds_return_requests_return_request_id");
+                });
+
+            modelBuilder.Entity("OnlineShop.Domain.Sales.ReturnLine", b =>
+                {
+                    b.HasOne("OnlineShop.Domain.Sales.OrderItem", null)
+                        .WithMany()
+                        .HasForeignKey("OrderItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_return_lines_order_items_order_item_id");
+
+                    b.HasOne("OnlineShop.Domain.Sales.ReturnRequest", null)
+                        .WithMany("Lines")
+                        .HasForeignKey("ReturnRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_return_lines_return_requests_return_request_id");
+                });
+
+            modelBuilder.Entity("OnlineShop.Domain.Sales.ReturnRequest", b =>
+                {
+                    b.HasOne("OnlineShop.Domain.Sales.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_return_requests_orders_order_id");
                 });
 
             modelBuilder.Entity("OnlineShop.Domain.Sales.ShippingMethod", b =>
@@ -4566,6 +4898,11 @@ namespace OnlineShop.Infrastructure.Migrations.PostgreSql.Migrations
             modelBuilder.Entity("OnlineShop.Domain.Sales.Order", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("OnlineShop.Domain.Sales.ReturnRequest", b =>
+                {
+                    b.Navigation("Lines");
                 });
 #pragma warning restore 612, 618
         }

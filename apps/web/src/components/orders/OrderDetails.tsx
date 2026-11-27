@@ -1,14 +1,15 @@
 import Image from "next/image";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import type { OrderView } from "@/lib/account/session";
 import { productPath } from "@/lib/catalog/product-path";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { regionName } from "@/lib/i18n/display-names";
 import { formatDate } from "@/lib/i18n/format-date";
-import { formatList } from "@/lib/i18n/format-list";
+import { joinParts } from "@/lib/i18n/format-list";
 import { formatMoney, formatNumber } from "@/lib/i18n/format-money";
 import { imageVariant } from "@/lib/media/image";
-import { historyText, statusTint } from "@/lib/orders/format";
+import { formatOrderNumber, historyText, statusTint } from "@/lib/orders/format";
 
 type Texts = Dictionary["orders"];
 
@@ -18,6 +19,10 @@ type Props = {
   texts: Texts;
   /** Staff see internal notes and who acted. */
   staff?: boolean;
+  /** The invoice page of this view (customer, guest link or staff); shown once the order is paid. */
+  invoiceHref?: string;
+  /** The customer's return form, shown under the lines while a return may be asked for. */
+  returnForm?: ReactNode;
 };
 
 /** A status as a small coloured label. */
@@ -29,7 +34,7 @@ export function OrderStatusBadge({ status, texts }: { status: OrderView["status"
  * One order: status, lines, amounts, delivery and the history. Server-rendered and presentation only; the pages load
  * the order (the customer's own, a guest's signed link, or any for staff).
  */
-export function OrderDetails({ order, locale, texts, staff = false }: Props) {
+export function OrderDetails({ order, locale, texts, staff = false, invoiceHref, returnForm }: Props) {
   const money = (amount: number) => formatMoney(amount, order.currency, locale);
   const section = "flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4";
   const address = order.address;
@@ -63,6 +68,51 @@ export function OrderDetails({ order, locale, texts, staff = false }: Props) {
           </ul>
         </section>
 
+        {returnForm}
+
+        {(order.returns.length > 0 || order.refunds.length > 0) && (
+          <section className={section} aria-labelledby="order-returns">
+            <h2 id="order-returns" className="font-bold">
+              {texts.returnsTitle}
+            </h2>
+            {order.returns.map((r) => (
+              <div key={r.id} className="flex flex-col gap-1 rounded-xl border border-border p-3 text-sm">
+                <p className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-bold">R-{formatNumber(r.number, locale)}</span>
+                  <span className="rounded-full bg-surface-muted px-2.5 py-0.5 text-xs font-bold">{texts.returnStatus[r.status]}</span>
+                </p>
+                <p className="text-xs text-muted">
+                  {r.lines.map((l) => `${l.name}${l.variantLabel ? ` (${l.variantLabel})` : ""} × ${formatNumber(l.quantity, locale)}`).join(" · ")}
+                </p>
+                <p>
+                  <span className="text-muted">{texts.returnReasonLabel}: </span>
+                  {r.reason}
+                </p>
+                {r.answer && (
+                  <p>
+                    <span className="text-muted">{texts.returnAnswerLabel}: </span>
+                    {r.answer}
+                  </p>
+                )}
+                {staff && r.status !== "Rejected" && <p className="text-xs text-muted">{texts.returnSuggested.replace("{amount}", money(r.suggestedRefund))}</p>}
+              </div>
+            ))}
+            {order.refunds.map((refund, index) => (
+              <p key={index} className="flex flex-wrap justify-between gap-2 text-sm">
+                <span>
+                  {texts.refundLine.replace("{method}", refund.method)}
+                  {refund.returnNumber !== null && ` · R-${formatNumber(refund.returnNumber, locale)}`}
+                  <span className="block text-xs text-muted">
+                    {formatDate(refund.atUtc, locale, true)}
+                    {staff && refund.note && ` · ${refund.note}`}
+                  </span>
+                </span>
+                <span className="font-bold">{money(refund.amount)}</span>
+              </p>
+            ))}
+          </section>
+        )}
+
         <section className={section} aria-labelledby="order-history">
           <h2 id="order-history" className="font-bold">
             {texts.historyTitle}
@@ -72,7 +122,7 @@ export function OrderDetails({ order, locale, texts, staff = false }: Props) {
               <li key={index} className="relative flex flex-col gap-0.5 text-sm">
                 <span aria-hidden className="absolute -start-[1.4rem] top-1.5 h-2.5 w-2.5 rounded-full bg-primary" />
                 <span className={entry.isInternal ? "text-muted italic" : "font-medium"}>
-                  {historyText(entry, texts)}
+                  {historyText(entry, texts, money)}
                   {staff && entry.isInternal && <span className="ms-2 rounded bg-surface-muted px-1.5 text-xs not-italic">{texts.internal}</span>}
                 </span>
                 <span className="text-xs text-muted">
@@ -118,7 +168,18 @@ export function OrderDetails({ order, locale, texts, staff = false }: Props) {
             {order.taxRate > 0 && order.pricesIncludeTax && (
               <p className="text-xs text-muted">{texts.taxIncluded.replace("{amount}", money(order.tax)).replace("{rate}", formatNumber(order.taxRate, locale))}</p>
             )}
+            {order.refundedTotal > 0 && (
+              <div className="flex justify-between text-sm">
+                <dt className="text-muted">{texts.refunded}</dt>
+                <dd>−{money(order.refundedTotal)}</dd>
+              </div>
+            )}
           </dl>
+          {order.invoice && invoiceHref && (
+            <a href={invoiceHref} className="text-sm font-medium text-primary hover:underline">
+              {texts.invoiceLink.replace("{number}", formatOrderNumber(order.invoice.number, locale))}
+            </a>
+          )}
           {order.paymentDueUtc && <p className="rounded-xl bg-surface-muted p-3 text-xs">{texts.awaitingPayment.replace("{time}", formatDate(order.paymentDueUtc, locale, true))}</p>}
         </section>
 
@@ -140,12 +201,7 @@ export function OrderDetails({ order, locale, texts, staff = false }: Props) {
           </p>
           {address && (
             <p className="text-sm text-muted">
-              {formatList(
-                [address.line1, address.line2, address.city, address.region, address.postalCode, address.countryCode ? regionName(address.countryCode, locale) : null].filter(
-                  (part): part is string => Boolean(part),
-                ),
-                locale,
-              )}
+              {joinParts([address.line1, address.line2, address.city, address.region, address.postalCode, address.countryCode ? regionName(address.countryCode, locale) : null], locale)}
             </p>
           )}
           {order.trackingCode && (

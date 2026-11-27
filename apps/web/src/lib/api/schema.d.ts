@@ -123,6 +123,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/orders/{number}/invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The invoice of a paid order through its signed link. */
+        get: operations["GetInvoiceByLink"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{number}/returns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** A guest asks to return items through the order's signed link. */
+        post: operations["RequestReturnByLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/currencies": {
         parameters: {
             query?: never;
@@ -680,6 +714,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/shipping/sales": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The seller's details printed on invoices and the return period. */
+        get: operations["GetSalesSettings"];
+        /** Change the invoice details (issued invoices keep theirs) and the return period. */
+        put: operations["SaveSalesSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/discounts": {
         parameters: {
             query?: never;
@@ -750,6 +802,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/account/orders/{number}/invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The invoice of one of the customer's paid orders (a printable page in the shop). */
+        get: operations["GetMyInvoice"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account/orders/{number}/returns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ask to send items of a delivered order back, within the return period. Answers the return number. */
+        post: operations["RequestMyReturn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/orders": {
         parameters: {
             query?: never;
@@ -776,6 +862,23 @@ export interface paths {
         };
         /** One order with its full history, internal notes included. */
         get: operations["GetOrder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{number}/invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The invoice of a paid order. */
+        get: operations["GetInvoice"];
         put?: never;
         post?: never;
         delete?: never;
@@ -846,6 +949,74 @@ export interface paths {
         put?: never;
         /** Cancel an unpaid order: its stock and discount code use are given back; the text is shown to the customer. */
         post: operations["CancelOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{number}/returns/{returnId}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Agree to a return; the text (how to send the items) goes to the customer. */
+        post: operations["ApproveReturn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{number}/returns/{returnId}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Turn a return down; the text (why) goes to the customer. */
+        post: operations["RejectReturn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{number}/returns/{returnId}/receive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** The returned items arrived: they go back into stock. */
+        post: operations["ReceiveReturn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{number}/refunds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record money paid back (never more than was paid in all); the customer is told. Answers the refunded total. */
+        post: operations["RecordRefund"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3296,6 +3467,23 @@ export interface components {
             roles: string[];
             locale: null | string;
         };
+        InvoiceSummary: {
+            /** Format: int64 */
+            number: number;
+            /** Format: date-time */
+            issuedUtc: string;
+        };
+        InvoiceView: {
+            /** Format: int64 */
+            number: number;
+            /** Format: date-time */
+            issuedUtc: string;
+            sellerName: string;
+            sellerAddress: null | string;
+            sellerTaxNumber: null | string;
+            note: null | string;
+            order: components["schemas"]["OrderView"];
+        };
         ItemSettingsView: {
             /** Format: uuid */
             itemId: string;
@@ -3422,6 +3610,10 @@ export interface components {
             canShip: boolean;
             canComplete: boolean;
             canCancel: boolean;
+            /** @default false */
+            canRequestReturn: boolean;
+            /** @default false */
+            canRefund: boolean;
         };
         OrderAddressView: {
             countryCode: null | string;
@@ -3464,7 +3656,7 @@ export interface components {
             items: components["schemas"]["OrderItemData"][];
         };
         /** @enum {unknown} */
-        OrderEventKind: "Placed" | "StatusChanged" | "TrackingSet" | "Note" | "PaymentExpired";
+        OrderEventKind: "Placed" | "StatusChanged" | "TrackingSet" | "Note" | "PaymentExpired" | "Invoiced" | "ReturnRequested" | "ReturnApproved" | "ReturnRejected" | "ReturnReceived" | "Refunded";
         OrderEventView: {
             /** Format: date-time */
             atUtc: string;
@@ -3482,6 +3674,8 @@ export interface components {
             quantity: number;
         };
         OrderLineView: {
+            /** Format: uuid */
+            id: string;
             /** Format: int64 */
             number: number;
             name: string;
@@ -3494,6 +3688,8 @@ export interface components {
             quantity: number;
             /** Format: double */
             lineTotal: number;
+            /** Format: int32 */
+            returnable: number;
         };
         OrderNoteRequest: {
             text: string;
@@ -3561,6 +3757,15 @@ export interface components {
             history: components["schemas"]["OrderEventView"][];
             actions: components["schemas"]["OrderActions"];
             customerId: null | string;
+            invoice: null | components["schemas"]["InvoiceSummary"];
+            returns: components["schemas"]["ReturnView"][];
+            refunds: components["schemas"]["RefundView"][];
+            /** Format: double */
+            refundedTotal: number;
+            /** Format: double */
+            refundable: number;
+            /** Format: date-time */
+            returnableUntilUtc: null | string;
         };
         PersonalDataExport: {
             /** Format: date-time */
@@ -3935,6 +4140,14 @@ export interface components {
             closedBy: null | string;
             lines: components["schemas"]["ReceiptLineView"][];
         };
+        RecordRefundRequest: {
+            /** Format: double */
+            amount: number;
+            method: string;
+            note: null | string;
+            /** Format: uuid */
+            returnId: null | string;
+        };
         RecoveryCodes: {
             codes: string[];
         };
@@ -3962,6 +4175,16 @@ export interface components {
             /** Format: date-time */
             lastHitUtc: null | string;
         };
+        RefundView: {
+            /** Format: date-time */
+            atUtc: string;
+            /** Format: double */
+            amount: number;
+            method: string;
+            note: null | string;
+            /** Format: int64 */
+            returnNumber: null | number;
+        };
         RegisterRequest: {
             email: null | string;
             password: string;
@@ -3979,10 +4202,51 @@ export interface components {
         ReorderSpecsRequest: {
             ids: string[];
         };
+        RequestReturnRequest: {
+            lines: components["schemas"]["ReturnLineInput"][];
+            reason: string;
+        };
         ResetPasswordRequest: {
             userId: string;
             token: string;
             newPassword: string;
+        };
+        ReturnAnswerRequest: {
+            text: null | string;
+        };
+        ReturnLineInput: {
+            /** Format: uuid */
+            orderItemId: string;
+            /** Format: int32 */
+            quantity: number;
+        };
+        ReturnLineView: {
+            /** Format: uuid */
+            orderItemId: string;
+            name: string;
+            variantLabel: null | string;
+            sku: string;
+            /** Format: int32 */
+            quantity: number;
+        };
+        /** @enum {unknown} */
+        ReturnStatus: "Requested" | "Approved" | "Rejected" | "Received";
+        ReturnView: {
+            /** Format: uuid */
+            id: string;
+            /** Format: int64 */
+            number: number;
+            status: components["schemas"]["ReturnStatus"];
+            /** Format: date-time */
+            createdUtc: string;
+            reason: string;
+            answer: null | string;
+            lines: components["schemas"]["ReturnLineView"][];
+            /** Format: double */
+            suggestedRefund: number;
+            canApprove: boolean;
+            canReject: boolean;
+            canReceive: boolean;
         };
         ReviewAdminList: {
             items: components["schemas"]["ReviewAdminRow"][];
@@ -4044,6 +4308,14 @@ export interface components {
             verifiedBuyer: boolean;
             /** Format: date-time */
             createdUtc: string;
+        };
+        SalesSettingsView: {
+            sellerName: null | string;
+            sellerAddress: null | string;
+            sellerTaxNumber: null | string;
+            invoiceNote: null | string;
+            /** Format: int32 */
+            returnDays: number;
         };
         SaveBrandingRequest: {
             primaryColor: string;
@@ -4935,6 +5207,76 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetInvoiceByLink: {
+        parameters: {
+            query?: {
+                key?: string;
+            };
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceView"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    RequestReturnByLink: {
+        parameters: {
+            query?: {
+                key?: string;
+            };
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestReturnRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
                 };
             };
         };
@@ -6128,6 +6470,59 @@ export interface operations {
             };
         };
     };
+    GetSalesSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SalesSettingsView"];
+                };
+            };
+        };
+    };
+    SaveSalesSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SalesSettingsView"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SalesSettingsView"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
     ListDiscountCodes: {
         parameters: {
             query?: never;
@@ -6289,6 +6684,72 @@ export interface operations {
             };
         };
     };
+    GetMyInvoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceView"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    RequestMyReturn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestReturnRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
     ListOrders: {
         parameters: {
             query?: {
@@ -6331,6 +6792,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OrderView"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetInvoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceView"];
                 };
             };
             /** @description Not Found */
@@ -6471,6 +6963,149 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OrderStatus"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    ApproveReturn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+                returnId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReturnAnswerRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReturnStatus"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    RejectReturn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+                returnId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReturnAnswerRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReturnStatus"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    ReceiveReturn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+                returnId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReturnAnswerRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReturnStatus"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    RecordRefund: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordRefundRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
                 };
             };
             /** @description Bad Request */

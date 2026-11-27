@@ -93,7 +93,7 @@ async function HeaderSearch({ locale, texts, className }: Props & { className: s
  */
 export function SiteHeader({ locale, texts }: Props) {
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-surface">
+    <header className="sticky top-0 z-30 border-b border-border bg-surface print:hidden">
       <div className="mx-auto max-w-7xl px-4 md:px-6">
         <div className="flex h-14 items-center gap-3 md:h-[4.5rem] md:gap-6">
           <Suspense fallback={<span className="h-9 w-36 animate-pulse rounded-xl bg-border" />}>

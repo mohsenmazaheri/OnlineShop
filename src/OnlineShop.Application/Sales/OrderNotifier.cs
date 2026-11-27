@@ -27,7 +27,12 @@ public sealed partial class OrderNotifier(
             ? $"order/{number}?key={Uri.EscapeDataString(links.TokenFor(orderId))}"
             : $"account/orders/{number}";
 
-    public async Task NotifyAsync(Guid orderId, OrderNotice notice, CancellationToken cancellationToken = default)
+    public async Task NotifyAsync(Guid orderId, OrderNotice notice, CancellationToken cancellationToken = default) =>
+        await NotifyAsync(orderId, notice, null, null, cancellationToken);
+
+    /// <param name="detail">The return number, or for a refund the amount (formatted here in the order's currency).</param>
+    /// <param name="note">A text from staff for the customer (a cancellation reason, an answer to a return).</param>
+    public async Task NotifyAsync(Guid orderId, OrderNotice notice, string? detail, string? note, CancellationToken cancellationToken = default)
     {
         var order = await db.Orders.AsNoTracking().Where(o => o.Id == orderId)
             .Select(o => new { o.Id, o.Number, o.CustomerId, o.Email, o.PhoneNumber, o.Locale, o.Total, o.Currency, o.TrackingCarrier, o.TrackingCode })
@@ -38,7 +43,9 @@ public sealed partial class OrderNotifier(
         var options = store.Value;
         var locale = options.LocaleList.Contains(order.Locale, StringComparer.Ordinal) ? order.Locale : options.DefaultLocale;
         var link = new Uri($"{options.PublicUrl.TrimEnd('/')}/{locale}/{PathFor(order.Id, order.Number, order.CustomerId)}");
-        var data = new OrderMessageData(order.Number, FormatTotal(order.Total, order.Currency, locale), order.TrackingCarrier, order.TrackingCode, link);
+        if (notice == OrderNotice.Refunded && decimal.TryParse(detail, NumberStyles.Number, CultureInfo.InvariantCulture, out var amount))
+            detail = FormatTotal(amount, order.Currency, locale);
+        var data = new OrderMessageData(order.Number, FormatTotal(order.Total, order.Currency, locale), order.TrackingCarrier, order.TrackingCode, link, detail, note);
 
         if (!string.IsNullOrWhiteSpace(order.Email))
         {

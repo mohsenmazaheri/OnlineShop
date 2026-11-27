@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { OrderDetails, OrderStatusBadge } from "@/components/orders/OrderDetails";
+import { ReturnRequestForm } from "@/components/orders/ReturnRequestForm";
 import { accountMetadata, routeLocale } from "@/lib/account/page-helpers";
 import { getCurrentUser, getMyOrder } from "@/lib/account/session";
 import { formatOrderNumber } from "@/lib/orders/format";
@@ -34,7 +35,17 @@ async function Order({ params }: { params: Params }) {
             <h1 className="text-xl font-extrabold">{dict.orders.orderNumber.replace("{number}", formatOrderNumber(order.number, locale))}</h1>
             <OrderStatusBadge status={order.status} texts={dict.orders} />
           </div>
-          <OrderDetails order={order} locale={locale} texts={dict.orders} />
+          <OrderDetails
+            order={order}
+            locale={locale}
+            texts={dict.orders}
+            invoiceHref={`/${locale}/account/orders/${order.number}/invoice`}
+            returnForm={
+              order.actions.canRequestReturn ? (
+                <ReturnRequestForm order={order} locale={locale} endpoint={`/api/v1/account/orders/${order.number}/returns`} texts={dict.orders} errors={dict.orders.errors} />
+              ) : null
+            }
+          />
         </div>
       ) : (
         <p className="text-muted">{dict.orders.notFound}</p>

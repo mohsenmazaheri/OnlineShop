@@ -40,7 +40,11 @@ internal sealed class SalesKit(SqliteTestDatabase database, StoreOptions store, 
     }
 
     public OrderLifecycleService Lifecycle(AppDbContext db) =>
-        new(db, Reservations(db), new DiscountCodeService(db, database.Clock), Notifier(db), new FixedCurrentUser(StaffUserId), database.Clock);
+        new(db, Reservations(db), new DiscountCodeService(db, database.Clock), TestLedger.For(db, store), new SalesSettingsService(db), Notifier(db),
+            new FixedCurrentUser(StaffUserId), Options.Create(store), database.Clock);
 
-    public OrderQueries Queries(AppDbContext db) => new(db, Links);
+    public ReturnService Returns(AppDbContext db) =>
+        new(db, TestLedger.For(db, store), new SalesSettingsService(db), Notifier(db), new FixedCurrentUser(StaffUserId), database.Clock);
+
+    public OrderQueries Queries(AppDbContext db) => new(db, Links, new SalesSettingsService(db), database.Clock);
 }

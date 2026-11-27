@@ -60,6 +60,11 @@ public static class CheckoutEndpoints
             .WithName("DeleteShippingMethod").WithSummary("Delete a shipping method (placed orders keep their copy).");
         shipping.MapGet("/tax", async (TaxSettingsService taxes, CancellationToken ct) => TypedResults.Ok(await taxes.GetAsync(ct)))
             .WithName("GetTax").WithSummary("The shop's tax rate and whether prices include it.");
+        shipping.MapGet("/sales", async (SalesSettingsService sales, CancellationToken ct) => TypedResults.Ok(await sales.GetAsync(ct)))
+            .WithName("GetSalesSettings").WithSummary("The seller's details printed on invoices and the return period.");
+        shipping.MapPut("/sales", async (SalesSettingsView request, SalesSettingsService sales, CancellationToken ct) => TypedResults.Ok(await sales.SaveAsync(request, ct)))
+            .Validate<SalesSettingsView>()
+            .WithName("SaveSalesSettings").WithSummary("Change the invoice details (issued invoices keep theirs) and the return period.");
         shipping.MapPut("/tax", async (SaveTaxRequest request, TaxSettingsService taxes, CancellationToken ct) => TypedResults.Ok(await taxes.SaveAsync(request, ct)))
             .Validate<SaveTaxRequest>()
             .WithName("SaveTax").WithSummary("Change the tax rate (placed orders keep theirs).");

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatList } from "./format-list";
+import { formatList, joinParts } from "./format-list";
 
 describe("formatList", () => {
   it("uses each language's separator", () => {
@@ -11,5 +11,12 @@ describe("formatList", () => {
     expect(formatList(["A"], "de")).toBe("A");
     expect(formatList([], "en")).toBe("");
     expect(formatList(["A", "B"], "not a locale!")).toBe("A, B");
+  });
+});
+
+describe("joinParts", () => {
+  it("joins address parts with plain commas, skipping empty ones", () => {
+    expect(joinParts(["Valiasr 10", null, "Tehran", "", "Iran"], "en")).toBe("Valiasr 10, Tehran, Iran");
+    expect(joinParts(["ولیعصر ۱۰", "تهران", "ایران"], "fa")).toBe("ولیعصر ۱۰، تهران، ایران");
   });
 });

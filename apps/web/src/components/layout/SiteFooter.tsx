@@ -36,7 +36,7 @@ export function SiteFooter({ locale, storeName, locales, description, texts, yea
   const about = [{ href: `/${locale}/blog`, label: texts.blog }, ...pages.map((p) => ({ href: `/${locale}/${encodeURIComponent(p.slug)}`, label: p.title }))];
 
   return (
-    <footer className="mt-12 bg-inverse text-sm text-inverse-foreground">
+    <footer className="mt-12 bg-inverse text-sm text-inverse-foreground print:hidden">
       <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 pt-10 pb-6 md:px-6">
         <div className="flex flex-wrap gap-x-8 gap-y-8 md:gap-x-12">
           <div className="flex min-w-64 flex-[2] flex-col gap-3">

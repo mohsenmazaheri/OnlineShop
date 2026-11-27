@@ -23,11 +23,33 @@ type HistoryTexts = {
   historyStatus: string;
   historyTracking: string;
   historyExpired: string;
+  historyInvoiced: string;
+  historyReturnRequested: string;
+  historyReturnApproved: string;
+  historyReturnRejected: string;
+  historyReturnReceived: string;
+  historyRefunded: string;
 };
 
-/** One history line in words: "Placed", "Status: Shipped", "Tracking: Post RR123", or the note itself. */
-export function historyText(entry: HistoryEntry, texts: HistoryTexts): string {
+/**
+ * One history line in words: "Placed", "Status: Shipped", "Tracking: Post RR123", "Return R-2 approved", "Refunded
+ * €12", or the note itself. <paramref name="money"/> formats a refunded amount in the order's currency.
+ */
+export function historyText(entry: HistoryEntry, texts: HistoryTexts, money: (amount: number) => string = String): string {
+  const text = entry.text ?? "";
   switch (entry.kind) {
+    case "Invoiced":
+      return texts.historyInvoiced.replace("{number}", text);
+    case "ReturnRequested":
+      return texts.historyReturnRequested.replace("{number}", text);
+    case "ReturnApproved":
+      return texts.historyReturnApproved.replace("{number}", text);
+    case "ReturnRejected":
+      return texts.historyReturnRejected.replace("{number}", text);
+    case "ReturnReceived":
+      return texts.historyReturnReceived.replace("{number}", text);
+    case "Refunded":
+      return texts.historyRefunded.replace("{amount}", Number.isFinite(Number(text)) ? money(Number(text)) : text);
     case "Placed":
       return texts.historyPlaced;
     case "StatusChanged":

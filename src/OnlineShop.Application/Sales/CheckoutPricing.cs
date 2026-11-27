@@ -16,6 +16,12 @@ public static class CheckoutPricing
 {
     public static decimal Round(decimal amount, int decimals) => Math.Round(amount, decimals, MidpointRounding.AwayFromZero);
 
+    /// <summary>Currencies written without minor units unless the shop set them up otherwise (rial, toman, yen, won).</summary>
+    private static readonly string[] WholeCurrencies = ["IRR", "IRT", "JPY", "KRW"];
+
+    /// <summary>The usual decimals of a currency when the shop has not set them up: 0 for rial-like ones, else 2.</summary>
+    public static int DefaultDecimals(string currency) => WholeCurrencies.Contains(currency, StringComparer.Ordinal) ? 0 : 2;
+
     /// <summary>
     /// What a code takes off the goods: a percent (at most the cap) or an amount (at most the goods). Free shipping
     /// takes nothing off the goods (see <see cref="ShippingCost"/>).
