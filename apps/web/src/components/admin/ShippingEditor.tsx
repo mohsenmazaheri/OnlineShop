@@ -9,6 +9,7 @@ import type { ErrorTexts } from "@/lib/account/problems";
 import type { ShippingMethodAdmin, TaxSettings } from "@/lib/account/session";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { regionName } from "@/lib/i18n/display-names";
+import { formatList } from "@/lib/i18n/format-list";
 import { LocalizedFields, readLocalizedFields } from "./LocalizedFields";
 
 type Texts = Dictionary["admin"];
@@ -55,7 +56,7 @@ export function ShippingEditor({ locale, texts, methods, tax, locales, defaultLo
               >
                 <span className="font-medium">{method.texts[0]?.name}</span>
                 <span className="text-xs text-muted">
-                  {method.isActive ? (method.isPickup ? texts.methodPickup : method.countries.map((c) => regionName(c, locale)).join("، ") || texts.methodAllCountries) : texts.methodInactive}
+                  {method.isActive ? (method.isPickup ? texts.methodPickup : formatList(method.countries.map((c) => regionName(c, locale)), locale) || texts.methodAllCountries) : texts.methodInactive}
                 </span>
               </button>
               {open === method.id && (

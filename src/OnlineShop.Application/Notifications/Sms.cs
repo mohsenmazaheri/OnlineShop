@@ -22,6 +22,12 @@ public interface ISmsSender
     /// <param name="code">The one-time code (digits only).</param>
     /// <param name="locale">Language for providers that send free text (Twilio, development pickup).</param>
     Task SendVerificationCodeAsync(string phoneE164, string code, string locale, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Tells a customer about their order (placed, shipped). Free-text providers send <see cref="OrderMessages.SmsText"/>;
+    /// Iranian providers need an approved template per notice and skip the message without one (returns false).
+    /// </summary>
+    Task<bool> SendOrderUpdateAsync(string phoneE164, OrderNotice notice, OrderMessageData data, string locale, CancellationToken cancellationToken = default);
 }
 
 /// <summary>Thrown when the provider rejects or fails a message; the caller reports "could not send".</summary>

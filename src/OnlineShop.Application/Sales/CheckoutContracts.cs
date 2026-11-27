@@ -93,7 +93,8 @@ public sealed class PlaceOrderRequestValidator : AbstractValidator<PlaceOrderReq
 }
 
 /// <summary>
-/// The placed order: its number, what is to be paid and until when the stock is held for it. Payment itself arrives
-/// with the gateways (phase 8).
+/// The placed order: its number, what is to be paid and until when the stock is held for it, and its page below the
+/// language ("account/orders/1001", or for guests the signed "order/1001?key=…"). Payment itself arrives with the
+/// gateways (phase 8).
 /// </summary>
-public sealed record PlacedOrderView(long Number, decimal Total, string Currency, DateTime PaymentDueUtc, string? Email);
+public sealed record PlacedOrderView(long Number, decimal Total, string Currency, DateTime PaymentDueUtc, string? Email, string Path);

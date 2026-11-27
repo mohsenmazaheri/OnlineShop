@@ -255,7 +255,8 @@
     "navWishlist": "علاقه‌مندی‌ها",
     "wishlistTitle": "علاقه‌مندی‌های من",
     "wishlistEmpty": "فهرست علاقه‌مندی‌ها خالی است. با دکمهٔ قلب روی صفحهٔ کالا آن را اینجا نگه دارید.",
-    "wishlistRemove": "حذف {name}"
+    "wishlistRemove": "حذف {name}",
+    "navOrders": "سفارش‌ها"
   },
   "admin": {
     "title": "پنل مدیریت",
@@ -675,12 +676,14 @@
     "videosSave": "ذخیرهٔ ترتیب و عنوان‌ها",
     "confirmDeleteVideo": "این ویدئو حذف شود؟",
     "groups": {
+      "sales": "فروش",
       "catalog": "کاتالوگ",
       "store": "فروشگاه",
       "team": "همکاران",
       "inventory": "انبار"
     },
     "sectionHints": {
+      "orders": "سفارش‌ها با وضعیت، تاریخچه و کد رهگیری",
       "products": "افزودن و ویرایش کالاها، قیمت، موجودی، تصویر، ویدئو و تنوع‌ها",
       "catalog": "دسته‌ها، زیردسته‌ها و گروه‌های کالا با قالب ویژگی",
       "brands": "برندها با نام هر زبان و لوگو",
@@ -1057,7 +1060,33 @@
       "value_invalid": "مقداری بیشتر از صفر وارد کنید (درصد حداکثر ۱۰۰).",
       "dates_invalid": "پایان باید بعد از شروع باشد.",
       "limit_invalid": "تعداد استفاده را دست‌کم ۱ وارد کنید."
-    }
+    },
+    "navOrders": "سفارش‌ها",
+    "ordersTitle": "سفارش‌ها",
+    "ordersIntro": "همهٔ سفارش‌ها، جدیدترین اول. با باز کردن هر سفارش می‌توانید پرداخت را ثبت کنید، آن را با کد رهگیری ارسال کنید یا پیش از پرداخت لغو کنید.",
+    "ordersStatus": "وضعیت",
+    "ordersAllStatuses": "همهٔ وضعیت‌ها",
+    "ordersSearch": "جستجو",
+    "ordersSearchHint": "شمارهٔ سفارش، نام، ایمیل یا تلفن",
+    "ordersFilter": "نمایش",
+    "ordersBack": "همهٔ سفارش‌ها",
+    "orderCustomer": "حساب مشتری",
+    "orderGuest": "سفارش مهمان",
+    "orderActions": "گام بعدی",
+    "orderMarkPaid": "پرداخت دریافت شد",
+    "orderMarkPaidHint": "برای پرداخت‌های بیرون از فروشگاه (کارت به کارت، نقدی). موجودی نگه‌داشته‌شده فروخته می‌شود.",
+    "orderPaidNote": "مرجع پرداخت (داخلی، اختیاری)",
+    "orderShip": "ارسال شد",
+    "orderCarrier": "شرکت حمل",
+    "orderTrackingCode": "کد رهگیری",
+    "orderComplete": "تحویل شد",
+    "orderCancel": "لغو سفارش",
+    "orderCancelReason": "دلیل، برای مشتری نمایش داده می‌شود (اختیاری)",
+    "orderConfirmCancel": "این سفارش لغو شود؟ موجودی و کد تخفیف آن برمی‌گردند.",
+    "orderAddNote": "افزودن یادداشت",
+    "orderNote": "یادداشت فقط برای کارکنان",
+    "orderOptionalNote": "یادداشت (اختیاری)",
+    "orderConfirm": "تأیید"
   },
   "footer": {
     "shopping": "خرید",
@@ -1333,6 +1362,61 @@
       "discount_min_subtotal": "این کد برای سفارش بزرگ‌تری است.",
       "discount_used_up": "ظرفیت این کد تخفیف تمام شده است.",
       "discount_already_used": "شما قبلاً از این کد تخفیف استفاده کرده‌اید."
+    },
+    "viewOrder": "دیدن سفارش"
+  },
+  "orders": {
+    "title": "سفارش‌های من",
+    "guestTitle": "سفارش شما",
+    "empty": "هنوز سفارشی ندارید.",
+    "notFound": "این سفارش پیدا نشد.",
+    "orderNumber": "سفارش {number}",
+    "itemCount": "{count} کالا",
+    "placedOn": "ثبت‌شده در {date}",
+    "backToOrders": "همهٔ سفارش‌های من",
+    "linesTitle": "کالاها",
+    "sku": "شناسهٔ کالا",
+    "historyTitle": "تاریخچه",
+    "historyPlaced": "سفارش ثبت شد",
+    "historyStatus": "وضعیت: {status}",
+    "historyTracking": "ارسال با {tracking}",
+    "historyExpired": "مهلت پرداخت تمام شد",
+    "internal": "داخلی",
+    "byStaff": "توسط کارکنان",
+    "summaryTitle": "مبالغ",
+    "subtotal": "کالاها",
+    "discount": "تخفیف",
+    "discountCode": "تخفیف ({code})",
+    "shipping": "هزینهٔ ارسال",
+    "free": "رایگان",
+    "taxAdded": "مالیات ({rate}٪)",
+    "taxIncluded": "شامل {amount} مالیات ({rate}٪).",
+    "total": "مبلغ کل",
+    "awaitingPayment": "در انتظار پرداخت. پرداخت آنلاین به‌زودی فعال می‌شود؛ کالاها تا {time} برایتان نگه داشته می‌شوند.",
+    "deliveryTitle": "تحویل",
+    "pickup": "تحویل حضوری در فروشگاه",
+    "tracking": "رهگیری",
+    "customerNote": "یادداشت",
+    "pages": "صفحه‌ها",
+    "newer": "سفارش‌های جدیدتر",
+    "older": "سفارش‌های قدیمی‌تر",
+    "pageOf": "صفحهٔ {page} از {pages}",
+    "status": {
+      "Pending": "در انتظار پرداخت",
+      "Paid": "پرداخت‌شده",
+      "Shipped": "ارسال‌شده",
+      "Completed": "تحویل‌شده",
+      "Canceled": "لغوشده"
+    },
+    "errors": {
+      "generic": "خطایی رخ داد. لطفاً دوباره تلاش کنید.",
+      "network": "ارتباط با فروشگاه برقرار نشد. اتصال اینترنت را بررسی کنید.",
+      "too_many_requests": "تلاش‌ها زیاد بود. لطفاً یک دقیقه بعد دوباره تلاش کنید.",
+      "not_found": "این سفارش پیدا نشد.",
+      "status_invalid": "وضعیت سفارش دیگر اجازهٔ این کار را نمی‌دهد؛ صفحه را تازه کنید.",
+      "not_available": "برخی کالاهای این سفارش دیگر موجود نیستند.",
+      "tracking_required": "شرکت حمل و کد رهگیری را وارد کنید.",
+      "text_too_long": "متن طولانی است (حداکثر ۱۰۰۰ نویسه)."
     }
   }
 }

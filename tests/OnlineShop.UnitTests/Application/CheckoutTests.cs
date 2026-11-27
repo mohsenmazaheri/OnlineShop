@@ -163,16 +163,11 @@ public sealed class CheckoutServiceTests : DemoCatalogTestBase
 {
     private readonly FakeAccountIdentity _identity = new();
 
-    private CheckoutService Service(AppDbContext db, StoreOptions? store = null)
-    {
-        var options = Options.Create(store ?? Store);
-        var phones = new PhoneNumberNormalizer();
-        return new CheckoutService(
-            db, new CartService(db, options), new AddressService(db, phones, options), new ShippingMethodService(db, options),
-            new DiscountCodeService(db, Database.Clock), new TaxSettingsService(db),
-            new StockReservationService(db, TestLedger.For(db, store ?? Store), Database.Clock, Options.Create(new InventoryOptions()), options),
-            new FakeAccountDataIdentity(_identity), phones, new NoSmsCapability(), Database.Clock, options);
-    }
+    private SalesKit? _kit;
+
+    private SalesKit Kit => _kit ??= new SalesKit(Database, Store, _identity);
+
+    private CheckoutService Service(AppDbContext db, StoreOptions? store = null) => Kit.Checkout(db, store);
 
     private static AddressInput Address(string city = "Tehran", string country = "IR") =>
         new(null, "Sara Ahmadi", "0912 123 4567", country, null, city, "Valiasr St. 10", null, null, false);
@@ -220,6 +215,12 @@ public sealed class CheckoutServiceTests : DemoCatalogTestBase
         var placed = (await checkout.PlaceAsync(guest, Order(post, total), "en")).Value;
         Assert.Equal((CheckoutService.FirstOrderNumber, total, "guest@example.com"), (placed.Number, placed.Total, placed.Email));
         Assert.Equal(Database.Clock.GetUtcNow().UtcDateTime.AddMinutes(15), placed.PaymentDueUtc);
+        // A guest's order page is the signed link; the confirmation email carries it.
+        Assert.StartsWith("order/1001?key=", placed.Path, StringComparison.Ordinal);
+        var mail = Assert.Single(Kit.Emails.Sent);
+        Assert.Equal("guest@example.com", mail.To);
+        Assert.Contains("/en/order/1001?key=", mail.TextBody, StringComparison.Ordinal);
+        Assert.Equal(OrderEventKind.Placed, (await db.OrderEvents.SingleAsync()).Kind);
 
         var order = await db.Orders.AsNoTracking().Include(o => o.Items).SingleAsync();
         Assert.Equal((OrderStatus.Pending, (string?)null, "+989121234567", "Tehran", "Please call first", "پست"),
@@ -269,7 +270,7 @@ public sealed class CheckoutServiceTests : DemoCatalogTestBase
         var request = new PlaceOrderRequest(post, theirs.Id, null, false, null, null, null, "welcome", null, quote.Totals.Total);
         Assert.Equal(CheckoutErrors.AddressNotFound, (await checkout.PlaceAsync(me, request, "en")).Error!.Code);
         var placed = (await checkout.PlaceAsync(me, request with { AddressId = mine.Id }, "en")).Value;
-        Assert.Equal("sara@example.com", placed.Email);
+        Assert.Equal(("sara@example.com", "account/orders/1001"), (placed.Email, placed.Path));
         var order = await db.Orders.AsNoTracking().SingleAsync();
         Assert.Equal(("u-1", "Shiraz", "WELCOME", quote.Totals.Discount), (order.CustomerId, order.City, order.DiscountCodeText, order.Discount));
         Assert.Equal(1, await db.DiscountCodes.Select(d => d.UsedCount).SingleAsync());

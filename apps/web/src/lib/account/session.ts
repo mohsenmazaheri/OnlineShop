@@ -277,3 +277,32 @@ export type DiscountCodeAdmin = components["schemas"]["DiscountCodeView"];
 export function getDiscountCodes(fetchImpl: typeof fetch = fetch): Promise<DiscountCodeAdmin[] | null> {
   return getForUser<DiscountCodeAdmin[]>("/api/v1/admin/discounts", fetchImpl);
 }
+
+export type OrderView = components["schemas"]["OrderView"];
+export type OrderPage = components["schemas"]["OrderPage"];
+export type OrderStatus = components["schemas"]["OrderStatus"];
+
+/** The signed-in customer's orders (newest first), or null without a session. */
+export function getMyOrders(page = 1, fetchImpl: typeof fetch = fetch): Promise<OrderPage | null> {
+  return getForUser<OrderPage>(`/api/v1/account/orders?page=${page}`, fetchImpl);
+}
+
+/** One of the customer's own orders (another customer's number is null, like a missing one). */
+export function getMyOrder(number: number, fetchImpl: typeof fetch = fetch): Promise<OrderView | null> {
+  return getForUser<OrderView>(`/api/v1/account/orders/${number}`, fetchImpl);
+}
+
+/** The staff order list (orders.view), or null without the permission. */
+export function getAdminOrders(query: { status?: OrderStatus | null; q?: string | null; page?: number }, fetchImpl: typeof fetch = fetch): Promise<OrderPage | null> {
+  const params = new URLSearchParams();
+  if (query.status) params.set("status", query.status);
+  if (query.q) params.set("q", query.q);
+  if (query.page && query.page > 1) params.set("page", String(query.page));
+  const search = params.toString();
+  return getForUser<OrderPage>(`/api/v1/admin/orders${search ? `?${search}` : ""}`, fetchImpl);
+}
+
+/** One order with its full history for staff (orders.view), or null. */
+export function getAdminOrder(number: number, fetchImpl: typeof fetch = fetch): Promise<OrderView | null> {
+  return getForUser<OrderView>(`/api/v1/admin/orders/${number}`, fetchImpl);
+}

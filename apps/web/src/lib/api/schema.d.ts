@@ -106,6 +106,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/orders/{number}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** An order through the signed link of its emails (guest orders); a wrong key answers 404. */
+        get: operations["GetOrderByLink"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/currencies": {
         parameters: {
             query?: never;
@@ -694,6 +711,159 @@ export interface paths {
         post?: never;
         /** Delete a discount code (orders keep their copy). */
         delete: operations["DeleteDiscountCode"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The signed-in customer's orders, the newest first. */
+        get: operations["ListMyOrders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account/orders/{number}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One of the customer's orders with its history (another customer's number answers 404). */
+        get: operations["GetMyOrder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every order, the newest first, by status and a search over number, name, email and phone. */
+        get: operations["ListOrders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{number}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One order with its full history, internal notes included. */
+        get: operations["GetOrder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{number}/paid": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record a payment received by hand: the held stock is sold. */
+        post: operations["MarkOrderPaid"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{number}/ship": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark a paid order shipped with its carrier and tracking code; the customer is told. */
+        post: operations["ShipOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{number}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark a shipped order delivered (or a paid pickup order handed over). */
+        post: operations["CompleteOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{number}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel an unpaid order: its stock and discount code use are given back; the text is shown to the customer. */
+        post: operations["CancelOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{number}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a note to the order's history for staff only. */
+        post: operations["AddOrderNote"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -3244,6 +3414,23 @@ export interface components {
             locale: string;
             value: string;
         };
+        OrderActionRequest: {
+            text: null | string;
+        };
+        OrderActions: {
+            canMarkPaid: boolean;
+            canShip: boolean;
+            canComplete: boolean;
+            canCancel: boolean;
+        };
+        OrderAddressView: {
+            countryCode: null | string;
+            region: null | string;
+            city: null | string;
+            line1: null | string;
+            line2: null | string;
+            postalCode: null | string;
+        };
         OrderContactData: {
             email: null | string;
             recipientName: string;
@@ -3276,12 +3463,104 @@ export interface components {
             contact: components["schemas"]["OrderContactData"];
             items: components["schemas"]["OrderItemData"][];
         };
+        /** @enum {unknown} */
+        OrderEventKind: "Placed" | "StatusChanged" | "TrackingSet" | "Note" | "PaymentExpired";
+        OrderEventView: {
+            /** Format: date-time */
+            atUtc: string;
+            kind: components["schemas"]["OrderEventKind"];
+            status: null | components["schemas"]["OrderStatus"];
+            text: null | string;
+            isInternal: boolean;
+            byStaff: boolean;
+        };
         OrderItemData: {
             productName: string;
             /** Format: double */
             unitPrice: number;
             /** Format: int32 */
             quantity: number;
+        };
+        OrderLineView: {
+            /** Format: int64 */
+            number: number;
+            name: string;
+            sku: string;
+            variantLabel: null | string;
+            imageUrl: null | string;
+            /** Format: double */
+            unitPrice: number;
+            /** Format: int32 */
+            quantity: number;
+            /** Format: double */
+            lineTotal: number;
+        };
+        OrderNoteRequest: {
+            text: string;
+        };
+        OrderPage: {
+            items: components["schemas"]["OrderSummary"][];
+            /** Format: int32 */
+            total: number;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+        };
+        /** @enum {unknown} */
+        OrderStatus: "Pending" | "Paid" | "Shipped" | "Completed" | "Canceled";
+        OrderSummary: {
+            /** Format: int64 */
+            number: number;
+            status: components["schemas"]["OrderStatus"];
+            /** Format: date-time */
+            orderedUtc: string;
+            recipientName: string;
+            email: null | string;
+            /** Format: int32 */
+            itemCount: number;
+            /** Format: double */
+            total: number;
+            currency: string;
+            imageUrl: null | string;
+        };
+        OrderView: {
+            /** Format: int64 */
+            number: number;
+            status: components["schemas"]["OrderStatus"];
+            /** Format: date-time */
+            orderedUtc: string;
+            /** Format: date-time */
+            paymentDueUtc: null | string;
+            locale: string;
+            email: null | string;
+            recipientName: string;
+            phoneNumber: string;
+            address: null | components["schemas"]["OrderAddressView"];
+            isPickup: boolean;
+            shippingMethodName: string;
+            trackingCarrier: null | string;
+            trackingCode: null | string;
+            note: null | string;
+            discountCode: null | string;
+            currency: string;
+            /** Format: double */
+            subtotal: number;
+            /** Format: double */
+            discount: number;
+            /** Format: double */
+            shipping: number;
+            /** Format: double */
+            tax: number;
+            /** Format: double */
+            taxRate: number;
+            pricesIncludeTax: boolean;
+            /** Format: double */
+            total: number;
+            lines: components["schemas"]["OrderLineView"][];
+            history: components["schemas"]["OrderEventView"][];
+            actions: components["schemas"]["OrderActions"];
+            customerId: null | string;
         };
         PersonalDataExport: {
             /** Format: date-time */
@@ -3320,6 +3599,7 @@ export interface components {
             /** Format: date-time */
             paymentDueUtc: string;
             email: null | string;
+            path: string;
         };
         PlaceOrderRequest: {
             /** Format: uuid */
@@ -3992,6 +4272,10 @@ export interface components {
             /** Format: int32 */
             quantity: number;
         };
+        ShipOrderRequest: {
+            carrier: string;
+            trackingCode: string;
+        };
         ShippingMethodAdminView: {
             /** Format: uuid */
             id: string;
@@ -4609,6 +4893,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LandingPageContent"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetOrderByLink: {
+        parameters: {
+            query?: {
+                key?: string;
+            };
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderView"];
                 };
             };
             /** @description Not Found */
@@ -5916,6 +6233,280 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    ListMyOrders: {
+        parameters: {
+            query?: {
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderPage"];
+                };
+            };
+        };
+    };
+    GetMyOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderView"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ListOrders: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["OrderStatus"];
+                q?: string;
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderPage"];
+                };
+            };
+        };
+    };
+    GetOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderView"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    MarkOrderPaid: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderActionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderStatus"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    ShipOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShipOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderStatus"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    CompleteOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderActionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderStatus"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    CancelOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderActionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderStatus"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    AddOrderNote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderNoteRequest"];
+            };
+        };
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
             };
         };
     };

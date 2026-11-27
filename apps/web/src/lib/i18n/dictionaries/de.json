@@ -255,7 +255,8 @@
     "navWishlist": "Wunschliste",
     "wishlistTitle": "Meine Wunschliste",
     "wishlistEmpty": "Ihre Wunschliste ist leer. Merken Sie sich Produkte mit dem Herz-Symbol.",
-    "wishlistRemove": "{name} entfernen"
+    "wishlistRemove": "{name} entfernen",
+    "navOrders": "Bestellungen"
   },
   "admin": {
     "title": "Verwaltungsbereich",
@@ -675,12 +676,14 @@
     "videosSave": "Reihenfolge und Titel speichern",
     "confirmDeleteVideo": "Dieses Video löschen?",
     "groups": {
+      "sales": "Verkauf",
       "catalog": "Katalog",
       "store": "Shop",
       "team": "Team",
       "inventory": "Lager"
     },
     "sectionHints": {
+      "orders": "Bestellungen mit Status, Verlauf und Sendungsnummer",
       "products": "Produkte anlegen und bearbeiten: Preis, Bestand, Bilder, Videos und Varianten",
       "catalog": "Kategorien, Unterkategorien und Produktgruppen mit Merkmalvorlagen",
       "brands": "Marken mit Namen je Sprache und Logos",
@@ -1057,7 +1060,33 @@
       "value_invalid": "Geben Sie einen Wert über null ein (Prozent höchstens 100).",
       "dates_invalid": "Das Ende muss nach dem Beginn liegen.",
       "limit_invalid": "Geben Sie mindestens 1 Nutzung ein."
-    }
+    },
+    "navOrders": "Bestellungen",
+    "ordersTitle": "Bestellungen",
+    "ordersIntro": "Alle Bestellungen, die neueste zuerst. Öffnen Sie eine, um eine Zahlung zu erfassen, sie mit Sendungsnummer zu versenden oder sie vor der Zahlung zu stornieren.",
+    "ordersStatus": "Status",
+    "ordersAllStatuses": "Alle Status",
+    "ordersSearch": "Suche",
+    "ordersSearchHint": "Bestellnummer, Name, E-Mail oder Telefon",
+    "ordersFilter": "Anzeigen",
+    "ordersBack": "Alle Bestellungen",
+    "orderCustomer": "Kundenkonto",
+    "orderGuest": "Gastbestellung",
+    "orderActions": "Nächster Schritt",
+    "orderMarkPaid": "Zahlung erhalten",
+    "orderMarkPaidHint": "Für Zahlungen außerhalb des Shops (Überweisung, bar). Der reservierte Bestand wird dann verkauft.",
+    "orderPaidNote": "Zahlungsreferenz (intern, optional)",
+    "orderShip": "Versandt",
+    "orderCarrier": "Versanddienst",
+    "orderTrackingCode": "Sendungsnummer",
+    "orderComplete": "Zugestellt",
+    "orderCancel": "Bestellung stornieren",
+    "orderCancelReason": "Grund, für den Kunden sichtbar (optional)",
+    "orderConfirmCancel": "Diese Bestellung stornieren? Bestand und Rabattcode gehen zurück.",
+    "orderAddNote": "Notiz hinzufügen",
+    "orderNote": "Notiz nur für Mitarbeiter",
+    "orderOptionalNote": "Notiz (optional)",
+    "orderConfirm": "Bestätigen"
   },
   "footer": {
     "shopping": "Einkaufen",
@@ -1333,6 +1362,61 @@
       "discount_min_subtotal": "Dieser Code gilt erst ab einem höheren Bestellwert.",
       "discount_used_up": "Dieser Rabattcode ist aufgebraucht.",
       "discount_already_used": "Sie haben diesen Rabattcode bereits verwendet."
+    },
+    "viewOrder": "Bestellung ansehen"
+  },
+  "orders": {
+    "title": "Meine Bestellungen",
+    "guestTitle": "Ihre Bestellung",
+    "empty": "Sie haben noch keine Bestellungen.",
+    "notFound": "Diese Bestellung wurde nicht gefunden.",
+    "orderNumber": "Bestellung {number}",
+    "itemCount": "{count} Artikel",
+    "placedOn": "Aufgegeben am {date}",
+    "backToOrders": "Alle meine Bestellungen",
+    "linesTitle": "Artikel",
+    "sku": "Artikelnummer",
+    "historyTitle": "Verlauf",
+    "historyPlaced": "Bestellung aufgegeben",
+    "historyStatus": "Status: {status}",
+    "historyTracking": "Versandt mit {tracking}",
+    "historyExpired": "Die Zahlungsfrist ist abgelaufen",
+    "internal": "intern",
+    "byStaff": "durch Mitarbeiter",
+    "summaryTitle": "Beträge",
+    "subtotal": "Artikel",
+    "discount": "Rabatt",
+    "discountCode": "Rabatt ({code})",
+    "shipping": "Versand",
+    "free": "Kostenlos",
+    "taxAdded": "Steuer ({rate} %)",
+    "taxIncluded": "Enthält {amount} Steuer ({rate} %).",
+    "total": "Gesamt",
+    "awaitingPayment": "Wartet auf Zahlung. Die Online-Zahlung ist bald möglich; Ihre Artikel sind bis {time} reserviert.",
+    "deliveryTitle": "Lieferung",
+    "pickup": "Abholung im Geschäft",
+    "tracking": "Sendungsverfolgung",
+    "customerNote": "Hinweis",
+    "pages": "Seiten",
+    "newer": "Neuere Bestellungen",
+    "older": "Ältere Bestellungen",
+    "pageOf": "Seite {page} von {pages}",
+    "status": {
+      "Pending": "Wartet auf Zahlung",
+      "Paid": "Bezahlt",
+      "Shipped": "Versandt",
+      "Completed": "Zugestellt",
+      "Canceled": "Storniert"
+    },
+    "errors": {
+      "generic": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
+      "network": "Der Shop ist nicht erreichbar. Prüfen Sie Ihre Internetverbindung.",
+      "too_many_requests": "Zu viele Versuche. Bitte versuchen Sie es in einer Minute erneut.",
+      "not_found": "Diese Bestellung wurde nicht gefunden.",
+      "status_invalid": "Der Status der Bestellung erlaubt das nicht mehr; laden Sie die Seite neu.",
+      "not_available": "Einige Artikel dieser Bestellung sind nicht mehr vorrätig.",
+      "tracking_required": "Geben Sie Versanddienst und Sendungsnummer ein.",
+      "text_too_long": "Der Text ist zu lang (höchstens 1000 Zeichen)."
     }
   }
 }

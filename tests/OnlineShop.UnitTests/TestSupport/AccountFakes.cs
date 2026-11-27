@@ -193,4 +193,14 @@ internal sealed class CapturingSmsSender : ISmsSender
         Sent.Add((phoneE164, code, locale));
         return Task.CompletedTask;
     }
+
+    public List<(string Phone, OrderNotice Notice, OrderMessageData Data, string Locale)> OrderUpdates { get; } = [];
+
+    public Task<bool> SendOrderUpdateAsync(string phoneE164, OrderNotice notice, OrderMessageData data, string locale, CancellationToken cancellationToken = default)
+    {
+        if (Fail)
+            throw new SmsDeliveryException("provider down");
+        OrderUpdates.Add((phoneE164, notice, data, locale));
+        return Task.FromResult(true);
+    }
 }

@@ -8,7 +8,7 @@ Application / Infrastructure / Api) + **Next.js 16** storefront in `apps/web`. O
 images serve every shop.
 
 **Plan and all recorded decisions: [docs/ROADMAP.md](docs/ROADMAP.md)** (Persian). Read it before starting, work on
-one step at a time, mark the status there when a step is done. Done: phases 0, 2–6, 7a (cart) and 7b (checkout); phase 1 has a
+one step at a time, mark the status there when a step is done. Done: phases 0, 2–6 and 7a–7c (cart, checkout, order lifecycle); phase 1 has a
 "remaining" list. SEO/marketing design: [docs/SEO-MARKETING.md](docs/SEO-MARKETING.md) (acceptance checklist at its end).
 
 Key decisions (details in the roadmap):
@@ -157,6 +157,15 @@ After a model change: migration + `has-pending-model-changes` reports none. Afte
   currency's decimals). Admin: `ShippingMethodService` + `TaxSettingsService` (`/admin/shipping`, settings.manage,
   `shipping.*` → `admin.shippingErrors`), `DiscountCodeService` (`/admin/discounts`, discounts.manage, `discount.*` →
   `admin.discountErrors`). Web: `CheckoutForm` (amounts in the base currency, `baseCurrency()`), `lib/checkout/*`.
+- **Order lifecycle** (`Sales/OrderLifecycleService`, `OrderQueries`, `OrderEndpoints`, codes `order.*` → web
+  `orders.errors`): allowed changes only via `OrderTransitions` (Pending → Paid → Shipped → Completed; pickup Paid →
+  Completed; Canceled only before payment); each claims the order with a conditional UPDATE, writes immutable
+  `OrderEvent`s (internal = staff only; a cancel reason is public, other notes internal) and tells the customer via
+  `OrderNotifier` (email in the order's locale; SMS for placed/shipped, Iranian providers only with configured
+  templates). Paid commits the `order:{number}` reservation (re-reserves when it ran out). Reservation calls clear the
+  change tracker: add events after them. `SalesMaintenanceWorker`: expired unpaid orders → Canceled every minute,
+  abandoned guest carts hourly. Guest links signed by `IOrderLinks` (Data Protection, nothing stored):
+  `/{locale}/order/{n}?key=` (noindex); customers `/account/orders`; staff `/admin/orders` (orders.view / orders.manage).
 - **Cart** (`Sales/CartService`, `CartEndpoints`, codes `cart.*` → web `cart.errors`): server-side for guests too
   (`CartOwner`: user id, else the HttpOnly `os_cart` token, stored only as SHA-256 `GuestTokenHash`); the first cart
   request after sign-in merges it (`MergeAsync`) and drops the cookie. Lines keyed by `ItemId` (variant id, else product

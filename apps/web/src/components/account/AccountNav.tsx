@@ -1,12 +1,13 @@
 import Link from "next/link";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
-export type AccountSection = "profile" | "addresses" | "wishlist" | "privacy";
+export type AccountSection = "profile" | "orders" | "addresses" | "wishlist" | "privacy";
 
 /** Tabs between the account pages (plain links: works without JavaScript). */
 export function AccountNav({ locale, texts, current }: { locale: string; texts: Dictionary["account"]; current: AccountSection }) {
   const items: { section: AccountSection; href: string; label: string }[] = [
     { section: "profile", href: `/${locale}/account`, label: texts.navProfile },
+    { section: "orders", href: `/${locale}/account/orders`, label: texts.navOrders },
     { section: "addresses", href: `/${locale}/account/addresses`, label: texts.navAddresses },
     { section: "wishlist", href: `/${locale}/account/wishlist`, label: texts.navWishlist },
     { section: "privacy", href: `/${locale}/account/privacy`, label: texts.navPrivacy },

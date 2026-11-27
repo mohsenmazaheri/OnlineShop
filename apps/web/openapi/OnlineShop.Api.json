@@ -251,6 +251,55 @@
         }
       }
     },
+    "/api/v1/orders/{number}": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "An order through the signed link of its emails (guest orders); a wrong key answers 404.",
+        "operationId": "GetOrderByLink",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderView"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/currencies": {
       "get": {
         "tags": [
@@ -2018,6 +2067,416 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/account/orders": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "The signed-in customer's orders, the newest first.",
+        "operationId": "ListMyOrders",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderPage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/account/orders/{number}": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "One of the customer's orders with its history (another customer's number answers 404).",
+        "operationId": "GetMyOrder",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderView"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders": {
+      "get": {
+        "tags": [
+          "Admin: orders"
+        ],
+        "summary": "Every order, the newest first, by status and a search over number, name, email and phone.",
+        "operationId": "ListOrders",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/OrderStatus"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderPage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{number}": {
+      "get": {
+        "tags": [
+          "Admin: orders"
+        ],
+        "summary": "One order with its full history, internal notes included.",
+        "operationId": "GetOrder",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderView"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{number}/paid": {
+      "post": {
+        "tags": [
+          "Admin: orders"
+        ],
+        "summary": "Record a payment received by hand: the held stock is sold.",
+        "operationId": "MarkOrderPaid",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderActionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{number}/ship": {
+      "post": {
+        "tags": [
+          "Admin: orders"
+        ],
+        "summary": "Mark a paid order shipped with its carrier and tracking code; the customer is told.",
+        "operationId": "ShipOrder",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{number}/complete": {
+      "post": {
+        "tags": [
+          "Admin: orders"
+        ],
+        "summary": "Mark a shipped order delivered (or a paid pickup order handed over).",
+        "operationId": "CompleteOrder",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderActionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{number}/cancel": {
+      "post": {
+        "tags": [
+          "Admin: orders"
+        ],
+        "summary": "Cancel an unpaid order: its stock and discount code use are given back; the text is shown to the customer.",
+        "operationId": "CancelOrder",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderActionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{number}/notes": {
+      "post": {
+        "tags": [
+          "Admin: orders"
+        ],
+        "summary": "Add a note to the order's history for staff only.",
+        "operationId": "AddOrderNote",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderNoteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
           }
         }
       }
@@ -9807,6 +10266,92 @@
           }
         }
       },
+      "OrderActionRequest": {
+        "required": [
+          "text"
+        ],
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "OrderActions": {
+        "required": [
+          "canMarkPaid",
+          "canShip",
+          "canComplete",
+          "canCancel"
+        ],
+        "type": "object",
+        "properties": {
+          "canMarkPaid": {
+            "type": "boolean"
+          },
+          "canShip": {
+            "type": "boolean"
+          },
+          "canComplete": {
+            "type": "boolean"
+          },
+          "canCancel": {
+            "type": "boolean"
+          }
+        }
+      },
+      "OrderAddressView": {
+        "required": [
+          "countryCode",
+          "region",
+          "city",
+          "line1",
+          "line2",
+          "postalCode"
+        ],
+        "type": "object",
+        "properties": {
+          "countryCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "region": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "line1": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "line2": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "postalCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "OrderContactData": {
         "required": [
           "email",
@@ -9939,6 +10484,57 @@
           }
         }
       },
+      "OrderEventKind": {
+        "enum": [
+          "Placed",
+          "StatusChanged",
+          "TrackingSet",
+          "Note",
+          "PaymentExpired"
+        ]
+      },
+      "OrderEventView": {
+        "required": [
+          "atUtc",
+          "kind",
+          "status",
+          "text",
+          "isInternal",
+          "byStaff"
+        ],
+        "type": "object",
+        "properties": {
+          "atUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/OrderEventKind"
+          },
+          "status": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/OrderStatus"
+              }
+            ]
+          },
+          "text": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isInternal": {
+            "type": "boolean"
+          },
+          "byStaff": {
+            "type": "boolean"
+          }
+        }
+      },
       "OrderItemData": {
         "required": [
           "productName",
@@ -9957,6 +10553,315 @@
           "quantity": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "OrderLineView": {
+        "required": [
+          "number",
+          "name",
+          "sku",
+          "variantLabel",
+          "imageUrl",
+          "unitPrice",
+          "quantity",
+          "lineTotal"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "variantLabel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "imageUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "unitPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lineTotal": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "OrderNoteRequest": {
+        "required": [
+          "text"
+        ],
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        }
+      },
+      "OrderPage": {
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderSummary"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "OrderStatus": {
+        "enum": [
+          "Pending",
+          "Paid",
+          "Shipped",
+          "Completed",
+          "Canceled"
+        ]
+      },
+      "OrderSummary": {
+        "required": [
+          "number",
+          "status",
+          "orderedUtc",
+          "recipientName",
+          "email",
+          "itemCount",
+          "total",
+          "currency",
+          "imageUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus"
+          },
+          "orderedUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "recipientName": {
+            "type": "string"
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "itemCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "number",
+            "format": "double"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "OrderView": {
+        "required": [
+          "number",
+          "status",
+          "orderedUtc",
+          "paymentDueUtc",
+          "locale",
+          "email",
+          "recipientName",
+          "phoneNumber",
+          "address",
+          "isPickup",
+          "shippingMethodName",
+          "trackingCarrier",
+          "trackingCode",
+          "note",
+          "discountCode",
+          "currency",
+          "subtotal",
+          "discount",
+          "shipping",
+          "tax",
+          "taxRate",
+          "pricesIncludeTax",
+          "total",
+          "lines",
+          "history",
+          "actions",
+          "customerId"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus"
+          },
+          "orderedUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "paymentDueUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "recipientName": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "address": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/OrderAddressView"
+              }
+            ]
+          },
+          "isPickup": {
+            "type": "boolean"
+          },
+          "shippingMethodName": {
+            "type": "string"
+          },
+          "trackingCarrier": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "trackingCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "discountCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "currency": {
+            "type": "string"
+          },
+          "subtotal": {
+            "type": "number",
+            "format": "double"
+          },
+          "discount": {
+            "type": "number",
+            "format": "double"
+          },
+          "shipping": {
+            "type": "number",
+            "format": "double"
+          },
+          "tax": {
+            "type": "number",
+            "format": "double"
+          },
+          "taxRate": {
+            "type": "number",
+            "format": "double"
+          },
+          "pricesIncludeTax": {
+            "type": "boolean"
+          },
+          "total": {
+            "type": "number",
+            "format": "double"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderLineView"
+            }
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderEventView"
+            }
+          },
+          "actions": {
+            "$ref": "#/components/schemas/OrderActions"
+          },
+          "customerId": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -10089,7 +10994,8 @@
           "total",
           "currency",
           "paymentDueUtc",
-          "email"
+          "email",
+          "path"
         ],
         "type": "object",
         "properties": {
@@ -10113,6 +11019,9 @@
               "null",
               "string"
             ]
+          },
+          "path": {
+            "type": "string"
           }
         }
       },
@@ -12813,6 +13722,21 @@
           }
         }
       },
+      "ShipOrderRequest": {
+        "required": [
+          "carrier",
+          "trackingCode"
+        ],
+        "type": "object",
+        "properties": {
+          "carrier": {
+            "type": "string"
+          },
+          "trackingCode": {
+            "type": "string"
+          }
+        }
+      },
       "ShippingMethodAdminView": {
         "required": [
           "id",
@@ -14620,6 +15544,9 @@
       "name": "Storefront"
     },
     {
+      "name": "Orders"
+    },
+    {
       "name": "Account"
     },
     {
@@ -14639,6 +15566,9 @@
     },
     {
       "name": "Admin: discount codes"
+    },
+    {
+      "name": "Admin: orders"
     },
     {
       "name": "Admin: currencies"

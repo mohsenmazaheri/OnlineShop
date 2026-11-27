@@ -6,10 +6,12 @@ import { adminHref, adminSections, isStaff, sectionsByGroup, visibleSections } f
 describe("admin sections", () => {
   it("shows each user only the sections of their permissions, grouped in menu order", () => {
     expect(visibleSections(["staff.manage"]).map((s) => s.section)).toEqual(["staff"]);
-    expect(sectionsByGroup(["settings.manage", "catalog.manage"]).map((g) => g.group)).toEqual(["catalog", "store"]);
+    // Shipping and tax (settings.manage) sit with the orders under Sales.
+    expect(sectionsByGroup(["settings.manage", "catalog.manage"]).map((g) => g.group)).toEqual(["sales", "catalog", "store"]);
     expect(sectionsByGroup([])).toEqual([]);
-    // The warehouse role sees only the inventory group.
-    expect(sectionsByGroup(["inventory.view", "inventory.manage", "orders.view"]).map((g) => g.group)).toEqual(["inventory"]);
+    // The warehouse role sees the orders (to pack them) and the inventory.
+    expect(sectionsByGroup(["inventory.view", "inventory.manage", "orders.view"]).map((g) => g.group)).toEqual(["sales", "inventory"]);
+    expect(visibleSections(["orders.view"]).map((s) => s.section)).toEqual(["orders"]);
     expect(visibleSections(["inventory.view"]).map((s) => s.section)).toEqual(["inventory", "movements", "purchases", "reservations", "stocktakes", "suppliers", "warehouses"]);
     expect(visibleSections(["catalog.manage"]).map((s) => s.section)).toEqual(["products", "catalog", "brands", "specs", "import", "seo"]);
   });

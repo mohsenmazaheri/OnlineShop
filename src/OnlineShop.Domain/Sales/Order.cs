@@ -56,6 +56,12 @@ public class Order : BaseEntity
 
     public bool IsPickup { get; set; }
 
+    /// <summary>The carrier the parcel left with ("Post", "DHL"), set when shipping.</summary>
+    public string? TrackingCarrier { get; set; }
+
+    /// <summary>The carrier's tracking code, for the customer.</summary>
+    public string? TrackingCode { get; set; }
+
     public Guid? DiscountCodeId { get; set; }
 
     public string? DiscountCodeText { get; set; }

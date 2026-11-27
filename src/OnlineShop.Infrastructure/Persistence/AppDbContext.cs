@@ -50,6 +50,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<CartItem> CartItems => Set<CartItem>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<OrderEvent> OrderEvents => Set<OrderEvent>();
     public DbSet<PhoneVerificationCode> PhoneVerificationCodes => Set<PhoneVerificationCode>();
     public DbSet<CustomerAddress> CustomerAddresses => Set<CustomerAddress>();
     public DbSet<CompareItem> CompareItems => Set<CompareItem>();
@@ -872,6 +873,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.Property(o => o.Note).HasMaxLength(1000);
             e.Property(o => o.ShippingMethodName).HasMaxLength(300);
             e.Property(o => o.DiscountCodeText).HasMaxLength(40);
+            e.Property(o => o.TrackingCarrier).HasMaxLength(100);
+            e.Property(o => o.TrackingCode).HasMaxLength(100);
+            e.HasIndex(x => x.OrderedUtc);
             e.Property(o => o.Currency).HasMaxLength(3);
             e.Property(o => o.ExchangeRate).HasPrecision(28, 12);
             e.Property(o => o.TaxRate).HasPrecision(5, 2);
@@ -901,6 +905,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     private static void ConfigureCheckout(ModelBuilder b)
     {
+        b.Entity<OrderEvent>(e =>
+        {
+            e.ToTable("order_events");
+            e.Property(x => x.Kind).HasConversion<string>().HasMaxLength(32);
+            e.Property(x => x.Status).HasConversion<string>().HasMaxLength(32);
+            e.Property(x => x.Text).HasMaxLength(1000);
+            e.Property(x => x.ActorUserId).HasMaxLength(450);
+            e.HasOne<Order>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(x => new { x.OrderId, x.CreatedUtc });
+        });
         b.Entity<ShippingMethod>(e =>
         {
             e.ToTable("shipping_methods");

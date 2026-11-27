@@ -63,6 +63,9 @@ public static class DependencyInjection
         services.AddScoped<Sales.TaxSettingsService>();
         services.AddScoped<Sales.DiscountCodeService>();
         services.AddScoped<Sales.CheckoutService>();
+        services.AddScoped<Sales.OrderNotifier>();
+        services.AddScoped<Sales.OrderQueries>();
+        services.AddScoped<Sales.OrderLifecycleService>();
         services.AddScoped<Catalog.Compare.CompareListService>();
         services.AddScoped<Catalog.Reviews.ReviewService>();
         services.AddScoped<Customers.WishlistService>();

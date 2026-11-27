@@ -255,7 +255,8 @@
     "navWishlist": "المفضلة",
     "wishlistTitle": "قائمتي المفضلة",
     "wishlistEmpty": "قائمتك المفضلة فارغة. احفظ المنتجات بزر القلب في صفحة المنتج.",
-    "wishlistRemove": "إزالة {name}"
+    "wishlistRemove": "إزالة {name}",
+    "navOrders": "الطلبات"
   },
   "admin": {
     "title": "لوحة الإدارة",
@@ -675,12 +676,14 @@
     "videosSave": "حفظ الترتيب والعناوين",
     "confirmDeleteVideo": "حذف هذا المقطع؟",
     "groups": {
+      "sales": "المبيعات",
       "catalog": "الكتالوج",
       "store": "المتجر",
       "team": "الفريق",
       "inventory": "المخزون"
     },
     "sectionHints": {
+      "orders": "الطلبات مع حالتها وسجلها ورمز التتبع",
       "products": "إضافة المنتجات وتعديلها: السعر والمخزون والصور والفيديو والمتغيرات",
       "catalog": "الفئات والفئات الفرعية ومجموعات المنتجات مع قوالب المواصفات",
       "brands": "العلامات التجارية بأسمائها لكل لغة وشعاراتها",
@@ -1057,7 +1060,33 @@
       "value_invalid": "أدخل قيمة أكبر من صفر (النسبة 100 كحد أقصى).",
       "dates_invalid": "يجب أن تكون النهاية بعد البداية.",
       "limit_invalid": "أدخل عدد استخدامات لا يقل عن 1."
-    }
+    },
+    "navOrders": "الطلبات",
+    "ordersTitle": "الطلبات",
+    "ordersIntro": "كل الطلبات، الأحدث أولًا. افتح طلبًا لتسجيل الدفع أو شحنه برمز تتبع أو إلغائه قبل الدفع.",
+    "ordersStatus": "الحالة",
+    "ordersAllStatuses": "كل الحالات",
+    "ordersSearch": "بحث",
+    "ordersSearchHint": "رقم الطلب أو الاسم أو البريد أو الهاتف",
+    "ordersFilter": "عرض",
+    "ordersBack": "كل الطلبات",
+    "orderCustomer": "حساب عميل",
+    "orderGuest": "طلب زائر",
+    "orderActions": "الخطوة التالية",
+    "orderMarkPaid": "تم استلام الدفع",
+    "orderMarkPaidHint": "للدفعات المستلمة خارج المتجر (تحويل بنكي، نقدًا). يُباع المخزون المحجوز عندها.",
+    "orderPaidNote": "مرجع الدفع (داخلي، اختياري)",
+    "orderShip": "تم الشحن",
+    "orderCarrier": "شركة الشحن",
+    "orderTrackingCode": "رمز التتبع",
+    "orderComplete": "تم التسليم",
+    "orderCancel": "إلغاء الطلب",
+    "orderCancelReason": "السبب، يظهر للعميل (اختياري)",
+    "orderConfirmCancel": "إلغاء هذا الطلب؟ يعود مخزونه ورمز الخصم.",
+    "orderAddNote": "إضافة ملاحظة",
+    "orderNote": "ملاحظة للموظفين فقط",
+    "orderOptionalNote": "ملاحظة (اختياري)",
+    "orderConfirm": "تأكيد"
   },
   "footer": {
     "shopping": "التسوق",
@@ -1333,6 +1362,61 @@
       "discount_min_subtotal": "هذا الرمز لطلب أكبر.",
       "discount_used_up": "نفد رمز الخصم هذا.",
       "discount_already_used": "لقد استخدمت رمز الخصم هذا من قبل."
+    },
+    "viewOrder": "عرض الطلب"
+  },
+  "orders": {
+    "title": "طلباتي",
+    "guestTitle": "طلبك",
+    "empty": "ليست لديك طلبات بعد.",
+    "notFound": "لم يُعثر على هذا الطلب.",
+    "orderNumber": "الطلب {number}",
+    "itemCount": "{count} منتجات",
+    "placedOn": "سُجّل في {date}",
+    "backToOrders": "كل طلباتي",
+    "linesTitle": "المنتجات",
+    "sku": "رقم المنتج",
+    "historyTitle": "السجل",
+    "historyPlaced": "تم تسجيل الطلب",
+    "historyStatus": "الحالة: {status}",
+    "historyTracking": "شُحن مع {tracking}",
+    "historyExpired": "انتهت مهلة الدفع",
+    "internal": "داخلي",
+    "byStaff": "بواسطة الموظفين",
+    "summaryTitle": "المبالغ",
+    "subtotal": "المنتجات",
+    "discount": "الخصم",
+    "discountCode": "الخصم ({code})",
+    "shipping": "الشحن",
+    "free": "مجاني",
+    "taxAdded": "الضريبة ({rate}٪)",
+    "taxIncluded": "يشمل {amount} ضريبة ({rate}٪).",
+    "total": "الإجمالي",
+    "awaitingPayment": "بانتظار الدفع. الدفع عبر الإنترنت متاح قريبًا؛ منتجاتك محجوزة حتى {time}.",
+    "deliveryTitle": "التسليم",
+    "pickup": "الاستلام من المتجر",
+    "tracking": "التتبع",
+    "customerNote": "ملاحظة",
+    "pages": "الصفحات",
+    "newer": "طلبات أحدث",
+    "older": "طلبات أقدم",
+    "pageOf": "الصفحة {page} من {pages}",
+    "status": {
+      "Pending": "بانتظار الدفع",
+      "Paid": "مدفوع",
+      "Shipped": "تم الشحن",
+      "Completed": "تم التسليم",
+      "Canceled": "ملغى"
+    },
+    "errors": {
+      "generic": "حدث خطأ ما. يُرجى المحاولة مرة أخرى.",
+      "network": "تعذّر الوصول إلى المتجر. تحقّق من اتصالك بالإنترنت.",
+      "too_many_requests": "محاولات كثيرة جدًا. يُرجى المحاولة بعد دقيقة.",
+      "not_found": "لم يُعثر على هذا الطلب.",
+      "status_invalid": "لم تعد حالة الطلب تسمح بذلك؛ أعد تحميل الصفحة.",
+      "not_available": "لم تعد بعض منتجات هذا الطلب متوفرة.",
+      "tracking_required": "أدخل شركة الشحن ورمز التتبع.",
+      "text_too_long": "النص طويل جدًا (1000 حرف كحد أقصى)."
     }
   }
 }
