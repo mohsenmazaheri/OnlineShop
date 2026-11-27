@@ -100,7 +100,7 @@ describe("CheckoutForm", () => {
   });
 
   it("places the order with the total shown and confirms it", async () => {
-    const placed: PlacedOrder = { number: 1001, total: 205, currency: "EUR", paymentDueUtc: "2026-11-22T10:15:00Z", email: "a@example.com" };
+    const placed: PlacedOrder = { number: 1001, total: 205, currency: "EUR", paymentDueUtc: "2026-11-22T10:15:00Z", email: "a@example.com", path: "order/1001?key=abc" };
     fetchMock.mockImplementation(async (url: string) => (url.includes("/orders") ? json(placed) : json(quote())));
     renderForm();
     await screen.findByText("€205");
@@ -170,9 +170,10 @@ describe("CheckoutForm", () => {
 
 describe("CheckoutPlaced", () => {
   it("shows the number, the amount and the hold time", () => {
-    render(<CheckoutPlaced locale="en" order={{ number: 1001, total: 205, currency: "EUR", paymentDueUtc: "2026-11-22T10:15:00Z", email: null }} money={eur} texts={en.checkout} />);
+    render(<CheckoutPlaced locale="en" order={{ number: 1001, total: 205, currency: "EUR", paymentDueUtc: "2026-11-22T10:15:00Z", email: null, path: "account/orders/1001" }} money={eur} texts={en.checkout} />);
     expect(screen.getByText("1001")).toBeTruthy();
     expect(screen.getByText(en.checkout.placedTotal.replace("{total}", "€205"))).toBeTruthy();
     expect(screen.getByRole("link", { name: en.checkout.continueShopping }).getAttribute("href")).toBe("/en");
+    expect(screen.getByRole("link", { name: en.checkout.viewOrder }).getAttribute("href")).toBe("/en/account/orders/1001");
   });
 });

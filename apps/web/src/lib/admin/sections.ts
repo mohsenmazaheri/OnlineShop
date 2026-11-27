@@ -1,7 +1,7 @@
 import type { IconName } from "@/components/ui/Icon";
 
-export type AdminSection = "home" | "products" | "import" | "catalog" | "brands" | "specs" | "seo" | "landing" | "content" | "reviews" | "staff" | "currencies" | "branding" | "shipping" | "discounts" | "inventory" | "movements" | "purchases" | "reservations" | "stocktakes" | "suppliers" | "warehouses";
-export type AdminGroup = "catalog" | "inventory" | "store" | "team";
+export type AdminSection = "home" | "orders" | "products" | "import" | "catalog" | "brands" | "specs" | "seo" | "landing" | "content" | "reviews" | "staff" | "currencies" | "branding" | "shipping" | "discounts" | "inventory" | "movements" | "purchases" | "reservations" | "stocktakes" | "suppliers" | "warehouses";
+export type AdminGroup = "sales" | "catalog" | "inventory" | "store" | "team";
 
 type SectionDefinition = {
   section: Exclude<AdminSection, "home">;
@@ -16,6 +16,7 @@ type SectionDefinition = {
 
 /** Every admin section in menu order. Adding one here adds it to the panel menu, the start page and the shop header. */
 export const adminSections: readonly SectionDefinition[] = [
+  { section: "orders", path: "/orders", label: "navOrders", icon: "receipt", group: "sales", permission: "orders.view" },
   { section: "products", path: "/products", label: "navProducts", icon: "box", group: "catalog", permission: "catalog.manage" },
   { section: "catalog", path: "/catalog", label: "navCatalog", icon: "grid", group: "catalog", permission: "catalog.manage" },
   { section: "brands", path: "/brands", label: "navBrands", icon: "tag", group: "catalog", permission: "catalog.manage" },
@@ -34,12 +35,12 @@ export const adminSections: readonly SectionDefinition[] = [
   { section: "warehouses", path: "/warehouses", label: "navWarehouses", icon: "warehouse", group: "inventory", permission: "inventory.view" },
   { section: "branding", path: "/branding", label: "navBranding", icon: "palette", group: "store", permission: "settings.manage" },
   { section: "currencies", path: "/currencies", label: "navCurrencies", icon: "coin", group: "store", permission: "settings.manage" },
-  { section: "shipping", path: "/shipping", label: "navShipping", icon: "truck", group: "store", permission: "settings.manage" },
-  { section: "discounts", path: "/discounts", label: "navDiscounts", icon: "tag", group: "store", permission: "discounts.manage" },
+  { section: "shipping", path: "/shipping", label: "navShipping", icon: "truck", group: "sales", permission: "settings.manage" },
+  { section: "discounts", path: "/discounts", label: "navDiscounts", icon: "tag", group: "sales", permission: "discounts.manage" },
   { section: "staff", path: "/staff", label: "navStaff", icon: "users", group: "team", permission: "staff.manage" },
 ];
 
-export const adminGroups: readonly AdminGroup[] = ["catalog", "inventory", "store", "team"];
+export const adminGroups: readonly AdminGroup[] = ["sales", "catalog", "inventory", "store", "team"];
 
 /** The sections this user may open. */
 export function visibleSections(permissions: readonly string[]): SectionDefinition[] {

@@ -143,6 +143,12 @@ public sealed class DiscountCodeService(IApplicationDbContext db, TimeProvider c
             .Where(d => d.Id == id && (d.UsageLimit == null || d.UsedCount < d.UsageLimit))
             .ExecuteUpdateAsync(s => s.SetProperty(d => d.UsedCount, d => d.UsedCount + 1), cancellationToken) == 1;
 
+    /// <summary>Gives a use back (its order was canceled before payment); never below zero.</summary>
+    public async Task UnclaimAsync(Guid id, CancellationToken cancellationToken = default) =>
+        await db.DiscountCodes
+            .Where(d => d.Id == id && d.UsedCount > 0)
+            .ExecuteUpdateAsync(s => s.SetProperty(d => d.UsedCount, d => d.UsedCount - 1), cancellationToken);
+
     private async Task<bool> UsedByAsync(Guid id, DiscountCustomer customer, CancellationToken cancellationToken)
     {
         var orders = db.Orders.Where(o => o.DiscountCodeId == id && o.Status != OrderStatus.Canceled);

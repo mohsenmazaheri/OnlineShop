@@ -78,6 +78,10 @@ services:
       Sms__SmsIr__ApiKey: ${SMSIR_API_KEY:-}
       Sms__SmsIr__VerifyTemplateId: ${SMSIR_VERIFY_TEMPLATE_ID:-0}
       Sms__SmsIr__CodeParameterName: ${SMSIR_CODE_PARAMETER:-Code}
+      Sms__Kavenegar__OrderPlacedTemplate: ${KAVENEGAR_ORDER_PLACED_TEMPLATE:-}
+      Sms__Kavenegar__OrderShippedTemplate: ${KAVENEGAR_ORDER_SHIPPED_TEMPLATE:-}
+      Sms__SmsIr__OrderPlacedTemplateId: ${SMSIR_ORDER_PLACED_TEMPLATE_ID:-0}
+      Sms__SmsIr__OrderShippedTemplateId: ${SMSIR_ORDER_SHIPPED_TEMPLATE_ID:-0}
       Sms__Twilio__AccountSid: ${TWILIO_ACCOUNT_SID:-}
       Sms__Twilio__AuthToken: ${TWILIO_AUTH_TOKEN:-}
       Sms__Twilio__From: ${TWILIO_FROM:-}

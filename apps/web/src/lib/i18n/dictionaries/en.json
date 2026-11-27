@@ -255,7 +255,8 @@
     "navWishlist": "Wishlist",
     "wishlistTitle": "My wishlist",
     "wishlistEmpty": "Your wishlist is empty. Use the heart button on a product to save it here.",
-    "wishlistRemove": "Remove {name}"
+    "wishlistRemove": "Remove {name}",
+    "navOrders": "Orders"
   },
   "admin": {
     "title": "Admin panel",
@@ -675,12 +676,14 @@
     "videosSave": "Save order and titles",
     "confirmDeleteVideo": "Delete this video?",
     "groups": {
+      "sales": "Sales",
       "catalog": "Catalog",
       "store": "Shop",
       "team": "Team",
       "inventory": "Inventory"
     },
     "sectionHints": {
+      "orders": "Orders with their status, history and tracking",
       "products": "Add and edit products: price, stock, images, videos and variants",
       "catalog": "Categories, sub-categories and product groups with spec templates",
       "brands": "Brands with names per language and logos",
@@ -1057,7 +1060,33 @@
       "value_invalid": "Enter a value above zero (a percent at most 100).",
       "dates_invalid": "The end must come after the start.",
       "limit_invalid": "Enter a number of uses of at least 1."
-    }
+    },
+    "navOrders": "Orders",
+    "ordersTitle": "Orders",
+    "ordersIntro": "Every order, the newest first. Open one to record a payment, ship it with a tracking code, or cancel it before payment.",
+    "ordersStatus": "Status",
+    "ordersAllStatuses": "All statuses",
+    "ordersSearch": "Search",
+    "ordersSearchHint": "Order number, name, email or phone",
+    "ordersFilter": "Show",
+    "ordersBack": "All orders",
+    "orderCustomer": "Customer account",
+    "orderGuest": "Guest order",
+    "orderActions": "Next step",
+    "orderMarkPaid": "Payment received",
+    "orderMarkPaidHint": "Use this for payments received outside the shop (bank transfer, cash). The held stock is then sold.",
+    "orderPaidNote": "Payment reference (internal, optional)",
+    "orderShip": "Shipped",
+    "orderCarrier": "Carrier",
+    "orderTrackingCode": "Tracking code",
+    "orderComplete": "Delivered",
+    "orderCancel": "Cancel order",
+    "orderCancelReason": "Reason, shown to the customer (optional)",
+    "orderConfirmCancel": "Cancel this order? Its stock and discount code go back.",
+    "orderAddNote": "Add a note",
+    "orderNote": "Note for staff only",
+    "orderOptionalNote": "Note (optional)",
+    "orderConfirm": "Confirm"
   },
   "footer": {
     "shopping": "Shopping",
@@ -1333,6 +1362,61 @@
       "discount_min_subtotal": "This code needs a larger order.",
       "discount_used_up": "This discount code has been used up.",
       "discount_already_used": "You have already used this discount code."
+    },
+    "viewOrder": "View your order"
+  },
+  "orders": {
+    "title": "My orders",
+    "guestTitle": "Your order",
+    "empty": "You have no orders yet.",
+    "notFound": "This order was not found.",
+    "orderNumber": "Order {number}",
+    "itemCount": "{count} items",
+    "placedOn": "Placed on {date}",
+    "backToOrders": "All my orders",
+    "linesTitle": "Items",
+    "sku": "Item number",
+    "historyTitle": "History",
+    "historyPlaced": "Order placed",
+    "historyStatus": "Status: {status}",
+    "historyTracking": "Shipped with {tracking}",
+    "historyExpired": "The payment time ran out",
+    "internal": "internal",
+    "byStaff": "by staff",
+    "summaryTitle": "Amounts",
+    "subtotal": "Items",
+    "discount": "Discount",
+    "discountCode": "Discount ({code})",
+    "shipping": "Shipping",
+    "free": "Free",
+    "taxAdded": "Tax ({rate}%)",
+    "taxIncluded": "Includes {amount} tax ({rate}%).",
+    "total": "Total",
+    "awaitingPayment": "Waiting for payment. Online payment opens soon; your items are held until {time}.",
+    "deliveryTitle": "Delivery",
+    "pickup": "Pickup at the shop",
+    "tracking": "Tracking",
+    "customerNote": "Note",
+    "pages": "Pages",
+    "newer": "Newer orders",
+    "older": "Older orders",
+    "pageOf": "Page {page} of {pages}",
+    "status": {
+      "Pending": "Awaiting payment",
+      "Paid": "Paid",
+      "Shipped": "Shipped",
+      "Completed": "Delivered",
+      "Canceled": "Canceled"
+    },
+    "errors": {
+      "generic": "Something went wrong. Please try again.",
+      "network": "Could not reach the shop. Check your internet connection.",
+      "too_many_requests": "Too many attempts. Please try again in a minute.",
+      "not_found": "This order was not found.",
+      "status_invalid": "The order is no longer in a state that allows this; reload the page.",
+      "not_available": "Some items of this order are no longer in stock.",
+      "tracking_required": "Enter the carrier and the tracking code.",
+      "text_too_long": "The text is too long (1000 characters at most)."
     }
   }
 }

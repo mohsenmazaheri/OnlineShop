@@ -38,6 +38,7 @@ public interface IApplicationDbContext
     DbSet<CartItem> CartItems { get; }
     DbSet<Order> Orders { get; }
     DbSet<OrderItem> OrderItems { get; }
+    DbSet<OrderEvent> OrderEvents { get; }
     DbSet<PhoneVerificationCode> PhoneVerificationCodes { get; }
     DbSet<CustomerAddress> CustomerAddresses { get; }
     DbSet<CompareItem> CompareItems { get; }

@@ -26,6 +26,7 @@ public sealed class CheckoutService(
     IAccountDataIdentity accounts,
     IPhoneNumberNormalizer phones,
     ISmsCapability sms,
+    OrderNotifier notifier,
     TimeProvider clock,
     IOptions<StoreOptions> store)
 {
@@ -120,6 +121,8 @@ public sealed class CheckoutService(
             return placed;
 
         await carts.ClearAsync(cart.CartId.Value, cancellationToken);
+        var orderId = await db.Orders.AsNoTracking().Where(o => o.Number == placed.Value.Number).Select(o => o.Id).SingleAsync(cancellationToken);
+        await notifier.NotifyAsync(orderId, OrderNotice.Placed, cancellationToken);
         if (request.SaveAddress && userId is not null && request.AddressId is null && request.Address is not null && !method.IsPickup)
             await addresses.CreateAsync(userId, request.Address with { IsDefault = false }, cancellationToken); // a full address book does not stop the order
         return placed;
@@ -188,8 +191,9 @@ public sealed class CheckoutService(
             });
         }
         db.Orders.Add(order);
+        db.OrderEvents.Add(new OrderEvent { OrderId = order.Id, Kind = OrderEventKind.Placed });
         await db.SaveChangesAsync(cancellationToken);
-        return new PlacedOrderView(number, totals.Total, order.Currency, order.PaymentDueUtc.Value, email);
+        return new PlacedOrderView(number, totals.Total, order.Currency, order.PaymentDueUtc.Value, email, notifier.PathFor(order.Id, number, userId));
     }
 
     /// <summary>Who receives the order and where: the pickup contact, a saved address of the customer, or a typed one.</summary>

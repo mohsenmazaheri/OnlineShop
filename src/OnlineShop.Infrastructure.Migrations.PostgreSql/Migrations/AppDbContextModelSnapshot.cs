@@ -2496,6 +2496,16 @@ namespace OnlineShop.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("total");
 
+                    b.Property<string>("TrackingCarrier")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("tracking_carrier");
+
+                    b.Property<string>("TrackingCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("tracking_code");
+
                     b.HasKey("Id")
                         .HasName("pk_orders");
 
@@ -2505,6 +2515,9 @@ namespace OnlineShop.Infrastructure.Migrations.PostgreSql.Migrations
                     b.HasIndex("Number")
                         .IsUnique()
                         .HasDatabaseName("ix_orders_number");
+
+                    b.HasIndex("OrderedUtc")
+                        .HasDatabaseName("ix_orders_ordered_utc");
 
                     b.HasIndex("ShippingMethodId")
                         .HasDatabaseName("ix_orders_shipping_method_id");
@@ -2519,6 +2532,63 @@ namespace OnlineShop.Infrastructure.Migrations.PostgreSql.Migrations
                         {
                             t.HasCheckConstraint("CK_Orders_Status", "status IN ('Pending', 'Paid', 'Shipped', 'Completed', 'Canceled')");
                         });
+                });
+
+            modelBuilder.Entity("OnlineShop.Domain.Sales.OrderEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ActorUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)")
+                        .HasColumnName("actor_user_id");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<bool>("IsInternal")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_internal");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("kind");
+
+                    b.Property<DateTime?>("ModifiedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_utc");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<string>("Status")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Text")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("text");
+
+                    b.HasKey("Id")
+                        .HasName("pk_order_events");
+
+                    b.HasIndex("OrderId", "CreatedUtc")
+                        .HasDatabaseName("ix_order_events_order_id_created_utc");
+
+                    b.ToTable("order_events", (string)null);
                 });
 
             modelBuilder.Entity("OnlineShop.Domain.Sales.OrderItem", b =>
@@ -4340,6 +4410,16 @@ namespace OnlineShop.Infrastructure.Migrations.PostgreSql.Migrations
                         .HasForeignKey("ShippingMethodId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_orders_shipping_methods_shipping_method_id");
+                });
+
+            modelBuilder.Entity("OnlineShop.Domain.Sales.OrderEvent", b =>
+                {
+                    b.HasOne("OnlineShop.Domain.Sales.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_order_events_orders_order_id");
                 });
 
             modelBuilder.Entity("OnlineShop.Domain.Sales.OrderItem", b =>

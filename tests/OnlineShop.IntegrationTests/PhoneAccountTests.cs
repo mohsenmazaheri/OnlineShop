@@ -57,6 +57,9 @@ public sealed class PhoneAccountTests(PhoneAccountTests.SmsFactory factory) : IC
             _lastCode[phoneE164] = code;
             return Task.CompletedTask;
         }
+
+        public Task<bool> SendOrderUpdateAsync(string phoneE164, OrderNotice notice, OrderMessageData data, string locale, CancellationToken cancellationToken = default) =>
+            Task.FromResult(true);
     }
 
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() } };

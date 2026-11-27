@@ -134,6 +134,7 @@ app.MapStorefrontSeoEndpoints();
 app.MapContentEndpoints();
 app.MapCartEndpoints();
 app.MapCheckoutEndpoints();
+app.MapOrderEndpoints();
 app.MapCurrencyEndpoints();
 app.MapBrandingEndpoints();
 app.MapCatalogAdminEndpoints();

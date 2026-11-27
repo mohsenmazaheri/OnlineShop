@@ -12,6 +12,7 @@ import type { CheckoutView } from "@/lib/checkout/server";
 import type { DisplayCurrency } from "@/lib/currency/display";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { formatMoney } from "@/lib/i18n/format-money";
+import { formatList } from "@/lib/i18n/format-list";
 import { regionName } from "@/lib/i18n/display-names";
 import { CheckoutPlaced } from "./CheckoutPlaced";
 
@@ -187,7 +188,7 @@ export function CheckoutForm({ locale, view, money, texts, addressTexts, errors,
                     <span>
                       <span className="font-medium">{a.label ?? a.recipientName}</span>
                       <span className="block text-muted">
-                        {[a.line1, a.line2, a.city, a.region, a.postalCode, regionName(a.countryCode, locale)].filter(Boolean).join("، ")}
+                        {formatList([a.line1, a.line2, a.city, a.region, a.postalCode, regionName(a.countryCode, locale)].filter((part): part is string => Boolean(part)), locale)}
                       </span>
                     </span>
                   </label>

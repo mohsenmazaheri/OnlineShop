@@ -19,7 +19,7 @@ public sealed class ContentService(IApplicationDbContext db, IProductQueries pro
     /// <summary>First path segments of the shop's own pages: a content page can never use them.</summary>
     public static readonly IReadOnlySet<string> ReservedSlugs = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
-        "account", "admin", "api", "b", "blog", "c", "cart", "checkout", "compare", "currency", "l", "offline", "p", "search",
+        "account", "admin", "api", "b", "blog", "c", "cart", "checkout", "compare", "currency", "l", "offline", "order", "p", "search",
         "sitemap", "sitemaps", "manifest", "robots", "icon", "apple-icon", "sw",
     };
 

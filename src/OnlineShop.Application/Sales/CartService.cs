@@ -40,6 +40,26 @@ public sealed class CartService(IApplicationDbContext db, IOptions<StoreOptions>
         return new CheckoutCart(cart?.Id, ToView(items), items);
     }
 
+    /// <summary>Guest carts untouched this long are deleted (the cookie lasts as long).</summary>
+    public const int AbandonedGuestCartDays = 60;
+
+    /// <summary>
+    /// Deletes guest carts that neither the cart nor any of its lines changed since <paramref name="olderThan"/> (in
+    /// batches of 1000). Account carts stay. Returns how many.
+    /// </summary>
+    public async Task<int> DeleteAbandonedGuestCartsAsync(DateTime olderThan, CancellationToken cancellationToken = default)
+    {
+        var ids = await db.Carts
+            .Where(c => c.CustomerId == null && c.CreatedUtc < olderThan && (c.ModifiedUtc == null || c.ModifiedUtc < olderThan)
+                && !db.CartItems.Any(i => i.CartId == c.Id && (i.CreatedUtc >= olderThan || (i.ModifiedUtc != null && i.ModifiedUtc >= olderThan))))
+            .Select(c => c.Id).Take(1000)
+            .ToListAsync(cancellationToken);
+        if (ids.Count == 0)
+            return 0;
+        await db.CartItems.Where(i => ids.Contains(i.CartId)).ExecuteDeleteAsync(cancellationToken);
+        return await db.Carts.Where(c => ids.Contains(c.Id)).ExecuteDeleteAsync(cancellationToken);
+    }
+
     /// <summary>Empties a cart after its order was placed.</summary>
     public async Task ClearAsync(Guid cartId, CancellationToken cancellationToken = default)
     {

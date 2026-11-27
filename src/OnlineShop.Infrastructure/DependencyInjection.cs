@@ -300,6 +300,8 @@ public static class DependencyInjection
         services.AddHostedService<ExchangeRateSyncWorker>();
         services.AddHostedService<Inventory.ReservationExpiryWorker>();
         services.AddHostedService<Catalog.SaleExpiryWorker>();
+        services.AddHostedService<Sales.SalesMaintenanceWorker>();
+        services.AddSingleton<OnlineShop.Application.Sales.IOrderLinks, Sales.DataProtectionOrderLinks>();
         services.AddHostedService<Search.SearchIndexWorker>();
         AddSearchEngine(services);
     }

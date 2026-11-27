@@ -39,6 +39,12 @@ public sealed class SmsOptions : IValidatableObject
 
         /// <summary>Name of the Verify Lookup template created in the Kavenegar panel; its %token% receives the code.</summary>
         public string? VerifyTemplate { get; set; }
+
+        /// <summary>Optional template for "order placed" (%token% = order number); without it no order SMS is sent.</summary>
+        public string? OrderPlacedTemplate { get; set; }
+
+        /// <summary>Optional template for "order shipped" (%token% = order number, %token2% = tracking code).</summary>
+        public string? OrderShippedTemplate { get; set; }
     }
 
     public sealed class SmsIrSettings
@@ -50,6 +56,11 @@ public sealed class SmsOptions : IValidatableObject
 
         /// <summary>Name of the template parameter that receives the code (as defined in the template).</summary>
         public string CodeParameterName { get; set; } = "Code";
+
+        /// <summary>Optional template ids for order messages (parameters OrderNumber and TrackingCode); 0: none sent.</summary>
+        public int OrderPlacedTemplateId { get; set; }
+
+        public int OrderShippedTemplateId { get; set; }
     }
 
     public sealed class TwilioSettings

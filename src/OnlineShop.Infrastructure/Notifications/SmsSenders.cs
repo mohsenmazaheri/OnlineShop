@@ -32,6 +32,16 @@ public sealed class PickupSmsSender(IOptions<SmsOptions> options, IOptions<Store
         var file = Path.Combine(directory, $"{clock.GetUtcNow():yyyyMMdd-HHmmss-fff}-{phoneE164.TrimStart('+')}.txt");
         await File.WriteAllTextAsync(file, $"To: {phoneE164}\n\n{text}\n", Encoding.UTF8, cancellationToken);
     }
+
+    public async Task<bool> SendOrderUpdateAsync(string phoneE164, OrderNotice notice, OrderMessageData data, string locale, CancellationToken cancellationToken = default)
+    {
+        var directory = Path.GetFullPath(options.Value.PickupDirectory);
+        Directory.CreateDirectory(directory);
+        var text = OrderMessages.SmsText(notice, locale, store.Value.Name, data);
+        var file = Path.Combine(directory, $"{clock.GetUtcNow():yyyyMMdd-HHmmss-fff}-{phoneE164.TrimStart('+')}-order.txt");
+        await File.WriteAllTextAsync(file, $"To: {phoneE164}\n\n{text}\n", Encoding.UTF8, cancellationToken);
+        return true;
+    }
 }
 
 /// <summary>
@@ -57,6 +67,24 @@ public sealed class KavenegarSmsSender(HttpClient http, IOptions<SmsOptions> opt
         var status = json.RootElement.TryGetProperty("return", out var ret) && ret.TryGetProperty("status", out var s) ? s.GetInt32() : 0;
         if (status != 200)
             throw new SmsDeliveryException($"Kavenegar returned status {status}.");
+    }
+
+    public async Task<bool> SendOrderUpdateAsync(string phoneE164, OrderNotice notice, OrderMessageData data, string locale, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(data);
+        var settings = options.Value.Kavenegar;
+        var template = notice == OrderNotice.Shipped ? settings.OrderShippedTemplate : notice == OrderNotice.Placed ? settings.OrderPlacedTemplate : null;
+        if (string.IsNullOrWhiteSpace(template))
+            return false;
+        var url = $"v1/{Uri.EscapeDataString(settings.ApiKey!)}/verify/lookup.json" +
+                  $"?receptor={Uri.EscapeDataString(IranianNumbers.ToNational(phoneE164))}" +
+                  $"&token={data.Number}&template={Uri.EscapeDataString(template)}";
+        if (notice == OrderNotice.Shipped && !string.IsNullOrWhiteSpace(data.TrackingCode))
+            url += $"&token2={Uri.EscapeDataString(data.TrackingCode.Replace(' ', '-'))}";
+        using var response = await http.GetAsync(new Uri(url, UriKind.Relative), cancellationToken);
+        if (!response.IsSuccessStatusCode)
+            throw new SmsDeliveryException($"Kavenegar rejected the message (HTTP {(int)response.StatusCode}).");
+        return true;
     }
 }
 
@@ -89,6 +117,28 @@ public sealed class SmsIrSmsSender(HttpClient http, IOptions<SmsOptions> options
         if (status != 1)
             throw new SmsDeliveryException($"SMS.ir returned status {status}.");
     }
+
+    public async Task<bool> SendOrderUpdateAsync(string phoneE164, OrderNotice notice, OrderMessageData data, string locale, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(data);
+        var settings = options.Value.SmsIr;
+        var templateId = notice == OrderNotice.Shipped ? settings.OrderShippedTemplateId : notice == OrderNotice.Placed ? settings.OrderPlacedTemplateId : 0;
+        if (templateId <= 0)
+            return false;
+        var parameters = new List<object> { new { name = "OrderNumber", value = data.Number.ToString(System.Globalization.CultureInfo.InvariantCulture) } };
+        if (notice == OrderNotice.Shipped)
+            parameters.Add(new { name = "TrackingCode", value = data.TrackingCode ?? "" });
+        using var request = new HttpRequestMessage(HttpMethod.Post, new Uri("v1/send/verify", UriKind.Relative))
+        {
+            Content = JsonContent.Create(new { mobile = IranianNumbers.ToNational(phoneE164), templateId, parameters })
+        };
+        request.Headers.Add("X-API-KEY", settings.ApiKey);
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        using var response = await http.SendAsync(request, cancellationToken);
+        if (!response.IsSuccessStatusCode)
+            throw new SmsDeliveryException($"SMS.ir rejected the message (HTTP {(int)response.StatusCode}).");
+        return true;
+    }
 }
 
 /// <summary>Twilio Messages API: POST /2010-04-01/Accounts/{sid}/Messages.json with basic auth.</summary>
@@ -96,11 +146,18 @@ public sealed class TwilioSmsSender(HttpClient http, IOptions<SmsOptions> option
 {
     public const string BaseAddress = "https://api.twilio.com/";
 
-    public async Task SendVerificationCodeAsync(string phoneE164, string code, string locale, CancellationToken cancellationToken = default)
+    public Task SendVerificationCodeAsync(string phoneE164, string code, string locale, CancellationToken cancellationToken = default) =>
+        SendAsync(phoneE164, SmsTexts.VerificationCode(locale, store.Value.Name, code, new Uri(store.Value.PublicUrl).Host), cancellationToken);
+
+    public async Task<bool> SendOrderUpdateAsync(string phoneE164, OrderNotice notice, OrderMessageData data, string locale, CancellationToken cancellationToken = default)
+    {
+        await SendAsync(phoneE164, OrderMessages.SmsText(notice, locale, store.Value.Name, data), cancellationToken);
+        return true;
+    }
+
+    private async Task SendAsync(string phoneE164, string body, CancellationToken cancellationToken)
     {
         var settings = options.Value.Twilio;
-        var body = SmsTexts.VerificationCode(locale, store.Value.Name, code, new Uri(store.Value.PublicUrl).Host);
-
         var form = new Dictionary<string, string> { ["To"] = phoneE164, ["Body"] = body };
         if (!string.IsNullOrWhiteSpace(settings.MessagingServiceSid))
             form["MessagingServiceSid"] = settings.MessagingServiceSid;
@@ -125,5 +182,8 @@ public sealed class TwilioSmsSender(HttpClient http, IOptions<SmsOptions> option
 public sealed class DisabledSmsSender : ISmsSender
 {
     public Task SendVerificationCodeAsync(string phoneE164, string code, string locale, CancellationToken cancellationToken = default) =>
+        throw new InvalidOperationException("SMS is not configured (Sms:Provider is None).");
+
+    public Task<bool> SendOrderUpdateAsync(string phoneE164, OrderNotice notice, OrderMessageData data, string locale, CancellationToken cancellationToken = default) =>
         throw new InvalidOperationException("SMS is not configured (Sms:Provider is None).");
 }
