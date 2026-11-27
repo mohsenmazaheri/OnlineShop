@@ -32,9 +32,6 @@ public sealed class CheckoutService(
 {
     public const long FirstOrderNumber = 1001;
 
-    /// <summary>Currencies shown without minor units when the shop has not set them up (IRR, toman).</summary>
-    private static readonly string[] WholeCurrencies = ["IRR", "IRT", "JPY", "KRW"];
-
     private sealed record Priced(CheckoutTotals Totals, IReadOnlyList<ShippingOption> Options, ShippingMethod? Method, DiscountCode? Discount, AppError? DiscountError);
 
     public async Task<CheckoutView> GetAsync(CartOwner owner, string locale, CancellationToken cancellationToken = default)
@@ -267,6 +264,6 @@ public sealed class CheckoutService(
     {
         var code = store.Value.Currency;
         var set = await db.Currencies.AsNoTracking().Where(c => c.Code == code).Select(c => (int?)c.Decimals).FirstOrDefaultAsync(cancellationToken);
-        return set ?? (WholeCurrencies.Contains(code, StringComparer.Ordinal) ? 0 : 2);
+        return set ?? CheckoutPricing.DefaultDecimals(code);
     }
 }

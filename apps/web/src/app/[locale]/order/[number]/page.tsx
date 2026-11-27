@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { OrderDetails, OrderStatusBadge } from "@/components/orders/OrderDetails";
+import { ReturnRequestForm } from "@/components/orders/ReturnRequestForm";
 import { routeLocale } from "@/lib/account/page-helpers";
 import { formatOrderNumber } from "@/lib/orders/format";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -31,7 +32,23 @@ async function GuestOrder({ params, searchParams }: Props) {
         <h1 className="text-xl font-extrabold">{dict.orders.orderNumber.replace("{number}", formatOrderNumber(order.number, locale))}</h1>
         <OrderStatusBadge status={order.status} texts={dict.orders} />
       </div>
-      <OrderDetails order={order} locale={locale} texts={dict.orders} />
+      <OrderDetails
+        order={order}
+        locale={locale}
+        texts={dict.orders}
+        invoiceHref={`/${locale}/order/${order.number}/invoice?key=${encodeURIComponent(key as string)}`}
+        returnForm={
+          order.actions.canRequestReturn ? (
+            <ReturnRequestForm
+              order={order}
+              locale={locale}
+              endpoint={`/api/v1/orders/${order.number}/returns?key=${encodeURIComponent(key as string)}`}
+              texts={dict.orders}
+              errors={dict.orders.errors}
+            />
+          ) : null
+        }
+      />
     </div>
   );
 }

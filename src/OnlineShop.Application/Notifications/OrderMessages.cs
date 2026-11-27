@@ -10,10 +10,17 @@ public enum OrderNotice
     Shipped,
     Canceled,
     PaymentExpired,
+    ReturnRequested,
+    ReturnApproved,
+    ReturnRejected,
+    Refunded,
 }
 
-/// <summary>The facts an order message needs (already formatted where it matters).</summary>
-public sealed record OrderMessageData(long Number, string Total, string? TrackingCarrier, string? TrackingCode, Uri Link);
+/// <summary>
+/// The facts an order message needs (already formatted where it matters). <see cref="Detail"/> is the return number or
+/// the refunded amount; <see cref="Note"/> a text from staff for the customer (a reason, an answer).
+/// </summary>
+public sealed record OrderMessageData(long Number, string Total, string? TrackingCarrier, string? TrackingCode, Uri Link, string? Detail = null, string? Note = null);
 
 /// <summary>
 /// Order emails and SMS texts in every supported language. Plain and short like the account emails: one link to the
@@ -54,6 +61,30 @@ public static class OrderMessages
         [(OrderNotice.PaymentExpired, "hy")] = new("{0}-ում {1} պատվերի վճարման ժամկետը լրացել է", "{1} պատվերի վճարման ժամկետը լրացել է, և պատվերը չեղարկվել է։ Կարող եք կրկին պատվիրել։", "Դիտել պատվերը"),
         [(OrderNotice.PaymentExpired, "de")] = new("Bestellung {1} bei {0}: Zahlungsfrist abgelaufen", "Die Zahlungsfrist für Bestellung {1} ist abgelaufen, die Bestellung wurde storniert. Sie können gern erneut bestellen.", "Bestellung ansehen"),
         [(OrderNotice.PaymentExpired, "ar")] = new("الطلب {1} في {0}: انتهت مهلة الدفع", "انتهت مهلة دفع الطلب {1} فتم إلغاؤه. يسعدنا أن تطلب مرة أخرى.", "عرض الطلب"),
+
+        [(OrderNotice.ReturnRequested, "fa")] = new("درخواست مرجوعی {5} برای سفارش {1} در {0}", "درخواست مرجوعی {5} برای سفارش شمارهٔ {1} ثبت شد. پس از بررسی، نتیجه را به شما خبر می‌دهیم.", "دیدن سفارش"),
+        [(OrderNotice.ReturnRequested, "en")] = new("Return {5} for order {1} at {0}", "We received your return request {5} for order {1}. We will let you know once we have looked at it.", "View your order"),
+        [(OrderNotice.ReturnRequested, "hy")] = new("{5} վերադարձ {1} պատվերի համար {0}-ում", "Ստացել ենք ձեր {5} վերադարձի հայտը {1} պատվերի համար։ Կտեղեկացնենք ուսումնասիրելուց հետո։", "Դիտել պատվերը"),
+        [(OrderNotice.ReturnRequested, "de")] = new("Rücksendung {5} zu Bestellung {1} bei {0}", "Wir haben Ihre Rücksendeanfrage {5} zu Bestellung {1} erhalten und melden uns nach der Prüfung.", "Bestellung ansehen"),
+        [(OrderNotice.ReturnRequested, "ar")] = new("الإرجاع {5} للطلب {1} في {0}", "استلمنا طلب الإرجاع {5} للطلب {1}. سنُعلمك بعد مراجعته.", "عرض الطلب"),
+
+        [(OrderNotice.ReturnApproved, "fa")] = new("مرجوعی {5} سفارش {1} در {0} پذیرفته شد", "درخواست مرجوعی {5} برای سفارش شمارهٔ {1} پذیرفته شد. لطفاً کالاها را برای فروشگاه بفرستید.", "دیدن سفارش"),
+        [(OrderNotice.ReturnApproved, "en")] = new("Return {5} for order {1} at {0} is approved", "Your return {5} for order {1} is approved. Please send the items back to the shop.", "View your order"),
+        [(OrderNotice.ReturnApproved, "hy")] = new("{1} պատվերի {5} վերադարձը {0}-ում հաստատված է", "{1} պատվերի ձեր {5} վերադարձը հաստատված է։ Խնդրում ենք ապրանքներն ուղարկել խանութ։", "Դիտել պատվերը"),
+        [(OrderNotice.ReturnApproved, "de")] = new("Rücksendung {5} zu Bestellung {1} bei {0} genehmigt", "Ihre Rücksendung {5} zu Bestellung {1} ist genehmigt. Bitte senden Sie die Artikel an den Shop zurück.", "Bestellung ansehen"),
+        [(OrderNotice.ReturnApproved, "ar")] = new("تمت الموافقة على الإرجاع {5} للطلب {1} في {0}", "تمت الموافقة على الإرجاع {5} للطلب {1}. يُرجى إرسال المنتجات إلى المتجر.", "عرض الطلب"),
+
+        [(OrderNotice.ReturnRejected, "fa")] = new("مرجوعی {5} سفارش {1} در {0} پذیرفته نشد", "درخواست مرجوعی {5} برای سفارش شمارهٔ {1} پذیرفته نشد.", "دیدن سفارش"),
+        [(OrderNotice.ReturnRejected, "en")] = new("Return {5} for order {1} at {0} was not accepted", "Your return request {5} for order {1} was not accepted.", "View your order"),
+        [(OrderNotice.ReturnRejected, "hy")] = new("{1} պատվերի {5} վերադարձը {0}-ում չի ընդունվել", "{1} պատվերի ձեր {5} վերադարձի հայտը չի ընդունվել։", "Դիտել պատվերը"),
+        [(OrderNotice.ReturnRejected, "de")] = new("Rücksendung {5} zu Bestellung {1} bei {0} abgelehnt", "Ihre Rücksendeanfrage {5} zu Bestellung {1} wurde nicht angenommen.", "Bestellung ansehen"),
+        [(OrderNotice.ReturnRejected, "ar")] = new("لم يُقبل الإرجاع {5} للطلب {1} في {0}", "لم يُقبل طلب الإرجاع {5} للطلب {1}.", "عرض الطلب"),
+
+        [(OrderNotice.Refunded, "fa")] = new("بازپرداخت سفارش {1} در {0}", "مبلغ {5} از سفارش شمارهٔ {1} به شما بازپرداخت شد.", "دیدن سفارش"),
+        [(OrderNotice.Refunded, "en")] = new("Refund for order {1} at {0}", "We have paid back {5} for order {1}.", "View your order"),
+        [(OrderNotice.Refunded, "hy")] = new("Վերադարձված գումար {1} պատվերի համար {0}-ում", "{1} պատվերի համար ձեզ վերադարձվել է {5}։", "Դիտել պատվերը"),
+        [(OrderNotice.Refunded, "de")] = new("Erstattung zu Bestellung {1} bei {0}", "Wir haben Ihnen {5} für Bestellung {1} erstattet.", "Bestellung ansehen"),
+        [(OrderNotice.Refunded, "ar")] = new("استرداد للطلب {1} في {0}", "أعدنا إليك {5} عن الطلب {1}.", "عرض الطلب"),
     };
 
     private static readonly Dictionary<(OrderNotice, string), string> Sms = new()
@@ -80,16 +111,18 @@ public static class OrderMessages
         ArgumentNullException.ThrowIfNull(data);
         var effective = Emails.ContainsKey((notice, locale)) ? locale : "en";
         var text = Emails[(notice, effective)];
-        string fill(string template) => string.Format(CultureInfo.InvariantCulture, template, storeName, data.Number, data.Total, data.TrackingCarrier, data.TrackingCode);
+        string fill(string template) => string.Format(CultureInfo.InvariantCulture, template, storeName, data.Number, data.Total, data.TrackingCarrier, data.TrackingCode, data.Detail);
         var subject = fill(text.Subject);
         var body = fill(text.Body);
+        var note = string.IsNullOrWhiteSpace(data.Note) ? null : data.Note.Trim();
         var url = data.Link.AbsoluteUri;
-        var textBody = $"{body}\n\n{url}\n\n— {storeName}";
+        var textBody = note is null ? $"{body}\n\n{url}\n\n— {storeName}" : $"{body}\n\n{note}\n\n{url}\n\n— {storeName}";
         static string encode(string value) => System.Net.WebUtility.HtmlEncode(value);
         var dir = RtlLocales.Contains(effective) ? "rtl" : "ltr";
         var htmlBody =
             $"<!doctype html><html lang=\"{effective}\" dir=\"{dir}\"><body style=\"font-family:Tahoma,Arial,sans-serif;line-height:1.7\">" +
             $"<p>{encode(body)}</p>" +
+            (note is null ? "" : $"<p style=\"padding:10px;background:#f4f4f5;border-radius:8px\">{encode(note)}</p>") +
             $"<p><a href=\"{encode(url)}\" style=\"display:inline-block;padding:10px 18px;background:#0f766e;color:#ffffff;border-radius:8px;text-decoration:none\">{encode(text.Action)}</a></p>" +
             $"<p>— {encode(storeName)}</p></body></html>";
         return new EmailMessage(to, subject, textBody, htmlBody);

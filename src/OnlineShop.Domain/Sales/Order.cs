@@ -26,6 +26,9 @@ public class Order : BaseEntity
     /// <summary>The stock reservation (and so the unpaid order) ends at this time.</summary>
     public DateTime? PaymentDueUtc { get; set; }
 
+    /// <summary>When it was delivered (or handed over): the return period counts from here.</summary>
+    public DateTime? CompletedUtc { get; set; }
+
     // Contact and address (personal data: blanked when the account is erased).
     public string? Email { get; set; }
 

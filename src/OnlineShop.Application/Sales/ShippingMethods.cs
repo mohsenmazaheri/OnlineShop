@@ -16,6 +16,8 @@ public static class ShippingErrors
     public const string CountryInvalid = "shipping.country_invalid";
     public const string DaysInvalid = "shipping.days_invalid";
     public const string TaxRateInvalid = "shipping.tax_rate_invalid";
+    public const string SellerTooLong = "shipping.seller_too_long";
+    public const string ReturnDaysInvalid = "shipping.return_days_invalid";
 }
 
 /// <summary>A shipping method as the admin edits it (texts: name and description per language).</summary>

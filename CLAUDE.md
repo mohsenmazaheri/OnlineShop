@@ -8,7 +8,7 @@ Application / Infrastructure / Api) + **Next.js 16** storefront in `apps/web`. O
 images serve every shop.
 
 **Plan and all recorded decisions: [docs/ROADMAP.md](docs/ROADMAP.md)** (Persian). Read it before starting, work on
-one step at a time, mark the status there when a step is done. Done: phases 0, 2–6 and 7a–7c (cart, checkout, order lifecycle); phase 1 has a
+one step at a time, mark the status there when a step is done. Done: phases 0, 2–6 and 7a–7d (cart, checkout, order lifecycle, invoices/returns); phase 1 has a
 "remaining" list. SEO/marketing design: [docs/SEO-MARKETING.md](docs/SEO-MARKETING.md) (acceptance checklist at its end).
 
 Key decisions (details in the roadmap):
@@ -166,6 +166,12 @@ After a model change: migration + `has-pending-model-changes` reports none. Afte
   change tracker: add events after them. `SalesMaintenanceWorker`: expired unpaid orders → Canceled every minute,
   abandoned guest carts hourly. Guest links signed by `IOrderLinks` (Data Protection, nothing stored):
   `/{locale}/order/{n}?key=` (noindex); customers `/account/orders`; staff `/admin/orders` (orders.view / orders.manage).
+- **Invoices, returns, refunds**: Paid issues an `Invoice` (gapless `Number`, seller details copied from
+  `SalesSettings`) in the same transaction; the invoice is a printable page (browser "Save as PDF", decided: no PDF
+  library; `InvoiceDocument`, site chrome `print:hidden`). Paid orders can be canceled before shipping (`RestockAsync`:
+  ledger `Return` movements). `ReturnService`: customer requests within `SalesSettings.ReturnDays` of `CompletedUtc`
+  (quantities ≤ ordered − non-rejected returns), staff approve/reject/receive (receive restocks), `RefundAsync` records
+  refunds (paid orders only, total ≤ order total). Addresses are joined with `joinParts` (never `formatList`: it adds "and").
 - **Cart** (`Sales/CartService`, `CartEndpoints`, codes `cart.*` → web `cart.errors`): server-side for guests too
   (`CartOwner`: user id, else the HttpOnly `os_cart` token, stored only as SHA-256 `GuestTokenHash`); the first cart
   request after sign-in merges it (`MergeAsync`) and drops the cookie. Lines keyed by `ItemId` (variant id, else product

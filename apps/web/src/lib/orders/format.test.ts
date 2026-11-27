@@ -4,7 +4,7 @@ import { formatOrderNumber, historyText, orderHref, statusTint } from "./format"
 
 vi.mock("server-only", () => ({}));
 
-import { getOrderByLink } from "./server";
+import { getInvoiceByLink, getOrderByLink } from "./server";
 
 const entry = (over: Partial<Parameters<typeof historyText>[0]>) => ({
   atUtc: "2026-11-27T10:00:00Z",
@@ -23,6 +23,9 @@ describe("order formatting", () => {
     expect(historyText(entry({ kind: "TrackingSet", text: "Post RR123" }), en.orders)).toBe("Shipped with Post RR123");
     expect(historyText(entry({ kind: "PaymentExpired" }), en.orders)).toBe(en.orders.historyExpired);
     expect(historyText(entry({ kind: "Note", text: "Call first" }), en.orders)).toBe("Call first");
+    expect(historyText(entry({ kind: "Invoiced", text: "7" }), en.orders)).toBe("Invoice 7 issued");
+    expect(historyText(entry({ kind: "ReturnApproved", text: "R-2" }), en.orders)).toBe("Return R-2 approved");
+    expect(historyText(entry({ kind: "Refunded", text: "12.5" }), en.orders, (n) => `€${n.toFixed(2)}`)).toBe("Refunded €12.50");
   });
 
   it("gives every status a tint and builds order addresses", () => {
@@ -31,6 +34,14 @@ describe("order formatting", () => {
     expect(orderHref("fa", "order/1001?key=abc")).toBe("/fa/order/1001?key=abc");
     expect(orderHref("en", "/account/orders/1001")).toBe("/en/account/orders/1001");
     expect([formatOrderNumber(1002, "en"), formatOrderNumber(1002, "fa")]).toEqual(["1002", "۱۰۰۲"]);
+  });
+});
+
+describe("getInvoiceByLink", () => {
+  it("asks for the invoice with the key", async () => {
+    const fetchImpl = vi.fn(async () => new Response(JSON.stringify({ number: 7 })));
+    expect(await getInvoiceByLink(1001, "k", fetchImpl)).toEqual({ number: 7 });
+    expect(String((fetchImpl.mock.calls[0] as unknown as [string])[0])).toContain("/api/v1/orders/1001/invoice?key=k");
   });
 });
 

@@ -66,6 +66,8 @@ public static class DependencyInjection
         services.AddScoped<Sales.OrderNotifier>();
         services.AddScoped<Sales.OrderQueries>();
         services.AddScoped<Sales.OrderLifecycleService>();
+        services.AddScoped<Sales.SalesSettingsService>();
+        services.AddScoped<Sales.ReturnService>();
         services.AddScoped<Catalog.Compare.CompareListService>();
         services.AddScoped<Catalog.Reviews.ReviewService>();
         services.AddScoped<Customers.WishlistService>();

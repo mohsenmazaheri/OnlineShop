@@ -6,3 +6,9 @@ export function formatList(items: readonly string[], locale: string): string {
     return items.join(", ");
   }
 }
+
+/** The parts of an address or similar line, joined by plain commas (no "and"): "، " for right-to-left languages. */
+export function joinParts(parts: readonly (string | null | undefined)[], locale: string): string {
+  const rtl = ["fa", "ar"].includes(locale.split("-")[0]);
+  return parts.filter((part): part is string => Boolean(part)).join(rtl ? "، " : ", ");
+}

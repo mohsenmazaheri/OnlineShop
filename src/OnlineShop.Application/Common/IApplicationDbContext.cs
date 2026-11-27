@@ -39,6 +39,11 @@ public interface IApplicationDbContext
     DbSet<Order> Orders { get; }
     DbSet<OrderItem> OrderItems { get; }
     DbSet<OrderEvent> OrderEvents { get; }
+    DbSet<Invoice> Invoices { get; }
+    DbSet<ReturnRequest> ReturnRequests { get; }
+    DbSet<ReturnLine> ReturnLines { get; }
+    DbSet<Refund> Refunds { get; }
+    DbSet<SalesSettings> SalesSettings { get; }
     DbSet<PhoneVerificationCode> PhoneVerificationCodes { get; }
     DbSet<CustomerAddress> CustomerAddresses { get; }
     DbSet<CompareItem> CompareItems { get; }

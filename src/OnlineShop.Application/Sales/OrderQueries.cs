@@ -8,7 +8,7 @@ namespace OnlineShop.Application.Sales;
 /// Reading orders: a customer's own (ownership checked in the query), a guest's through its signed link, and every
 /// order for staff. Customers never see internal notes or who changed what.
 /// </summary>
-public sealed class OrderQueries(IApplicationDbContext db, IOrderLinks links)
+public sealed class OrderQueries(IApplicationDbContext db, IOrderLinks links, SalesSettingsService settings, TimeProvider clock)
 {
     public const int PageSize = 20;
 
@@ -69,6 +69,32 @@ public sealed class OrderQueries(IApplicationDbContext db, IOrderLinks links)
         return order is null ? null : await ViewAsync(order, staff: true, cancellationToken);
     }
 
+    /// <summary>The id of the customer's own order, or of a guest's through its link (null: none of theirs).</summary>
+    public async Task<Guid?> FindIdAsync(long number, string? userId, string? token, CancellationToken cancellationToken = default)
+    {
+        var order = await db.Orders.AsNoTracking().Where(o => o.Number == number).Select(o => new { o.Id, o.CustomerId }).FirstOrDefaultAsync(cancellationToken);
+        if (order is null)
+            return null;
+        if (userId is not null && order.CustomerId == userId)
+            return order.Id;
+        return !string.IsNullOrWhiteSpace(token) && links.IsValid(order.Id, token) ? order.Id : null;
+    }
+
+    /// <summary>The invoice page of the customer's own order, a guest's through its link, or any for staff (null: no invoice yet).</summary>
+    public async Task<InvoiceView?> GetInvoiceAsync(long number, string? userId, string? token, bool staff, CancellationToken cancellationToken = default)
+    {
+        var view = staff ? await GetForStaffAsync(number, cancellationToken)
+            : userId is not null ? await GetForCustomerAsync(userId, number, cancellationToken)
+            : await GetWithTokenAsync(number, token ?? "", cancellationToken);
+        if (view is null)
+            return null;
+        var invoice = await db.Invoices.AsNoTracking().Where(i => db.Orders.Any(o => o.Id == i.OrderId && o.Number == number))
+            .FirstOrDefaultAsync(cancellationToken);
+        return invoice is null
+            ? null
+            : new InvoiceView(invoice.Number, invoice.IssuedUtc, invoice.SellerName, invoice.SellerAddress, invoice.SellerTaxNumber, invoice.Note, view);
+    }
+
     private async Task<OrderPage> PageAsync(IQueryable<Order> orders, int page, CancellationToken cancellationToken)
     {
         page = Math.Max(1, page);
@@ -100,24 +126,79 @@ public sealed class OrderQueries(IApplicationDbContext db, IOrderLinks links)
     {
         var events = await db.OrderEvents.AsNoTracking()
             .Where(e => e.OrderId == order.Id && (staff || !e.IsInternal))
-            // Entries written together share their time: placed, then tracking or expiry, the status change, the note.
+            // Entries written together share their time: placed, then tracking or expiry, the status change, the invoice,
+            // the note.
             .OrderBy(e => e.CreatedUtc)
             .ThenBy(e => e.Kind == OrderEventKind.Placed ? 0
                 : e.Kind == OrderEventKind.TrackingSet || e.Kind == OrderEventKind.PaymentExpired ? 1
-                : e.Kind == OrderEventKind.StatusChanged ? 2 : 3)
+                : e.Kind == OrderEventKind.StatusChanged ? 2
+                : e.Kind == OrderEventKind.Invoiced ? 3 : 4)
             .Select(e => new OrderEventView(e.CreatedUtc, e.Kind, e.Status, e.Text, e.IsInternal, e.ActorUserId != null))
             .ToListAsync(cancellationToken);
         var images = await ImagesAsync(order.Items.Select(i => i.ProductId).Distinct().ToList(), cancellationToken);
+        var invoice = await db.Invoices.AsNoTracking().Where(i => i.OrderId == order.Id)
+            .Select(i => new InvoiceSummary(i.Number, i.IssuedUtc)).FirstOrDefaultAsync(cancellationToken);
+        var returns = await db.ReturnRequests.AsNoTracking().Include(r => r.Lines).Where(r => r.OrderId == order.Id)
+            .OrderBy(r => r.CreatedUtc).ToListAsync(cancellationToken);
+        var refunds = await db.Refunds.AsNoTracking().Where(r => r.OrderId == order.Id).OrderBy(r => r.CreatedUtc).ToListAsync(cancellationToken);
+
+        // What is still out there to ask back: ordered minus what is in returns that were not rejected.
+        var asked = returns.Where(r => r.Status != ReturnStatus.Rejected).SelectMany(r => r.Lines)
+            .GroupBy(l => l.OrderItemId).ToDictionary(g => g.Key, g => g.Sum(l => l.Quantity));
+        var items = order.Items.ToDictionary(i => i.Id);
         var lines = order.Items.OrderBy(i => i.CreatedUtc)
-            .Select(i => new OrderLineView(i.ProductNumber, i.ProductName, i.Sku, i.VariantLabel, images.GetValueOrDefault(i.ProductId), i.UnitPrice, i.Quantity, i.UnitPrice * i.Quantity))
+            .Select(i => new OrderLineView(i.Id, i.ProductNumber, i.ProductName, i.Sku, i.VariantLabel, images.GetValueOrDefault(i.ProductId), i.UnitPrice, i.Quantity,
+                i.UnitPrice * i.Quantity, Math.Max(0, i.Quantity - asked.GetValueOrDefault(i.Id))))
             .ToList();
+        var returnNumbers = returns.ToDictionary(r => r.Id, r => r.Number);
+        var returnViews = returns.Select(r =>
+        {
+            var steps = OrderTransitions.ForReturn(r.Status);
+            var returnLines = r.Lines.Where(l => items.ContainsKey(l.OrderItemId))
+                .Select(l => new ReturnLineView(l.OrderItemId, items[l.OrderItemId].ProductName, items[l.OrderItemId].VariantLabel, items[l.OrderItemId].Sku, l.Quantity))
+                .ToList();
+            var goods = r.Lines.Where(l => items.ContainsKey(l.OrderItemId)).Sum(l => items[l.OrderItemId].UnitPrice * l.Quantity);
+            return new ReturnView(r.Id, r.Number, r.Status, r.CreatedUtc, r.Reason, r.Answer, returnLines, SuggestedRefund(order, goods),
+                staff && steps.Approve, staff && steps.Reject, staff && steps.Receive);
+        }).ToList();
+        var refundViews = refunds
+            .Select(r => new RefundView(r.CreatedUtc, r.Amount, r.Method, staff ? r.Note : null, r.ReturnRequestId is { } id ? returnNumbers.GetValueOrDefault(id) : null))
+            .ToList();
+        var refunded = refunds.Sum(r => r.Amount);
+        var refundable = invoice is null ? 0 : Math.Max(0, order.Total - refunded);
+
+        var returnDays = (await settings.GetAsync(cancellationToken)).ReturnDays;
+        DateTime? returnableUntil = order.Status == OrderStatus.Completed && order.CompletedUtc is { } delivered && returnDays > 0
+            ? delivered.AddDays(returnDays) : null;
+        if (returnableUntil <= clock.GetUtcNow().UtcDateTime)
+            returnableUntil = null;
+
+        var actions = OrderTransitions.For(order.Status, order.IsPickup) with
+        {
+            CanRequestReturn = !staff && returnableUntil is not null && lines.Any(l => l.Returnable > 0),
+            CanRefund = staff && refundable > 0,
+        };
         var address = order.IsPickup ? null : new OrderAddressView(order.CountryCode, order.Region, order.City, order.Line1, order.Line2, order.PostalCode);
         return new OrderView(
             order.Number, order.Status, order.OrderedUtc, order.Status == OrderStatus.Pending ? order.PaymentDueUtc : null, order.Locale,
             order.Email, order.RecipientName, order.PhoneNumber, address, order.IsPickup, order.ShippingMethodName, order.TrackingCarrier,
             order.TrackingCode, order.Note, order.DiscountCodeText, order.Currency, order.Subtotal, order.Discount, order.Shipping, order.Tax,
-            order.TaxRate, order.PricesIncludeTax, order.Total, lines, events, OrderTransitions.For(order.Status, order.IsPickup),
-            staff ? order.CustomerId : null);
+            order.TaxRate, order.PricesIncludeTax, order.Total, lines, events, actions,
+            staff ? order.CustomerId : null, invoice, returnViews, refundViews, refunded, refundable, returnableUntil);
+    }
+
+    /// <summary>
+    /// What a return of goods worth <paramref name="goods"/> (at their prices) gives back: their share of what was paid
+    /// for the goods after the discount, rounded like the order's currency. Staff may change it.
+    /// </summary>
+    public static decimal SuggestedRefund(Order order, decimal goods)
+    {
+        ArgumentNullException.ThrowIfNull(order);
+        if (order.Subtotal <= 0)
+            return 0;
+        var share = goods * (order.Subtotal - order.Discount) / order.Subtotal;
+        var decimals = CheckoutPricing.DefaultDecimals(order.Currency);
+        return CheckoutPricing.Round(share, decimals);
     }
 
     /// <summary>Each product's first image (deleted products too: the order still shows what was bought).</summary>

@@ -25,7 +25,7 @@ export function CompareBar({ locale, texts }: { locale: string; texts: Texts }) 
   return (
     <aside
       aria-label={texts.barLabel}
-      className="pointer-events-none fixed inset-x-0 bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-40 px-4 md:bottom-4"
+      className="pointer-events-none fixed inset-x-0 bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-40 px-4 md:bottom-4 print:hidden"
     >
       <div className="pointer-events-auto mx-auto flex max-w-xl flex-col gap-3 rounded-2xl border border-border bg-surface p-3 text-sm shadow-lg">
         {notice && (

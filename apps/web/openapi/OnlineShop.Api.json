@@ -300,6 +300,115 @@
         }
       }
     },
+    "/api/v1/orders/{number}/invoice": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "The invoice of a paid order through its signed link.",
+        "operationId": "GetInvoiceByLink",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceView"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders/{number}/returns": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "A guest asks to return items through the order's signed link.",
+        "operationId": "RequestReturnByLink",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestReturnRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/currencies": {
       "get": {
         "tags": [
@@ -1933,6 +2042,66 @@
         }
       }
     },
+    "/api/v1/admin/shipping/sales": {
+      "get": {
+        "tags": [
+          "Admin: shipping and tax"
+        ],
+        "summary": "The seller's details printed on invoices and the return period.",
+        "operationId": "GetSalesSettings",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesSettingsView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin: shipping and tax"
+        ],
+        "summary": "Change the invoice details (issued invoices keep theirs) and the return period.",
+        "operationId": "SaveSalesSettings",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SalesSettingsView"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesSettingsView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/discounts": {
       "get": {
         "tags": [
@@ -2144,6 +2313,101 @@
         }
       }
     },
+    "/api/v1/account/orders/{number}/invoice": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "The invoice of one of the customer's paid orders (a printable page in the shop).",
+        "operationId": "GetMyInvoice",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceView"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/account/orders/{number}/returns": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Ask to send items of a delivered order back, within the return period. Answers the return number.",
+        "operationId": "RequestMyReturn",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestReturnRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/orders": {
       "get": {
         "tags": [
@@ -2214,6 +2478,48 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrderView"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{number}/invoice": {
+      "get": {
+        "tags": [
+          "Admin: orders"
+        ],
+        "summary": "The invoice of a paid order.",
+        "operationId": "GetInvoice",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceView"
                 }
               }
             }
@@ -2432,6 +2738,242 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrderStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{number}/returns/{returnId}/approve": {
+      "post": {
+        "tags": [
+          "Admin: orders"
+        ],
+        "summary": "Agree to a return; the text (how to send the items) goes to the customer.",
+        "operationId": "ApproveReturn",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "returnId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReturnAnswerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{number}/returns/{returnId}/reject": {
+      "post": {
+        "tags": [
+          "Admin: orders"
+        ],
+        "summary": "Turn a return down; the text (why) goes to the customer.",
+        "operationId": "RejectReturn",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "returnId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReturnAnswerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{number}/returns/{returnId}/receive": {
+      "post": {
+        "tags": [
+          "Admin: orders"
+        ],
+        "summary": "The returned items arrived: they go back into stock.",
+        "operationId": "ReceiveReturn",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "returnId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReturnAnswerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{number}/refunds": {
+      "post": {
+        "tags": [
+          "Admin: orders"
+        ],
+        "summary": "Record money paid back (never more than was paid in all); the customer is told. Answers the refunded total.",
+        "operationId": "RecordRefund",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordRefundRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "number",
+                  "format": "double"
                 }
               }
             }
@@ -9800,6 +10342,69 @@
           }
         }
       },
+      "InvoiceSummary": {
+        "required": [
+          "number",
+          "issuedUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "issuedUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "InvoiceView": {
+        "required": [
+          "number",
+          "issuedUtc",
+          "sellerName",
+          "sellerAddress",
+          "sellerTaxNumber",
+          "note",
+          "order"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "issuedUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sellerName": {
+            "type": "string"
+          },
+          "sellerAddress": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sellerTaxNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "order": {
+            "$ref": "#/components/schemas/OrderView"
+          }
+        }
+      },
       "ItemSettingsView": {
         "required": [
           "itemId",
@@ -10300,6 +10905,14 @@
           },
           "canCancel": {
             "type": "boolean"
+          },
+          "canRequestReturn": {
+            "type": "boolean",
+            "default": false
+          },
+          "canRefund": {
+            "type": "boolean",
+            "default": false
           }
         }
       },
@@ -10490,7 +11103,13 @@
           "StatusChanged",
           "TrackingSet",
           "Note",
-          "PaymentExpired"
+          "PaymentExpired",
+          "Invoiced",
+          "ReturnRequested",
+          "ReturnApproved",
+          "ReturnRejected",
+          "ReturnReceived",
+          "Refunded"
         ]
       },
       "OrderEventView": {
@@ -10558,6 +11177,7 @@
       },
       "OrderLineView": {
         "required": [
+          "id",
           "number",
           "name",
           "sku",
@@ -10565,10 +11185,15 @@
           "imageUrl",
           "unitPrice",
           "quantity",
-          "lineTotal"
+          "lineTotal",
+          "returnable"
         ],
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
           "number": {
             "type": "integer",
             "format": "int64"
@@ -10602,6 +11227,10 @@
           "lineTotal": {
             "type": "number",
             "format": "double"
+          },
+          "returnable": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -10735,7 +11364,13 @@
           "lines",
           "history",
           "actions",
-          "customerId"
+          "customerId",
+          "invoice",
+          "returns",
+          "refunds",
+          "refundedTotal",
+          "refundable",
+          "returnableUntilUtc"
         ],
         "type": "object",
         "properties": {
@@ -10862,6 +11497,43 @@
               "null",
               "string"
             ]
+          },
+          "invoice": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/InvoiceSummary"
+              }
+            ]
+          },
+          "returns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReturnView"
+            }
+          },
+          "refunds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RefundView"
+            }
+          },
+          "refundedTotal": {
+            "type": "number",
+            "format": "double"
+          },
+          "refundable": {
+            "type": "number",
+            "format": "double"
+          },
+          "returnableUntilUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           }
         }
       },
@@ -12353,6 +13025,37 @@
           }
         }
       },
+      "RecordRefundRequest": {
+        "required": [
+          "amount",
+          "method",
+          "note",
+          "returnId"
+        ],
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "method": {
+            "type": "string"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "returnId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
       "RecoveryCodes": {
         "required": [
           "codes"
@@ -12458,6 +13161,42 @@
           }
         }
       },
+      "RefundView": {
+        "required": [
+          "atUtc",
+          "amount",
+          "method",
+          "note",
+          "returnNumber"
+        ],
+        "type": "object",
+        "properties": {
+          "atUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "method": {
+            "type": "string"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "returnNumber": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int64"
+          }
+        }
+      },
       "RegisterRequest": {
         "required": [
           "email",
@@ -12532,6 +13271,24 @@
           }
         }
       },
+      "RequestReturnRequest": {
+        "required": [
+          "lines",
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReturnLineInput"
+            }
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
       "ResetPasswordRequest": {
         "required": [
           "userId",
@@ -12548,6 +13305,138 @@
           },
           "newPassword": {
             "type": "string"
+          }
+        }
+      },
+      "ReturnAnswerRequest": {
+        "required": [
+          "text"
+        ],
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ReturnLineInput": {
+        "required": [
+          "orderItemId",
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "orderItemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ReturnLineView": {
+        "required": [
+          "orderItemId",
+          "name",
+          "variantLabel",
+          "sku",
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "orderItemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "variantLabel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sku": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ReturnStatus": {
+        "enum": [
+          "Requested",
+          "Approved",
+          "Rejected",
+          "Received"
+        ]
+      },
+      "ReturnView": {
+        "required": [
+          "id",
+          "number",
+          "status",
+          "createdUtc",
+          "reason",
+          "answer",
+          "lines",
+          "suggestedRefund",
+          "canApprove",
+          "canReject",
+          "canReceive"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReturnStatus"
+          },
+          "createdUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "answer": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReturnLineView"
+            }
+          },
+          "suggestedRefund": {
+            "type": "number",
+            "format": "double"
+          },
+          "canApprove": {
+            "type": "boolean"
+          },
+          "canReject": {
+            "type": "boolean"
+          },
+          "canReceive": {
+            "type": "boolean"
           }
         }
       },
@@ -12762,6 +13651,46 @@
           "createdUtc": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "SalesSettingsView": {
+        "required": [
+          "sellerName",
+          "sellerAddress",
+          "sellerTaxNumber",
+          "invoiceNote",
+          "returnDays"
+        ],
+        "type": "object",
+        "properties": {
+          "sellerName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sellerAddress": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sellerTaxNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "invoiceNote": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "returnDays": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },

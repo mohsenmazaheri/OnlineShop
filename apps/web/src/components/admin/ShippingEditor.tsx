@@ -6,10 +6,10 @@ import { FormAlert, FormField } from "@/components/account/FormParts";
 import { useApiForm } from "@/components/account/useApiForm";
 import { Button } from "@/components/ui/Button";
 import type { ErrorTexts } from "@/lib/account/problems";
-import type { ShippingMethodAdmin, TaxSettings } from "@/lib/account/session";
+import type { SalesSettings, ShippingMethodAdmin, TaxSettings } from "@/lib/account/session";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { regionName } from "@/lib/i18n/display-names";
-import { formatList } from "@/lib/i18n/format-list";
+import { joinParts } from "@/lib/i18n/format-list";
 import { LocalizedFields, readLocalizedFields } from "./LocalizedFields";
 
 type Texts = Dictionary["admin"];
@@ -19,6 +19,7 @@ type Props = {
   texts: Texts;
   methods: ShippingMethodAdmin[];
   tax: TaxSettings;
+  sales: SalesSettings;
   /** Shop languages, the default first. */
   locales: string[];
   defaultLocale: string;
@@ -34,12 +35,13 @@ export function optionalNumber(form: FormData, name: string): number | null {
 }
 
 /** The tax rate and the shipping methods (settings.manage). Amounts are in the base currency, as prices are. */
-export function ShippingEditor({ locale, texts, methods, tax, locales, defaultLocale, countries, currency, languageNames }: Props) {
+export function ShippingEditor({ locale, texts, methods, tax, sales, locales, defaultLocale, countries, currency, languageNames }: Props) {
   const [open, setOpen] = useState<string | null>(methods.length === 0 ? "new" : null);
   const form = { locale, texts, locales, defaultLocale, countries, currency, languageNames };
   return (
     <div className="flex flex-col gap-6">
       <TaxForm texts={texts} tax={tax} />
+      <SalesForm texts={texts} sales={sales} />
       <section aria-labelledby="shipping-methods" className="flex flex-col gap-3">
         <h2 id="shipping-methods" className="font-bold">
           {texts.methodsTitle}
@@ -56,7 +58,7 @@ export function ShippingEditor({ locale, texts, methods, tax, locales, defaultLo
               >
                 <span className="font-medium">{method.texts[0]?.name}</span>
                 <span className="text-xs text-muted">
-                  {method.isActive ? (method.isPickup ? texts.methodPickup : formatList(method.countries.map((c) => regionName(c, locale)), locale) || texts.methodAllCountries) : texts.methodInactive}
+                  {method.isActive ? (method.isPickup ? texts.methodPickup : joinParts(method.countries.map((c) => regionName(c, locale)), locale) || texts.methodAllCountries) : texts.methodInactive}
                 </span>
               </button>
               {open === method.id && (
@@ -122,7 +124,62 @@ function TaxForm({ texts, tax }: { texts: Texts; tax: TaxSettings }) {
   );
 }
 
-type FormProps = Omit<Props, "methods" | "tax"> & { method?: ShippingMethodAdmin; onDone: () => void };
+/** The seller's details printed on invoices and the return period. */
+function SalesForm({ texts, sales }: { texts: Texts; sales: SalesSettings }) {
+  const router = useRouter();
+  const { busy, submit, formError, fieldError } = useApiForm({ ...texts.errors, ...texts.shippingErrors } as ErrorTexts);
+  const [saved, setSaved] = useState(false);
+
+  async function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaved(false);
+    const form = new FormData(event.currentTarget);
+    const text = (name: string) => String(form.get(name) ?? "").trim() || null;
+    const result = await submit(
+      "/api/v1/admin/shipping/sales",
+      {
+        sellerName: text("sellerName"),
+        sellerAddress: text("sellerAddress"),
+        sellerTaxNumber: text("sellerTaxNumber"),
+        invoiceNote: text("invoiceNote"),
+        returnDays: optionalNumber(form, "returnDays") ?? 0,
+      },
+      "PUT",
+    );
+    if (!result.ok) return;
+    setSaved(true);
+    router.refresh();
+  }
+
+  return (
+    <form onSubmit={save} noValidate aria-labelledby="sales-title" className="flex flex-col gap-3 rounded-xl border border-border p-3">
+      <h2 id="sales-title" className="font-bold">
+        {texts.salesTitle}
+      </h2>
+      <p className="text-sm text-muted">{texts.salesIntro}</p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <FormField label={texts.salesSellerName} name="sellerName" maxLength={200} defaultValue={sales.sellerName ?? ""} error={fieldError("sellerName")} />
+        <FormField label={texts.salesTaxNumber} name="sellerTaxNumber" dir="ltr" maxLength={100} defaultValue={sales.sellerTaxNumber ?? ""} error={fieldError("sellerTaxNumber")} />
+        <div className="sm:col-span-2">
+          <FormField label={texts.salesAddress} name="sellerAddress" maxLength={500} defaultValue={sales.sellerAddress ?? ""} error={fieldError("sellerAddress")} />
+        </div>
+        <div className="sm:col-span-2">
+          <FormField label={texts.salesInvoiceNote} name="invoiceNote" maxLength={500} defaultValue={sales.invoiceNote ?? ""} error={fieldError("invoiceNote")} />
+        </div>
+        <FormField label={texts.salesReturnDays} name="returnDays" type="number" min={0} max={365} dir="ltr" defaultValue={sales.returnDays} hint={texts.salesReturnDaysHint} error={fieldError("returnDays")} />
+      </div>
+      {formError && <FormAlert kind="error">{formError}</FormAlert>}
+      {saved && <FormAlert kind="success">{texts.taxSaved}</FormAlert>}
+      <div>
+        <Button type="submit" disabled={busy}>
+          {texts.salesSave}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+type FormProps = Omit<Props, "methods" | "tax" | "sales"> & { method?: ShippingMethodAdmin; onDone: () => void };
 
 function MethodForm({ texts, locales, defaultLocale, countries, currency, languageNames, method, onDone, locale }: FormProps) {
   const router = useRouter();

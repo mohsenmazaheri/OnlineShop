@@ -18,6 +18,22 @@ public enum OrderEventKind
 
     /// <summary>The payment time ran out: the shop canceled the order and released its stock.</summary>
     PaymentExpired,
+
+    /// <summary>The invoice was issued (<see cref="OrderEvent.Text"/> = its number).</summary>
+    Invoiced,
+
+    /// <summary>The customer asked for a return (<see cref="OrderEvent.Text"/> = its number, "R-3").</summary>
+    ReturnRequested,
+
+    ReturnApproved,
+
+    ReturnRejected,
+
+    /// <summary>The returned items arrived and went back into stock.</summary>
+    ReturnReceived,
+
+    /// <summary>Money was paid back (<see cref="OrderEvent.Text"/> = the amount).</summary>
+    Refunded,
 }
 
 /// <summary>

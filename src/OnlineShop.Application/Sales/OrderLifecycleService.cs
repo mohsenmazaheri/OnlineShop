@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using OnlineShop.Application.Common;
 using OnlineShop.Application.Inventory;
 using OnlineShop.Application.Notifications;
+using Microsoft.Extensions.Options;
 using OnlineShop.Domain.Sales;
 
 namespace OnlineShop.Application.Sales;
@@ -11,30 +12,48 @@ namespace OnlineShop.Application.Sales;
 /// conditional UPDATE ("status = expected"), so two staff members or the expiry job can never both act; it is
 /// written to the history and the customer is told.
 /// <list type="bullet">
-/// <item>Paid (by hand until the payment gateways of phase 8): the held stock is sold. When the hold ran out
-/// meanwhile, the stock is held again first, or the change is refused when it is gone.</item>
-/// <item>Canceled (before payment, by staff or when the payment time runs out): the stock and the discount code's use
-/// are given back.</item>
+/// <item>Paid (by hand until the payment gateways of phase 8): the held stock is sold and the invoice is issued (the
+/// next number, in the same transaction). When the hold ran out meanwhile, the stock is held again first, or the
+/// change is refused when it is gone.</item>
+/// <item>Canceled before payment (by staff or when the payment time runs out): the held stock and the discount code's
+/// use are given back. Canceled after payment (not yet shipped): the sold stock comes back as "Return" movements and
+/// the refund is recorded apart (<see cref="ReturnService.RefundAsync"/>).</item>
 /// </list>
 /// </summary>
 public sealed class OrderLifecycleService(
     IApplicationDbContext db,
     StockReservationService reservations,
     DiscountCodeService discounts,
+    StockLedger ledger,
+    SalesSettingsService settings,
     OrderNotifier notifier,
     ICurrentUser currentUser,
+    IOptions<StoreOptions> store,
     TimeProvider clock)
 {
     public static string ReservationReference(long number) => $"order:{number}";
 
     public Task<Result<OrderStatus>> MarkPaidAsync(long number, OrderActionRequest request, CancellationToken cancellationToken = default) =>
-        ChangeAsync(number, OrderStatus.Pending, OrderStatus.Paid, request?.Text, OrderNotice.Paid, cancellationToken, SellAsync);
+        ChangeAsync(number, OrderStatus.Pending, OrderStatus.Paid, request?.Text, OrderNotice.Paid, cancellationToken, async (order, ct) =>
+        {
+            var error = await SellAsync(order, ct);
+            if (error is null)
+                await IssueInvoiceAsync(order, ct);
+            return error;
+        });
 
     public Task<Result<OrderStatus>> CompleteAsync(long number, OrderActionRequest request, CancellationToken cancellationToken = default) =>
-        ChangeAsync(number, null, OrderStatus.Completed, request?.Text, null, cancellationToken);
+        ChangeAsync(number, null, OrderStatus.Completed, request?.Text, null, cancellationToken, async (order, ct) =>
+        {
+            var now = clock.GetUtcNow().UtcDateTime;
+            await db.Orders.Where(o => o.Id == order.Id).ExecuteUpdateAsync(s => s.SetProperty(o => o.CompletedUtc, now), ct);
+            return null;
+        });
 
+    /// <summary>Before payment the held stock is released; after payment (not shipped) the sold stock comes back.</summary>
     public Task<Result<OrderStatus>> CancelAsync(long number, OrderActionRequest request, CancellationToken cancellationToken = default) =>
-        ChangeAsync(number, OrderStatus.Pending, OrderStatus.Canceled, request?.Text, OrderNotice.Canceled, cancellationToken, GiveBackAsync);
+        ChangeAsync(number, null, OrderStatus.Canceled, request?.Text, OrderNotice.Canceled, cancellationToken,
+            (order, ct) => order.Status == OrderStatus.Paid ? RestockAsync(order, ct) : GiveBackAsync(order, ct));
 
     public async Task<Result<OrderStatus>> ShipAsync(long number, ShipOrderRequest request, CancellationToken cancellationToken = default)
     {
@@ -118,8 +137,9 @@ public sealed class OrderLifecycleService(
         }, cancellationToken);
         db.ChangeTracker.Clear();
 
+        // A cancellation's reason goes to the customer; other texts are internal.
         if (result.IsSuccess && notice is { } n)
-            await notifier.NotifyAsync(order.Id, n, cancellationToken);
+            await notifier.NotifyAsync(order.Id, n, null, to == OrderStatus.Canceled ? text : null, cancellationToken);
         return result;
     }
 
@@ -156,6 +176,45 @@ public sealed class OrderLifecycleService(
             return AppError.Conflict(OrderErrors.NotAvailable, "Some items of the order are no longer in stock.");
         committed = await reservations.CommitAsync(reference, reference, cancellationToken);
         return committed.IsSuccess ? null : committed.Error;
+    }
+
+    /// <summary>
+    /// The invoice: the next number of the one sequence (the unique index refuses a duplicate, the transaction then
+    /// rolls back, so numbers never repeat or skip) with the seller's details as they are now.
+    /// </summary>
+    private async Task IssueInvoiceAsync(Target order, CancellationToken cancellationToken)
+    {
+        var seller = await settings.GetAsync(cancellationToken);
+        var number = (await db.Invoices.MaxAsync(i => (long?)i.Number, cancellationToken) ?? 0) + 1;
+        db.Invoices.Add(new Invoice
+        {
+            Number = number,
+            OrderId = order.Id,
+            IssuedUtc = clock.GetUtcNow().UtcDateTime,
+            SellerName = seller.SellerName ?? store.Value.Name,
+            SellerAddress = seller.SellerAddress,
+            SellerTaxNumber = seller.SellerTaxNumber,
+            Note = seller.InvoiceNote,
+        });
+        db.OrderEvents.Add(new OrderEvent { OrderId = order.Id, Kind = OrderEventKind.Invoiced, Text = number.ToString(System.Globalization.CultureInfo.InvariantCulture) });
+    }
+
+    /// <summary>A paid order canceled before shipping: its sold units come back into the default warehouse.</summary>
+    private async Task<AppError?> RestockAsync(Target order, CancellationToken cancellationToken)
+    {
+        var warehouse = await ledger.DefaultWarehouseIdAsync(cancellationToken);
+        var items = await db.OrderItems.AsNoTracking().Where(i => i.OrderId == order.Id)
+            .Select(i => new { i.ProductId, i.VariantId, i.Quantity }).ToListAsync(cancellationToken);
+        foreach (var item in items)
+        {
+            var posted = await ledger.PostAsync(warehouse, new StockItem(item.ProductId, item.VariantId), Domain.Inventory.StockMovementKind.Return, item.Quantity,
+                ReservationReference(order.Number), "canceled", cancellationToken: cancellationToken);
+            if (!posted.IsSuccess)
+                return posted.Error;
+        }
+        if (order.DiscountCodeId is { } codeId)
+            await discounts.UnclaimAsync(codeId, cancellationToken);
+        return null;
     }
 
     /// <summary>The held stock goes back on sale and the discount code may be used again.</summary>

@@ -306,3 +306,21 @@ export function getAdminOrders(query: { status?: OrderStatus | null; q?: string 
 export function getAdminOrder(number: number, fetchImpl: typeof fetch = fetch): Promise<OrderView | null> {
   return getForUser<OrderView>(`/api/v1/admin/orders/${number}`, fetchImpl);
 }
+
+export type InvoiceView = components["schemas"]["InvoiceView"];
+export type SalesSettings = components["schemas"]["SalesSettingsView"];
+
+/** The invoice of one of the customer's paid orders, or null (unpaid, not theirs, no session). */
+export function getMyInvoice(number: number, fetchImpl: typeof fetch = fetch): Promise<InvoiceView | null> {
+  return getForUser<InvoiceView>(`/api/v1/account/orders/${number}/invoice`, fetchImpl);
+}
+
+/** The invoice of a paid order for staff (orders.view), or null. */
+export function getAdminInvoice(number: number, fetchImpl: typeof fetch = fetch): Promise<InvoiceView | null> {
+  return getForUser<InvoiceView>(`/api/v1/admin/orders/${number}/invoice`, fetchImpl);
+}
+
+/** The seller's invoice details and the return period (settings.manage), or null. */
+export function getSalesSettings(fetchImpl: typeof fetch = fetch): Promise<SalesSettings | null> {
+  return getForUser<SalesSettings>("/api/v1/admin/shipping/sales", fetchImpl);
+}
