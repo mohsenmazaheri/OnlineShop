@@ -60,3 +60,36 @@ self.addEventListener("fetch", (event) => {
     );
   }
 });
+
+/*
+ * Notifications (Web Push, optional): the API sends {title, body, url} encrypted for this browser. A click opens the
+ * shop's page (only the shop's own pages), or focuses it when it is already open.
+ */
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { title: event.data ? event.data.text() : "" };
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title || "", {
+      body: data.body || "",
+      icon: "/icon/192",
+      badge: "/icon/192",
+      data: { url: typeof data.url === "string" ? data.url : "/" },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = new URL((event.notification.data && event.notification.data.url) || "/", self.location.origin);
+  if (url.origin !== self.location.origin) return;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
+      const open = windows.find((w) => w.url === url.href && "focus" in w);
+      return open ? open.focus() : self.clients.openWindow(url.href);
+    }),
+  );
+});

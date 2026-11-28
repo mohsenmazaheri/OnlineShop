@@ -156,7 +156,9 @@
       "address_country_not_supported": "The shop does not ship to this country.",
       "address_postal_code_invalid": "This postal code is not valid for the country.",
       "compare_too_many": "You can compare up to 4 products.",
-      "wishlist_product_not_found": "That product is no longer available."
+      "wishlist_product_not_found": "That product is no longer available.",
+      "push_disabled": "This shop does not send notifications.",
+      "push_invalid": "This browser's notification subscription is not valid."
     },
     "withCode": "With an SMS code",
     "withPassword": "With a password",
@@ -256,7 +258,13 @@
     "wishlistTitle": "My wishlist",
     "wishlistEmpty": "Your wishlist is empty. Use the heart button on a product to save it here.",
     "wishlistRemove": "Remove {name}",
-    "navOrders": "Orders"
+    "navOrders": "Orders",
+    "pushTitle": "Notifications on this device",
+    "pushIntro": "Get a notification here when your order is paid, shipped or refunded.",
+    "pushOnText": "Notifications about your orders are on in this browser.",
+    "pushBlocked": "Notifications are blocked in this browser's settings for this shop.",
+    "pushTurnOn": "Turn on notifications",
+    "pushTurnOff": "Turn off notifications"
   },
   "admin": {
     "title": "Admin panel",

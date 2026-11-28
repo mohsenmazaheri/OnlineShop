@@ -156,7 +156,9 @@
       "address_country_not_supported": "لا يشحن المتجر إلى هذه الدولة.",
       "address_postal_code_invalid": "هذا الرمز البريدي غير صالح لهذه الدولة.",
       "compare_too_many": "يمكن مقارنة 4 منتجات كحد أقصى.",
-      "wishlist_product_not_found": "هذا المنتج لم يعد متاحًا."
+      "wishlist_product_not_found": "هذا المنتج لم يعد متاحًا.",
+      "push_disabled": "هذا المتجر لا يرسل إشعارات.",
+      "push_invalid": "اشتراك الإشعارات في هذا المتصفح غير صالح."
     },
     "withCode": "برمز SMS",
     "withPassword": "بكلمة المرور",
@@ -256,7 +258,13 @@
     "wishlistTitle": "قائمتي المفضلة",
     "wishlistEmpty": "قائمتك المفضلة فارغة. احفظ المنتجات بزر القلب في صفحة المنتج.",
     "wishlistRemove": "إزالة {name}",
-    "navOrders": "الطلبات"
+    "navOrders": "الطلبات",
+    "pushTitle": "الإشعارات على هذا الجهاز",
+    "pushIntro": "احصل على إشعار هنا عند دفع طلبك أو شحنه أو استرداد مبلغه.",
+    "pushOnText": "إشعارات طلباتك مفعّلة في هذا المتصفح.",
+    "pushBlocked": "إشعارات هذا المتجر محظورة في إعدادات هذا المتصفح.",
+    "pushTurnOn": "تفعيل الإشعارات",
+    "pushTurnOff": "إيقاف الإشعارات"
   },
   "admin": {
     "title": "لوحة الإدارة",

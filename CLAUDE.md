@@ -8,7 +8,7 @@ Application / Infrastructure / Api) + **Next.js 16** storefront in `apps/web`. O
 images serve every shop.
 
 **Plan and all recorded decisions: [docs/ROADMAP.md](docs/ROADMAP.md)** (Persian). Read it before starting, work on
-one step at a time, mark the status there when a step is done. Done: phases 0, 2–6 and 7a–7d (cart, checkout, order lifecycle, invoices/returns); phase 1 has a
+one step at a time, mark the status there when a step is done. Done: phases 0 and 2–7 (7: cart, checkout, order lifecycle, invoices/returns, Web Push); phase 1 has a
 "remaining" list. SEO/marketing design: [docs/SEO-MARKETING.md](docs/SEO-MARKETING.md) (acceptance checklist at its end).
 
 Key decisions (details in the roadmap):
@@ -172,6 +172,12 @@ After a model change: migration + `has-pending-model-changes` reports none. Afte
   ledger `Return` movements). `ReturnService`: customer requests within `SalesSettings.ReturnDays` of `CompletedUtc`
   (quantities ≤ ordered − non-rejected returns), staff approve/reject/receive (receive restocks), `RefundAsync` records
   refunds (paid orders only, total ≤ order total). Addresses are joined with `joinParts` (never `formatList`: it adds "and").
+- **Web Push** (optional, off without `WebPush:PublicKey/PrivateKey`; keys from `dotnet run --project src/OnlineShop.Api
+  -- generate-vapid-keys`): `PushSubscriptionService` (`push_subscriptions`, personal data, ≤20 per customer, one per
+  endpoint, moves to the signed-in account), `IWebPushSender` = `WebPushSender` (RFC 8291 `aes128gcm` + RFC 8292 VAPID
+  in plain .NET crypto, `WebPushCrypto`/`Vapid`; 404/410 → subscription deleted). `OrderNotifier` pushes the email's
+  subject/body to signed-in customers. Codes `account.push_*`. Web: `PushNotifications` on `/account`,
+  `lib/push/client.ts`, `push`/`notificationclick` in `public/sw.js` (same-origin URLs only).
 - **Cart** (`Sales/CartService`, `CartEndpoints`, codes `cart.*` → web `cart.errors`): server-side for guests too
   (`CartOwner`: user id, else the HttpOnly `os_cart` token, stored only as SHA-256 `GuestTokenHash`); the first cart
   request after sign-in merges it (`MergeAsync`) and drops the cookie. Lines keyed by `ItemId` (variant id, else product

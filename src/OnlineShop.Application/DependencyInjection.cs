@@ -68,6 +68,8 @@ public static class DependencyInjection
         services.AddScoped<Sales.OrderLifecycleService>();
         services.AddScoped<Sales.SalesSettingsService>();
         services.AddScoped<Sales.ReturnService>();
+        services.AddSingleton<Notifications.IWebPushSender, Notifications.NoWebPushSender>();
+        services.AddScoped<Customers.PushSubscriptionService>();
         services.AddScoped<Catalog.Compare.CompareListService>();
         services.AddScoped<Catalog.Reviews.ReviewService>();
         services.AddScoped<Customers.WishlistService>();

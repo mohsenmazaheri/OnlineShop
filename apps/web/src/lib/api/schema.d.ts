@@ -157,6 +157,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/push": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Whether the shop sends notifications, and its VAPID public key for subscribing. */
+        get: operations["GetPushSettings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/currencies": {
         parameters: {
             query?: never;
@@ -1034,6 +1051,40 @@ export interface paths {
         put?: never;
         /** Add a note to the order's history for staff only. */
         post: operations["AddOrderNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account/push": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Switch notifications on for this browser (its push subscription). */
+        put: operations["SubscribePush"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account/push/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Switch notifications off for this browser. */
+        post: operations["UnsubscribePush"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3593,6 +3644,12 @@ export interface components {
             /** Format: date-time */
             expiresUtc: string;
         };
+        NotificationDeviceData: {
+            pushService: string;
+            locale: string;
+            /** Format: date-time */
+            subscribedUtc: string;
+        };
         OpenStocktakeRequest: {
             /** Format: uuid */
             warehouseId: string;
@@ -3777,6 +3834,7 @@ export interface components {
             compare: components["schemas"]["SavedProductData"][];
             wishlist: components["schemas"]["SavedProductData"][];
             reviews: components["schemas"]["ReviewData"][];
+            notificationDevices: components["schemas"]["NotificationDeviceData"][];
         };
         PhoneCodeSent: {
             /** Format: int32 */
@@ -4075,6 +4133,19 @@ export interface components {
         };
         /** @enum {unknown} */
         PurchaseReceiptStatus: "Draft" | "Posted" | "Cancelled";
+        PushSettingsView: {
+            enabled: boolean;
+            publicKey: null | string;
+        };
+        PushSubscriptionRequest: {
+            endpoint: string;
+            p256dh: string;
+            auth: string;
+            locale: null | string;
+        };
+        PushUnsubscribeRequest: {
+            endpoint: string;
+        };
         RateSyncResult: {
             /** Format: int32 */
             updated: number;
@@ -5277,6 +5348,26 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    GetPushSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushSettingsView"];
                 };
             };
         };
@@ -7134,6 +7225,72 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    SubscribePush: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushSubscriptionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": boolean;
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    UnsubscribePush: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushUnsubscribeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": boolean;
+                };
+            };
             /** @description Bad Request */
             400: {
                 headers: {

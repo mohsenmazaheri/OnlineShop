@@ -25,8 +25,10 @@ describe("Countdown", () => {
     expect(screen.getByRole("timer").textContent).toBe(`${en.product.offerEndsIn}2 d00:00:03`);
     expect(screen.getByRole("timer").querySelector("time")!.getAttribute("datetime")).toBe("2026-11-24T10:00:03Z");
 
+    // Jump to just after the end and let one tick run (stepping two days second by second is slow under load).
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(2 * 86_400_000 + 4000);
+      vi.setSystemTime(new Date("2026-11-24T10:00:04Z"));
+      await vi.advanceTimersByTimeAsync(1000);
     });
     expect(screen.getByText(en.product.offerEnded)).toBeTruthy();
   });

@@ -18,6 +18,7 @@ public sealed partial class OrderNotifier(
     ISmsSender sms,
     ISmsCapability smsCapability,
     IOrderLinks links,
+    Customers.PushSubscriptionService push,
     IOptions<StoreOptions> store,
     ILogger<OrderNotifier> logger)
 {
@@ -57,6 +58,17 @@ public sealed partial class OrderNotifier(
             {
                 LogEmailFailed(logger, order.Number, notice, ex);
             }
+        }
+
+        // Notifications reach the browsers the customer switched them on in (signed-in customers only), in each one's language.
+        if (order.CustomerId is { } customerId)
+        {
+            var path = $"/{{0}}/{PathFor(order.Id, order.Number, customerId)}";
+            await push.NotifyAsync(customerId, browserLocale =>
+            {
+                var (title, body) = OrderMessages.Push(notice, browserLocale, options.Name, data);
+                return new PushMessage(title, body, string.Format(CultureInfo.InvariantCulture, path, browserLocale));
+            }, cancellationToken);
         }
 
         if (OrderMessages.HasSms(notice) && smsCapability.IsEnabled && !string.IsNullOrWhiteSpace(order.PhoneNumber))

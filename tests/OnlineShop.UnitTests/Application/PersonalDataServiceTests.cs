@@ -55,6 +55,7 @@ public sealed class PersonalDataServiceTests : IDisposable
         _db.Carts.Add(new Cart { CustomerId = userId, Items = { new CartItem { ProductId = product.Id, Quantity = 2 } } });
         _db.CompareItems.Add(new OnlineShop.Domain.Customers.CompareItem { CustomerId = userId, ProductId = product.Id, AddedUtc = Now.UtcDateTime });
         _db.WishlistItems.Add(new OnlineShop.Domain.Customers.WishlistItem { CustomerId = userId, ProductId = product.Id, AddedUtc = Now.UtcDateTime });
+        _db.PushSubscriptions.Add(new OnlineShop.Domain.Customers.PushSubscription { CustomerId = userId, Endpoint = $"https://push.example.com/{userId}", P256dh = "k", Auth = "a", Locale = "fa" });
         _db.ProductReviews.Add(new OnlineShop.Domain.Catalog.ProductReview
         {
             ProductId = product.Id, CustomerId = userId, Rating = 4, Body = "Good phone, works well.", Locale = "fa", Status = OnlineShop.Domain.Catalog.ReviewStatus.Approved,
@@ -92,6 +93,7 @@ public sealed class PersonalDataServiceTests : IDisposable
         var compared = Assert.Single(export.Compare);
         Assert.Equal(Now.UtcDateTime, compared.AddedUtc);
         Assert.Single(export.Wishlist);
+        Assert.Equal(("push.example.com", "fa"), (Assert.Single(export.NotificationDevices).PushService, export.NotificationDevices[0].Locale));
         Assert.Equal((4, "Approved"), (Assert.Single(export.Reviews).Rating, export.Reviews[0].Status));
     }
 
@@ -107,6 +109,7 @@ public sealed class PersonalDataServiceTests : IDisposable
         Assert.Empty(export.Cart);
         Assert.Empty(export.Compare);
         Assert.Empty(export.Wishlist);
+        Assert.Empty(export.NotificationDevices);
         Assert.Empty(export.Reviews);
     }
 
@@ -125,6 +128,7 @@ public sealed class PersonalDataServiceTests : IDisposable
         Assert.False(await check.CartItems.IgnoreQueryFilters().AnyAsync());
         Assert.False(await check.CompareItems.AnyAsync());
         Assert.False(await check.WishlistItems.AnyAsync());
+        Assert.False(await check.PushSubscriptions.AnyAsync());
         Assert.False(await check.ProductReviews.IgnoreQueryFilters().AnyAsync());
         // The product's rating no longer counts the erased review.
         Assert.Equal(0, (await check.Products.SingleAsync()).RatingCount);

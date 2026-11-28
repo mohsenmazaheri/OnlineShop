@@ -409,6 +409,27 @@
         }
       }
     },
+    "/api/v1/push": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Whether the shop sends notifications, and its VAPID public key for subscribing.",
+        "operationId": "GetPushSettings",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushSettingsView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/currencies": {
       "get": {
         "tags": [
@@ -3010,6 +3031,88 @@
           "required": true
         },
         "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/account/push": {
+      "put": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Switch notifications on for this browser (its push subscription).",
+        "operationId": "SubscribePush",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushSubscriptionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/account/push/remove": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Switch notifications off for this browser.",
+        "operationId": "UnsubscribePush",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushUnsubscribeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -10837,6 +10940,26 @@
           }
         }
       },
+      "NotificationDeviceData": {
+        "required": [
+          "pushService",
+          "locale",
+          "subscribedUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "pushService": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "subscribedUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
       "OpenStocktakeRequest": {
         "required": [
           "warehouseId",
@@ -11546,7 +11669,8 @@
           "cart",
           "compare",
           "wishlist",
-          "reviews"
+          "reviews",
+          "notificationDevices"
         ],
         "type": "object",
         "properties": {
@@ -11591,6 +11715,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ReviewData"
+            }
+          },
+          "notificationDevices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationDeviceData"
             }
           }
         }
@@ -12799,6 +12929,61 @@
           "Posted",
           "Cancelled"
         ]
+      },
+      "PushSettingsView": {
+        "required": [
+          "enabled",
+          "publicKey"
+        ],
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "publicKey": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PushSubscriptionRequest": {
+        "required": [
+          "endpoint",
+          "p256dh",
+          "auth",
+          "locale"
+        ],
+        "type": "object",
+        "properties": {
+          "endpoint": {
+            "type": "string"
+          },
+          "p256dh": {
+            "type": "string"
+          },
+          "auth": {
+            "type": "string"
+          },
+          "locale": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PushUnsubscribeRequest": {
+        "required": [
+          "endpoint"
+        ],
+        "type": "object",
+        "properties": {
+          "endpoint": {
+            "type": "string"
+          }
+        }
       },
       "RateSyncResult": {
         "required": [

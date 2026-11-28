@@ -56,6 +56,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<ReturnLine> ReturnLines => Set<ReturnLine>();
     public DbSet<Refund> Refunds => Set<Refund>();
     public DbSet<SalesSettings> SalesSettings => Set<SalesSettings>();
+    public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
     public DbSet<PhoneVerificationCode> PhoneVerificationCodes => Set<PhoneVerificationCode>();
     public DbSet<CustomerAddress> CustomerAddresses => Set<CustomerAddress>();
     public DbSet<CompareItem> CompareItems => Set<CompareItem>();
@@ -918,6 +919,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     private static void ConfigureCheckout(ModelBuilder b)
     {
+        b.Entity<PushSubscription>(e =>
+        {
+            e.ToTable("push_subscriptions");
+            e.Property(x => x.CustomerId).HasMaxLength(450);
+            e.Property(x => x.Endpoint).HasMaxLength(2048);
+            e.Property(x => x.P256dh).HasMaxLength(200);
+            e.Property(x => x.Auth).HasMaxLength(200);
+            e.Property(x => x.Locale).HasMaxLength(8);
+            e.HasIndex(x => x.Endpoint).IsUnique();
+            e.HasIndex(x => x.CustomerId);
+            // Personal data: gone with the account.
+            e.HasOne<AppUser>().WithMany().HasForeignKey(x => x.CustomerId).OnDelete(DeleteBehavior.Cascade);
+        });
         b.Entity<Invoice>(e =>
         {
             e.ToTable("invoices");
