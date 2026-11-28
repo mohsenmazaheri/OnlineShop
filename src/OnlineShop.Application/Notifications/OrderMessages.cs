@@ -128,6 +128,15 @@ public static class OrderMessages
         return new EmailMessage(to, subject, textBody, htmlBody);
     }
 
+    /// <summary>The notification of a notice: the email's subject and first paragraph, in that language.</summary>
+    public static (string Title, string Body) Push(OrderNotice notice, string locale, string storeName, OrderMessageData data)
+    {
+        ArgumentNullException.ThrowIfNull(data);
+        var text = Emails[(notice, Emails.ContainsKey((notice, locale)) ? locale : "en")];
+        string fill(string template) => string.Format(CultureInfo.InvariantCulture, template, storeName, data.Number, data.Total, data.TrackingCarrier, data.TrackingCode, data.Detail);
+        return (fill(text.Subject), fill(text.Body));
+    }
+
     /// <summary>The free-text SMS (Twilio, development pickup); Iranian providers use their own approved templates.</summary>
     public static string SmsText(OrderNotice notice, string locale, string storeName, OrderMessageData data)
     {

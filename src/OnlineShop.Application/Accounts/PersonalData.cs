@@ -25,7 +25,11 @@ public sealed record PersonalDataExport(
     IReadOnlyList<CartItemData> Cart,
     IReadOnlyList<SavedProductData> Compare,
     IReadOnlyList<SavedProductData> Wishlist,
-    IReadOnlyList<ReviewData> Reviews);
+    IReadOnlyList<ReviewData> Reviews,
+    IReadOnlyList<NotificationDeviceData> NotificationDevices);
+
+/// <summary>A browser that receives notifications: its push service (the host) and since when.</summary>
+public sealed record NotificationDeviceData(string PushService, string Locale, DateTime SubscribedUtc);
 
 /// <summary>A product on the customer's comparison list or wishlist.</summary>
 public sealed record SavedProductData(long Number, string ProductName, DateTime AddedUtc);

@@ -11,6 +11,15 @@ using OnlineShop.Infrastructure;
 using OnlineShop.Infrastructure.Persistence.Seeding;
 using Serilog;
 
+// "generate-vapid-keys": prints a new Web Push key pair for the WebPush section and exits (nothing else starts).
+if (args.Contains("generate-vapid-keys", StringComparer.Ordinal))
+{
+    var (publicKey, privateKey) = OnlineShop.Infrastructure.Notifications.Vapid.GenerateKeys();
+    Console.WriteLine($"WebPush:PublicKey  = {publicKey}");
+    Console.WriteLine($"WebPush:PrivateKey = {privateKey}   (a secret: user-secrets or an environment variable)");
+    return;
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((context, logger) => logger
@@ -135,6 +144,7 @@ app.MapContentEndpoints();
 app.MapCartEndpoints();
 app.MapCheckoutEndpoints();
 app.MapOrderEndpoints();
+app.MapPushEndpoints();
 app.MapCurrencyEndpoints();
 app.MapBrandingEndpoints();
 app.MapCatalogAdminEndpoints();

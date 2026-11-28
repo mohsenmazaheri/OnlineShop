@@ -156,7 +156,9 @@
       "address_country_not_supported": "Der Shop liefert nicht in dieses Land.",
       "address_postal_code_invalid": "Diese Postleitzahl ist für das Land nicht gültig.",
       "compare_too_many": "Sie können bis zu 4 Produkte vergleichen.",
-      "wishlist_product_not_found": "Dieses Produkt ist nicht mehr verfügbar."
+      "wishlist_product_not_found": "Dieses Produkt ist nicht mehr verfügbar.",
+      "push_disabled": "Dieser Shop sendet keine Benachrichtigungen.",
+      "push_invalid": "Das Benachrichtigungsabo dieses Browsers ist ungültig."
     },
     "withCode": "Mit SMS-Code",
     "withPassword": "Mit Passwort",
@@ -256,7 +258,13 @@
     "wishlistTitle": "Meine Wunschliste",
     "wishlistEmpty": "Ihre Wunschliste ist leer. Merken Sie sich Produkte mit dem Herz-Symbol.",
     "wishlistRemove": "{name} entfernen",
-    "navOrders": "Bestellungen"
+    "navOrders": "Bestellungen",
+    "pushTitle": "Benachrichtigungen auf diesem Gerät",
+    "pushIntro": "Erhalten Sie hier eine Benachrichtigung, wenn Ihre Bestellung bezahlt, versandt oder erstattet wurde.",
+    "pushOnText": "Benachrichtigungen zu Ihren Bestellungen sind in diesem Browser an.",
+    "pushBlocked": "Benachrichtigungen dieses Shops sind in den Browsereinstellungen blockiert.",
+    "pushTurnOn": "Benachrichtigungen einschalten",
+    "pushTurnOff": "Benachrichtigungen ausschalten"
   },
   "admin": {
     "title": "Verwaltungsbereich",

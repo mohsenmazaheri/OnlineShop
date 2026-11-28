@@ -58,6 +58,10 @@ public sealed class PersonalDataService(
                 (r, p) => new ReviewData(p.PublicNumber, p.Name, r.Rating, r.Title, r.Body, r.Status.ToString(), r.CreatedUtc))
             .ToListAsync(cancellationToken);
 
+        var devices = (await db.PushSubscriptions.AsNoTracking().Where(s => s.CustomerId == userId).OrderBy(s => s.CreatedUtc)
+                .Select(s => new { s.Endpoint, s.Locale, s.CreatedUtc }).ToListAsync(cancellationToken))
+            .Select(s => new NotificationDeviceData(new Uri(s.Endpoint).Host, s.Locale, s.CreatedUtc)).ToList();
+
         return new PersonalDataExport(
             clock.GetUtcNow().UtcDateTime,
             account,
@@ -66,7 +70,8 @@ public sealed class PersonalDataService(
             cart,
             compare,
             wishlist,
-            reviews);
+            reviews,
+            devices);
     }
 
     /// <param name="signedInAt">When this session's sign-in happened (<see cref="AccountClaims.AuthTime"/>), if known.</param>
@@ -97,6 +102,7 @@ public sealed class PersonalDataService(
         await db.Carts.IgnoreQueryFilters().Where(c => c.CustomerId == userId).ExecuteDeleteAsync(cancellationToken);
         await db.CompareItems.Where(c => c.CustomerId == userId).ExecuteDeleteAsync(cancellationToken);
         await db.WishlistItems.Where(w => w.CustomerId == userId).ExecuteDeleteAsync(cancellationToken);
+        await db.PushSubscriptions.Where(s => s.CustomerId == userId).ExecuteDeleteAsync(cancellationToken);
         // Reviews are the customer's own words: erased, and the products' ratings recomputed without them.
         var reviewed = await db.ProductReviews.IgnoreQueryFilters().Where(r => r.CustomerId == userId).Select(r => r.ProductId).ToListAsync(cancellationToken);
         await db.ProductReviews.IgnoreQueryFilters().Where(r => r.CustomerId == userId).ExecuteDeleteAsync(cancellationToken);

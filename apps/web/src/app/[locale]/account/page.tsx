@@ -8,6 +8,7 @@ import { providerNames } from "@/components/account/ExternalLoginButtons";
 import { LinkedAccounts } from "@/components/account/LinkedAccounts";
 import { PhoneCodeForm } from "@/components/account/PhoneCodeForm";
 import { ChangePasswordForm, ProfileForm } from "@/components/account/ProfileForms";
+import { PushNotifications } from "@/components/account/PushNotifications";
 import { StaffInvitations } from "@/components/account/StaffInvitations";
 import { TwoFactorSettings } from "@/components/account/TwoFactorSettings";
 import { format } from "@/lib/account/digits";
@@ -81,6 +82,7 @@ async function AccountSummary({ locale, texts, adminTexts, searchParams }: Summa
         </h2>
         <ProfileForm texts={texts} displayName={user.displayName ?? null} preferredLocale={user.preferredLocale ?? null} locales={store.locales} />
       </section>
+      <PushNotifications locale={locale} locales={store.locales} texts={texts} />
       {!user.phoneNumber && store.signIn.phoneCode && (
         <section aria-labelledby="add-phone" className="rounded-xl border border-border p-3">
           <h2 id="add-phone" className="mb-3 font-semibold">

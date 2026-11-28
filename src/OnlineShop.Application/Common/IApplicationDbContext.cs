@@ -44,6 +44,7 @@ public interface IApplicationDbContext
     DbSet<ReturnLine> ReturnLines { get; }
     DbSet<Refund> Refunds { get; }
     DbSet<SalesSettings> SalesSettings { get; }
+    DbSet<PushSubscription> PushSubscriptions { get; }
     DbSet<PhoneVerificationCode> PhoneVerificationCodes { get; }
     DbSet<CustomerAddress> CustomerAddresses { get; }
     DbSet<CompareItem> CompareItems { get; }

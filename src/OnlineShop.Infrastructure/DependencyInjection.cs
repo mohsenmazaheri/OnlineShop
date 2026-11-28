@@ -254,6 +254,11 @@ public static class DependencyInjection
             client.Timeout = TimeSpan.FromSeconds(15);
         }
         services.AddHttpClient<KavenegarSmsSender>(c => Http(c, KavenegarSmsSender.BaseAddress));
+
+        // Web Push (optional, on with VAPID keys); replaces the Application default (no push).
+        services.AddOptions<WebPushOptions>().Bind(configuration.GetSection(WebPushOptions.SectionName));
+        services.AddHttpClient<WebPushSender>(c => c.Timeout = TimeSpan.FromSeconds(15));
+        services.AddScoped<IWebPushSender>(sp => sp.GetRequiredService<WebPushSender>());
         services.AddHttpClient<SmsIrSmsSender>(c => Http(c, SmsIrSmsSender.BaseAddress));
         services.AddHttpClient<TwilioSmsSender>(c => Http(c, TwilioSmsSender.BaseAddress));
         services.AddScoped<PickupSmsSender>();
